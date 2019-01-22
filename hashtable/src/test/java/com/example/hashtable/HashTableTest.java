@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HashTableTest {
-    private static HashTable table;
+    private HashTable table;
 
     @BeforeEach
     void initTable() {
