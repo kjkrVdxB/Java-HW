@@ -105,6 +105,6 @@ class HashTableTest {
 
     @Test
     void testNullKey() {
-        assertThrows(NullPointerException.class, () -> { table.put(null, "aaa"); });
+        assertThrows(NullPointerException.class, () -> table.put(null, "aaa"));
     }
 }
