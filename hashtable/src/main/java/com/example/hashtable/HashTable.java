@@ -1,5 +1,8 @@
 package com.example.hashtable;
 
+/**
+ * List based hash table.
+ */
 public class HashTable {
     private int sz;
     private KeyValueList[] buckets;
@@ -53,7 +56,7 @@ public class HashTable {
     }
 
     /**
-     * @return number of elements in the table.
+     * @return Number of elements in the table.
      */
     public int size() {
         return sz;
@@ -67,8 +70,8 @@ public class HashTable {
     }
 
     /**
-     * Get the {@code String} associeted with the {@code key}, or null if there is none. Note that null is also returned if the
-     * associated {@code String} is {@code null}. Use contains to resolve the ambiguity.
+     * Get the {@code String} associated with the {@code key}, or null if there is none. Note that null is also
+     * returned if the associated {@code String} is {@code null}. Use contains to resolve the ambiguity.
      */
     public String get(String key) {
         KeyValueList.Link foundPosition = bucket(key).find(key);
