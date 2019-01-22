@@ -91,14 +91,14 @@ class HashTableTest {
     @Test
     void testRehash() {
         for (int i = 0; i < 15; ++i) {
-            table.put(Integer.valueOf(i).toString(), Integer.valueOf(i).toString() + "aaa");
+            table.put(i + "aaa", i + "bbb");
         }
         assertEquals(15, table.size());
         for (int i = 0; i < 15; ++i) {
-            assertEquals(Integer.valueOf(i).toString() + "aaa", table.get(Integer.valueOf(i).toString()));
+            assertEquals(i + "bbb", table.get(i + "aaa"));
         }
         for (int i = 0; i < 15; ++i) {
-            table.remove(Integer.valueOf(i).toString());
+            table.remove(i + "aaa");
         }
         assertEquals(0, table.size());
     }
