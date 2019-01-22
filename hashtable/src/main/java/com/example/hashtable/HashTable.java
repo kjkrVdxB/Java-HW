@@ -1,0 +1,128 @@
+package com.example.hashtable;
+
+public class HashTable {
+    private int sz;
+    private KeyValueList[] buckets;
+
+    private static int BUCKETS_GROWTH_RATE = 2;
+    private static int INITIAL_BUCKETS = 10;
+    private static int REHASH_TRESHOLD = 2;
+
+    private int keyToIndex(String key) {
+        return Math.floorMod(key.hashCode(), buckets.length);
+    }
+
+    private KeyValueList bucket(String key) {
+        return buckets[keyToIndex(key)];
+    }
+
+    private void rehash() {
+        int oldNumBuckets = buckets.length;
+        KeyValueList[] newBuckets = new KeyValueList[buckets.length * BUCKETS_GROWTH_RATE];
+        for (int i = 0; i < newBuckets.length; ++i) {
+            newBuckets[i] = new KeyValueList();
+        }
+        KeyValueList[] oldBuckets = buckets;
+        buckets = newBuckets;
+
+        for (int i = 0; i < oldNumBuckets; ++i) {
+            KeyValueList.Link current = oldBuckets[i].getHead();
+            while (current != null) {
+                bucket(current.getKey()).append(current.getKey(), current.getValue());
+                current = current.getNext();
+            }
+        }
+    }
+
+    /**
+     * New table with a predefined number of buckets.
+     */
+    public HashTable() {
+        this(INITIAL_BUCKETS);
+    }
+
+    /**
+     * New table with {@code numBuckets} buckets.
+     */
+    public HashTable(int numBuckets) {
+        sz = 0;
+        buckets = new KeyValueList[numBuckets];
+        for (int i = 0; i < buckets.length; ++i) {
+            buckets[i] = new KeyValueList();
+        }
+    }
+
+    /**
+     * @return number of elements in the table.
+     */
+    public int size() {
+        return sz;
+    }
+
+    /**
+     * Check whether there is a pair in the table with specified {@code key}.
+     */
+    public boolean contains(String key) {
+        return bucket(key).find(key) != null;
+    }
+
+    /**
+     * Get the {@code String} associeted with the {@code key}, or null if there is none. Note that null is also returned if the
+     * associated {@code String} is {@code null}. Use contains to resolve the ambiguity.
+     */
+    public String get(String key) {
+        KeyValueList.Link foundPosition = bucket(key).find(key);
+        if (foundPosition == null) return null;
+        return foundPosition.getValue();
+    }
+
+    /**
+     * Associate {@code value} with {@code key}. Note that {@code null} keys are not supported, while {@code null}
+     * values are.
+     * @return Previous value associated with the {@code key}. Note that {@code null} is also returned if the previous
+     * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
+     */
+    public String put(String key, String value) {
+        KeyValueList targetBucket = bucket(key);
+        KeyValueList.Link foundPosition = targetBucket.find(key);
+        if (foundPosition == null) {
+            targetBucket.append(key, value);
+            ++sz;
+            if (sz * REHASH_TRESHOLD >= buckets.length) {
+                rehash();
+            }
+            return null;
+        }
+        String oldValue = foundPosition.getValue();
+        foundPosition.setValue(value);
+        return oldValue;
+
+    }
+
+    /**
+     * Remove the pair associated with {@code key}. Note that the number of buckets will not decrease.
+     * @return Value associated with {@code key} before removal. Note that {@code null} is also returned if the previous
+     * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
+     */
+    public String remove(String key) {
+        KeyValueList targetBucket = bucket(key);
+        KeyValueList.Link foundPosition = targetBucket.find(key);
+        if (foundPosition == null) {
+            return null;
+        }
+        String oldValue = foundPosition.getValue();
+        targetBucket.remove(key);
+        --sz;
+        return oldValue;
+    }
+
+    /**
+     * Remove all elements. Note that the number of buckets will not decrease.
+     */
+    public void clear() {
+        sz = 0;
+        for (int i = 0; i < buckets.length; ++i) {
+            buckets[i] = new KeyValueList();
+        }
+    }
+}
