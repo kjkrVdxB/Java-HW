@@ -31,11 +31,14 @@ class KeyValueList {
 
     private Link head;
 
+    static private boolean equalStringsMaybeNull(String a, String b) {
+        return (a == null && b == null) || a.equals(b);
+    }
 
     Link find(String key) {
         Link current = getHead();
         while (current != null) {
-            if (current.getKey().equals(key)) {
+            if (equalStringsMaybeNull(current.getKey(), key)) {
                 return current;
             }
             current = current.getNext();
@@ -47,7 +50,7 @@ class KeyValueList {
         Link current = getHead();
         Link previous = null;
         while (current != null) {
-            if (current.getKey().equals(key)) {
+            if (equalStringsMaybeNull(current.getKey(), key)) {
                 if (previous == null) {
                     head = current.getNext();
                     return;

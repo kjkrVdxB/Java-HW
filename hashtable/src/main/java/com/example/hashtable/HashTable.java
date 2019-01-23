@@ -4,7 +4,7 @@ package com.example.hashtable;
  * List based hash table.
  */
 public class HashTable {
-    private int sz;
+    private int size;
     private KeyValueList[] buckets;
 
     private static int BUCKETS_GROWTH_RATE = 2;
@@ -12,6 +12,8 @@ public class HashTable {
     private static int REHASH_TRESHOLD = 2;
 
     private int keyToIndex(String key) {
+        // buckets.length is always at least 1
+        if (key == null) return 0;
         return Math.floorMod(key.hashCode(), buckets.length);
     }
 
@@ -48,7 +50,7 @@ public class HashTable {
      * New table with {@code numBuckets} buckets.
      */
     public HashTable(int numBuckets) {
-        sz = 0;
+        size = 0;
         buckets = new KeyValueList[numBuckets];
         for (int i = 0; i < buckets.length; ++i) {
             buckets[i] = new KeyValueList();
@@ -59,7 +61,7 @@ public class HashTable {
      * @return Number of elements in the table.
      */
     public int size() {
-        return sz;
+        return size;
     }
 
     /**
@@ -90,8 +92,8 @@ public class HashTable {
         KeyValueList.Link foundPosition = targetBucket.find(key);
         if (foundPosition == null) {
             targetBucket.append(key, value);
-            ++sz;
-            if (sz * REHASH_TRESHOLD >= buckets.length) {
+            ++size;
+            if (size * REHASH_TRESHOLD >= buckets.length) {
                 rehash();
             }
             return null;
@@ -115,7 +117,7 @@ public class HashTable {
         }
         String oldValue = foundPosition.getValue();
         targetBucket.remove(key);
-        --sz;
+        --size;
         return oldValue;
     }
 
@@ -123,7 +125,7 @@ public class HashTable {
      * Remove all elements. Note that the number of buckets will not decrease.
      */
     public void clear() {
-        sz = 0;
+        size = 0;
         for (int i = 0; i < buckets.length; ++i) {
             buckets[i] = new KeyValueList();
         }

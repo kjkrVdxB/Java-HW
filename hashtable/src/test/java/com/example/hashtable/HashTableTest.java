@@ -105,6 +105,13 @@ class HashTableTest {
 
     @Test
     void testNullKey() {
-        assertThrows(NullPointerException.class, () -> table.put(null, "aaa"));
+        table.put(null, "aaa");
+
+        assertEquals("aaa", table.get(null));
+
+        assertEquals("aaa", table.put(null, "bbb"));
+        assertEquals("bbb", table.get(null));
+        assertEquals("bbb", table.remove(null));
+        assertEquals(0, table.size());
     }
 }
