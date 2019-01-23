@@ -4,12 +4,29 @@ package com.example.hashtable;
  * List based hash table.
  */
 public class HashTable {
-    private int size;
-    private KeyValueList[] buckets;
-
     private static int BUCKETS_GROWTH_RATE = 2;
     private static int INITIAL_BUCKETS = 10;
     private static int REHASH_TRESHOLD = 2;
+    private int size;
+    private KeyValueList[] buckets;
+
+    /**
+     * New table with a predefined number of buckets.
+     */
+    public HashTable() {
+        this(INITIAL_BUCKETS);
+    }
+
+    /**
+     * New table with {@code numBuckets} buckets.
+     */
+    public HashTable(int numBuckets) {
+        size = 0;
+        buckets = new KeyValueList[numBuckets];
+        for (int i = 0; i < buckets.length; ++i) {
+            buckets[i] = new KeyValueList();
+        }
+    }
 
     private int keyToIndex(String key) {
         // buckets.length is always at least 1
@@ -40,24 +57,6 @@ public class HashTable {
     }
 
     /**
-     * New table with a predefined number of buckets.
-     */
-    public HashTable() {
-        this(INITIAL_BUCKETS);
-    }
-
-    /**
-     * New table with {@code numBuckets} buckets.
-     */
-    public HashTable(int numBuckets) {
-        size = 0;
-        buckets = new KeyValueList[numBuckets];
-        for (int i = 0; i < buckets.length; ++i) {
-            buckets[i] = new KeyValueList();
-        }
-    }
-
-    /**
      * @return Number of elements in the table.
      */
     public int size() {
@@ -84,6 +83,7 @@ public class HashTable {
     /**
      * Associate {@code value} with {@code key}. Note that {@code null} keys are not supported, while {@code null}
      * values are.
+     *
      * @return Previous value associated with the {@code key}. Note that {@code null} is also returned if the previous
      * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
      */
@@ -106,6 +106,7 @@ public class HashTable {
 
     /**
      * Remove the pair associated with {@code key}. Note that the number of buckets will not decrease.
+     *
      * @return Value associated with {@code key} before removal. Note that {@code null} is also returned if the previous
      * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
      */
