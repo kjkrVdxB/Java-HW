@@ -58,7 +58,7 @@ public class HashTable {
     }
 
     /**
-     * @return Number of elements in the table.
+     * Returns number of elements in the table.
      */
     public int size() {
         return size;
