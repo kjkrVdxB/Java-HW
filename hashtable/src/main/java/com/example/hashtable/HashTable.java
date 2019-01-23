@@ -8,7 +8,7 @@ import static java.lang.StrictMath.max;
 public class HashTable {
     private static int MINIMUM_BUCKETS = 10;
     private static int INVERSE_PUT_REHASH_TRESHOLD = 2;
-    private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 2;
+    private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private static int INVERSE_REMOVE_REHASH_TRESHOLD = 8;
     private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private int size;
