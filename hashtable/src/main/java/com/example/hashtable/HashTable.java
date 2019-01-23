@@ -1,28 +1,25 @@
 package com.example.hashtable;
 
+import static java.lang.StrictMath.max;
+
 /**
  * List based hash table.
  */
 public class HashTable {
-    private static int BUCKETS_GROWTH_RATE = 2;
-    private static int INITIAL_BUCKETS = 10;
-    private static int REHASH_TRESHOLD = 2;
+    private static int MINIMUM_BUCKETS = 10;
+    private static int INVERSE_PUT_REHASH_TRESHOLD = 2;
+    private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 2;
+    private static int INVERSE_REMOVE_REHASH_TRESHOLD = 8;
+    private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private int size;
-    private KeyValueList[] buckets;
+    private KeyValueList[] buckets; // Invariant: buckets.length is always at least MINIMUM_BUCKETS
 
     /**
      * New table with a predefined number of buckets.
      */
     public HashTable() {
-        this(INITIAL_BUCKETS);
-    }
-
-    /**
-     * New table with {@code numBuckets} buckets.
-     */
-    public HashTable(int numBuckets) {
         size = 0;
-        buckets = new KeyValueList[numBuckets];
+        buckets = new KeyValueList[MINIMUM_BUCKETS];
         for (int i = 0; i < buckets.length; ++i) {
             buckets[i] = new KeyValueList();
         }
@@ -38,9 +35,13 @@ public class HashTable {
         return buckets[keyToIndex(key)];
     }
 
-    private void rehash() {
+    /**
+     * Rehash using at least {@code newNumBuckets} buckets.
+     */
+    private void rehash(int newNumBuckets) {
+        newNumBuckets = max(newNumBuckets, MINIMUM_BUCKETS);
         int oldNumBuckets = buckets.length;
-        KeyValueList[] newBuckets = new KeyValueList[buckets.length * BUCKETS_GROWTH_RATE];
+        KeyValueList[] newBuckets = new KeyValueList[newNumBuckets];
         for (int i = 0; i < newBuckets.length; ++i) {
             newBuckets[i] = new KeyValueList();
         }
@@ -93,8 +94,8 @@ public class HashTable {
         if (foundPosition == null) {
             targetBucket.append(key, value);
             ++size;
-            if (size * REHASH_TRESHOLD >= buckets.length) {
-                rehash();
+            if (size * INVERSE_PUT_REHASH_TRESHOLD >= buckets.length) {
+                rehash(size * PUT_REHASH_RELATIVE_BUCKETS_NUMBER);
             }
             return null;
         }
@@ -105,7 +106,7 @@ public class HashTable {
     }
 
     /**
-     * Remove the pair associated with {@code key}. Note that the number of buckets will not decrease.
+     * Remove the pair associated with {@code key}. Memory used by buckets is reclaimed.
      *
      * @return Value associated with {@code key} before removal. Note that {@code null} is also returned if the previous
      * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
@@ -119,14 +120,18 @@ public class HashTable {
         String oldValue = foundPosition.getValue();
         targetBucket.remove(key);
         --size;
+        if (size * INVERSE_REMOVE_REHASH_TRESHOLD <= buckets.length) {
+            rehash(size * REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER);
+        }
         return oldValue;
     }
 
     /**
-     * Remove all elements. Note that the number of buckets will not decrease.
+     * Remove all elements. Memory used by buckets is reclaimed.
      */
     public void clear() {
         size = 0;
+        buckets = new KeyValueList[MINIMUM_BUCKETS];
         for (int i = 0; i < buckets.length; ++i) {
             buckets[i] = new KeyValueList();
         }
