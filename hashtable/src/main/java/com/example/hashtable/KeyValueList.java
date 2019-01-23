@@ -5,7 +5,11 @@ import java.util.Objects;
 class KeyValueList {
     private Link head;
 
-    Link find(String key) {
+    /**
+     * Find a {@code Link} containing the {@key}.
+     * @return The found {@code Link}, or {@code null} if none containse the {@code key}.
+     */
+    public Link find(String key) {
         Link current = getHead();
         while (current != null) {
             if (Objects.equals(current.getKey(), key)) {
@@ -16,7 +20,10 @@ class KeyValueList {
         return null;
     }
 
-    void remove(String key) {
+    /**
+     * Remove one {@code Link} containing the {@code key}.
+     */
+    public void remove(String key) {
         Link current = getHead();
         Link previous = null;
         while (current != null) {
@@ -32,15 +39,21 @@ class KeyValueList {
         }
     }
 
-    void append(String key, String value) {
+    /**
+     * Append {@code key: value} pair to the list.
+     */
+    public void append(String key, String value) {
         head = new Link(key, value, head);
     }
 
-    Link getHead() {
+    /**
+     * Get the first {@code Link} in the list.
+     */
+    public Link getHead() {
         return head;
     }
 
-    class Link {
+    public class Link {
         final private String key;
         private String value;
         private Link next;
@@ -51,19 +64,22 @@ class KeyValueList {
             this.next = next;
         }
 
-        String getKey() {
+        public String getKey() {
             return key;
         }
 
-        String getValue() {
+        public String getValue() {
             return value;
         }
 
-        void setValue(String value) {
+        public void setValue(String value) {
             this.value = value;
         }
 
-        Link getNext() {
+        /**
+         * Get next {@code Link} in the list.
+         */
+        public Link getNext() {
             return next;
         }
     }
