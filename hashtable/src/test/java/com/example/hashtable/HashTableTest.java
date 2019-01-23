@@ -114,4 +114,11 @@ class HashTableTest {
         assertEquals("bbb", table.remove(null));
         assertEquals(0, table.size());
     }
+
+    @Test
+    void testRegressionInListWithNull() {
+        table.put(null, "aaa");
+        table.put("dbaba", "ccc");
+
+    }
 }
