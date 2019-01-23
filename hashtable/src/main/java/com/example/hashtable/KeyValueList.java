@@ -21,7 +21,7 @@ class KeyValueList {
     }
 
     /**
-     * Remove one {@code Link} containing the {@code key}.
+     * Remove first {@code Link} containing the {@code key}, if there is any.
      */
     public void remove(String key) {
         Link current = getHead();
@@ -33,6 +33,7 @@ class KeyValueList {
                     return;
                 }
                 previous.next = current.getNext();
+                return;
             }
             previous = current;
             current = current.getNext();

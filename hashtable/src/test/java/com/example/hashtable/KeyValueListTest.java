@@ -26,11 +26,13 @@ class KeyValueListTest {
 
     @Test
     void testRemove() {
-
+        list.append("aaa", "ttt");
         list.remove("aaa");
-        assertNull(list.getHead().getNext());
+        assertEquals("ccc", list.getHead().getKey());
+        assertEquals("aaa", list.getHead().getNext().getKey());
+        assertNull(list.getHead().getNext().getNext());
         list.remove("ccc");
-        assertNull(list.getHead());
+        assertNull(list.getHead().getNext());
     }
 
     @Test
