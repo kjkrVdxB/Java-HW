@@ -31,8 +31,12 @@ class KeyValueListTest {
         assertEquals("ccc", list.getHead().getKey());
         assertEquals("aaa", list.getHead().getNext().getKey());
         assertNull(list.getHead().getNext().getNext());
-        list.remove("ccc");
+        list.remove("aaa");
         assertNull(list.getHead().getNext());
+        assertEquals("ccc", list.getHead().getKey());
+        list.remove("aaa");
+        assertNull(list.getHead().getNext());
+        assertEquals("ccc", list.getHead().getKey());
     }
 
     @Test
