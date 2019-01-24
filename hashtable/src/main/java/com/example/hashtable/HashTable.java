@@ -6,11 +6,11 @@ import static java.lang.StrictMath.max;
  * List-based hash table.
  */
 public class HashTable {
-    private static int MINIMUM_BUCKETS = 10;
-    private static int INVERSE_PUT_REHASH_THRESHOLD = 2;
-    private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
-    private static int INVERSE_REMOVE_REHASH_THRESHOLD = 8;
-    private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
+    final private static int MINIMUM_BUCKETS = 10;
+    final private static int INVERSE_PUT_REHASH_THRESHOLD = 2;
+    final private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
+    final private static int INVERSE_REMOVE_REHASH_THRESHOLD = 8;
+    final private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private int size;
     private KeyValueList[] buckets; // Invariant: buckets.length is always at least MINIMUM_BUCKETS
 
