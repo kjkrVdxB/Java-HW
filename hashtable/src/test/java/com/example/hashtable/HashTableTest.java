@@ -60,7 +60,7 @@ class HashTableTest {
     }
 
     @Test
-    void testReput() {
+    void testRePut() {
         table.put("aaa", "bbb");
 
         String previous = table.put("aaa", "ccc");

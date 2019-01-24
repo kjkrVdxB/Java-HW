@@ -7,7 +7,7 @@ class KeyValueList {
 
     /**
      * Find a {@code Link} containing the {@code key}.
-     * @return The found {@code Link}, or {@code null} if none containse the {@code key}.
+     * @return The found {@code Link}, or {@code null} if none contains the {@code key}.
      */
     public Link find(String key) {
         Link current = getHead();

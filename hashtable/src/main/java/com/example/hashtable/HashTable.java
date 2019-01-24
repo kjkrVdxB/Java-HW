@@ -3,13 +3,13 @@ package com.example.hashtable;
 import static java.lang.StrictMath.max;
 
 /**
- * List based hash table.
+ * List-based hash table.
  */
 public class HashTable {
     private static int MINIMUM_BUCKETS = 10;
-    private static int INVERSE_PUT_REHASH_TRESHOLD = 2;
+    private static int INVERSE_PUT_REHASH_THRESHOLD = 2;
     private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
-    private static int INVERSE_REMOVE_REHASH_TRESHOLD = 8;
+    private static int INVERSE_REMOVE_REHASH_THRESHOLD = 8;
     private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private int size;
     private KeyValueList[] buckets; // Invariant: buckets.length is always at least MINIMUM_BUCKETS
@@ -94,7 +94,7 @@ public class HashTable {
         if (foundPosition == null) {
             targetBucket.append(key, value);
             ++size;
-            if (size * INVERSE_PUT_REHASH_TRESHOLD >= buckets.length) {
+            if (size * INVERSE_PUT_REHASH_THRESHOLD >= buckets.length) {
                 rehash(size * PUT_REHASH_RELATIVE_BUCKETS_NUMBER);
             }
             return null;
@@ -120,7 +120,7 @@ public class HashTable {
         String oldValue = foundPosition.getValue();
         targetBucket.remove(key);
         --size;
-        if (size * INVERSE_REMOVE_REHASH_TRESHOLD <= buckets.length) {
+        if (size * INVERSE_REMOVE_REHASH_THRESHOLD <= buckets.length) {
             rehash(size * REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER);
         }
         return oldValue;
