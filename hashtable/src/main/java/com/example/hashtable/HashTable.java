@@ -4,13 +4,31 @@ import static java.lang.StrictMath.max;
 
 /** List-based hash table. */
 public class HashTable {
+    /** Invariant: buckets.length is always at least MINIMUM_BUCKETS */
     final private static int MINIMUM_BUCKETS = 10;
+
+    /** In put(String), rehash is happening when {@code size / buckets.length >= 1 / INVERSE_PUT_REHASH_THRESHOLD}. */
     final private static int INVERSE_PUT_REHASH_THRESHOLD = 2;
+
+    /**
+     * In put(String), the target number of buckets after a rehash is
+     * {@code size * PUT_REHASH_RELATIVE_BUCKETS_NUMBER}.
+     */
     final private static int PUT_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
+
+    /**
+     * In remove(String), rehash is happening when
+     * {@code size / buckets.length <= 1 / INVERSE_REMOVE_REHASH_THRESHOLD}.
+     */
     final private static int INVERSE_REMOVE_REHASH_THRESHOLD = 8;
+
+    /**
+     * In remove(String), the target number of buckets after a rehash is
+     * {@code size * REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER}.
+     */
     final private static int REMOVE_REHASH_RELATIVE_BUCKETS_NUMBER = 4;
     private int size;
-    private KeyValueList[] buckets; // Invariant: buckets.length is always at least MINIMUM_BUCKETS
+    private KeyValueList[] buckets;
 
     /** New table with a predefined number of buckets. */
     public HashTable() {
