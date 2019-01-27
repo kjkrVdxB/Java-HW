@@ -7,6 +7,7 @@ class KeyValueList {
 
     /**
      * Find a {@code Link} containing the {@code key}.
+     *
      * @return The found {@code Link}, or {@code null} if none contains the {@code key}.
      */
     public Link find(String key) {
@@ -20,9 +21,7 @@ class KeyValueList {
         return null;
     }
 
-    /**
-     * Remove first {@code Link} containing the {@code key}, if there is any.
-     */
+    /** Remove first {@code Link} containing the {@code key}, if there is any. */
     public void remove(String key) {
         Link current = getHead();
         Link previous = null;
@@ -40,16 +39,12 @@ class KeyValueList {
         }
     }
 
-    /**
-     * Append {@code key: value} pair to the list.
-     */
+    /** Append {@code key: value} pair to the list. */
     public void append(String key, String value) {
         head = new Link(key, value, head);
     }
 
-    /**
-     * Get the first {@code Link} in the list.
-     */
+    /** Get the first {@code Link} in the list. */
     public Link getHead() {
         return head;
     }
@@ -77,9 +72,7 @@ class KeyValueList {
             this.value = value;
         }
 
-        /**
-         * Get next {@code Link} in the list.
-         */
+        /** Get next {@code Link} in the list. */
         public Link getNext() {
             return next;
         }

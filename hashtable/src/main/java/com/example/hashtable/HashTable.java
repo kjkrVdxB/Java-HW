@@ -2,9 +2,7 @@ package com.example.hashtable;
 
 import static java.lang.StrictMath.max;
 
-/**
- * List-based hash table.
- */
+/** List-based hash table. */
 public class HashTable {
     final private static int MINIMUM_BUCKETS = 10;
     final private static int INVERSE_PUT_REHASH_THRESHOLD = 2;
@@ -14,9 +12,7 @@ public class HashTable {
     private int size;
     private KeyValueList[] buckets; // Invariant: buckets.length is always at least MINIMUM_BUCKETS
 
-    /**
-     * New table with a predefined number of buckets.
-     */
+    /** New table with a predefined number of buckets. */
     public HashTable() {
         size = 0;
         buckets = new KeyValueList[MINIMUM_BUCKETS];
@@ -35,9 +31,7 @@ public class HashTable {
         return buckets[keyToIndex(key)];
     }
 
-    /**
-     * Rehash using at least {@code newNumBuckets} buckets.
-     */
+    /** Rehash using at least {@code newNumBuckets} buckets. */
     private void rehash(int newNumBuckets) {
         newNumBuckets = max(newNumBuckets, MINIMUM_BUCKETS);
         int oldNumBuckets = buckets.length;
@@ -57,16 +51,12 @@ public class HashTable {
         }
     }
 
-    /**
-     * Returns number of elements in the table.
-     */
+    /** Returns number of elements in the table. */
     public int size() {
         return size;
     }
 
-    /**
-     * Check whether there is a pair in the table with specified {@code key}.
-     */
+    /** Check whether there is a pair in the table with specified {@code key}. */
     public boolean contains(String key) {
         return bucket(key).find(key) != null;
     }
@@ -126,9 +116,7 @@ public class HashTable {
         return oldValue;
     }
 
-    /**
-     * Remove all elements. Memory used by buckets is reclaimed.
-     */
+    /** Remove all elements. Memory used by buckets is reclaimed. */
     public void clear() {
         size = 0;
         buckets = new KeyValueList[MINIMUM_BUCKETS];
