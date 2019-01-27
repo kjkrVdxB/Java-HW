@@ -56,6 +56,7 @@ public class Trie {
 
     /**
      * Test if the trie contains the {@code element}.
+     *
      * @throws IllegalArgumentException if {@code element} is {@code null}
      */
     public boolean contains(String element) {
@@ -110,6 +111,7 @@ public class Trie {
 
     /**
      * Return number of unique strings in the trie starting with the {@code prefix}.
+     *
      * @throws IllegalArgumentException if {@code prefix} is {@code null}
      */
     public int howManyStartWithPrefix(String prefix) {
