@@ -9,108 +9,108 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HashTableTest {
-    private HashTable table;
+    private HashTable testTable;
 
     @BeforeEach
     void initTable() {
-        table = new HashTable();
+        testTable = new HashTable();
     }
 
     @Test
     void testSize() {
-        assertEquals(0, table.size());
+        assertEquals(0, testTable.size());
 
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        assertEquals(1, table.size());
+        assertEquals(1, testTable.size());
     }
 
     @Test
     void testPutAndContains() {
-        String previous = table.put("aaa", "bbb");
+        String previous = testTable.put("aaa", "bbb");
 
         assertNull(previous);
-        assertTrue(table.contains("aaa"));
-        assertFalse(table.contains("xxx"));
+        assertTrue(testTable.contains("aaa"));
+        assertFalse(testTable.contains("xxx"));
 
-        table.put("ccc", null);
+        testTable.put("ccc", null);
 
-        assertTrue(table.contains("ccc"));
+        assertTrue(testTable.contains("ccc"));
     }
 
     @Test
     void testRemove() {
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        String previous = table.remove("aaa");
+        String previous = testTable.remove("aaa");
 
         assertEquals("bbb", previous);
-        assertFalse(table.contains("aaa"));
+        assertFalse(testTable.contains("aaa"));
     }
 
     @Test
     void testGet() {
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        assertEquals("bbb", table.get("aaa"));
+        assertEquals("bbb", testTable.get("aaa"));
 
-        table.put("ccc", null);
+        testTable.put("ccc", null);
 
-        assertNull(table.get("ccc"));
+        assertNull(testTable.get("ccc"));
     }
 
     @Test
     void testRePut() {
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        String previous = table.put("aaa", "ccc");
+        String previous = testTable.put("aaa", "ccc");
 
         assertEquals("bbb", previous);
-        assertEquals("ccc", table.get("aaa"));
+        assertEquals("ccc", testTable.get("aaa"));
     }
 
     @Test
     void testRemoveNonexistent() {
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        String previous = table.remove("ccc");
+        String previous = testTable.remove("ccc");
 
         assertNull(previous);
     }
 
     @Test
     void testClear() {
-        table.put("aaa", "bbb");
+        testTable.put("aaa", "bbb");
 
-        table.clear();
+        testTable.clear();
 
-        assertEquals(0, table.size());
+        assertEquals(0, testTable.size());
     }
 
     @Test
     void testRehash() {
         for (int i = 0; i < 15; ++i) {
-            table.put(i + "aaa", i + "bbb");
+            testTable.put(i + "aaa", i + "bbb");
         }
-        assertEquals(15, table.size());
+        assertEquals(15, testTable.size());
         for (int i = 0; i < 15; ++i) {
-            assertEquals(i + "bbb", table.get(i + "aaa"));
+            assertEquals(i + "bbb", testTable.get(i + "aaa"));
         }
         for (int i = 0; i < 15; ++i) {
-            table.remove(i + "aaa");
+            testTable.remove(i + "aaa");
         }
-        assertEquals(0, table.size());
+        assertEquals(0, testTable.size());
     }
 
     @Test
     void testNullKey() {
-        table.put(null, "aaa");
+        testTable.put(null, "aaa");
 
-        assertEquals("aaa", table.get(null));
+        assertEquals("aaa", testTable.get(null));
 
-        assertEquals("aaa", table.put(null, "bbb"));
-        assertEquals("bbb", table.get(null));
-        assertEquals("bbb", table.remove(null));
-        assertEquals(0, table.size());
+        assertEquals("aaa", testTable.put(null, "bbb"));
+        assertEquals("bbb", testTable.get(null));
+        assertEquals("bbb", testTable.remove(null));
+        assertEquals(0, testTable.size());
     }
 }

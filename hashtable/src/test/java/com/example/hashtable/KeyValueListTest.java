@@ -7,48 +7,48 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 class KeyValueListTest {
-    private KeyValueList list;
+    private KeyValueList testList;
 
     @BeforeEach
     void init() {
-        list = new KeyValueList();
-        list.append("aaa", "bbb");
-        list.append("ccc", "ddd");
+        testList = new KeyValueList();
+        testList.append("aaa", "bbb");
+        testList.append("ccc", "ddd");
     }
 
     @Test
     void testAppend() {
-        assertEquals("bbb", list.getHead().getNext().getValue());
-        assertEquals("aaa", list.getHead().getNext().getKey());
-        assertEquals("ddd", list.getHead().getValue());
-        assertEquals("ccc", list.getHead().getKey());
+        assertEquals("bbb", testList.getHead().getNext().getValue());
+        assertEquals("aaa", testList.getHead().getNext().getKey());
+        assertEquals("ddd", testList.getHead().getValue());
+        assertEquals("ccc", testList.getHead().getKey());
     }
 
     @Test
     void testRemove() {
-        list.append("aaa", "ttt");
-        list.remove("aaa");
-        assertEquals("ccc", list.getHead().getKey());
-        assertEquals("aaa", list.getHead().getNext().getKey());
-        assertNull(list.getHead().getNext().getNext());
-        list.remove("aaa");
-        assertNull(list.getHead().getNext());
-        assertEquals("ccc", list.getHead().getKey());
-        list.remove("aaa");
-        assertNull(list.getHead().getNext());
-        assertEquals("ccc", list.getHead().getKey());
+        testList.append("aaa", "ttt");
+        testList.remove("aaa");
+        assertEquals("ccc", testList.getHead().getKey());
+        assertEquals("aaa", testList.getHead().getNext().getKey());
+        assertNull(testList.getHead().getNext().getNext());
+        testList.remove("aaa");
+        assertNull(testList.getHead().getNext());
+        assertEquals("ccc", testList.getHead().getKey());
+        testList.remove("aaa");
+        assertNull(testList.getHead().getNext());
+        assertEquals("ccc", testList.getHead().getKey());
     }
 
     @Test
     void testFind() {
-        assertEquals("bbb", list.find("aaa").getValue());
-        assertNull(list.find("aba"));
-        assertEquals("ccc", list.find("ccc").getKey());
+        assertEquals("bbb", testList.find("aaa").getValue());
+        assertNull(testList.find("aba"));
+        assertEquals("ccc", testList.find("ccc").getKey());
     }
 
     @Test
     void testRegressionWithNullKey() {
-        list.append(null, "aaa");
-        list.find("xxx");
+        testList.append(null, "aaa");
+        testList.find("xxx");
     }
 }
