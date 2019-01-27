@@ -86,13 +86,16 @@ public class HashTable {
     }
 
     /**
-     * Associate {@code value} with {@code key}. Note that {@code null} keys are not supported, while {@code null}
-     * values are.
+     * Associate {@code value} with {@code key}. Note that {@code null} keys are supported, while {@code null}
+     * values are not.
      *
-     * @return Previous value associated with the {@code key}. Note that {@code null} is also returned if the previous
-     * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
+     * @return Previous value associated with the {@code key}.
+     * @throws IllegalArgumentException if the {@code value} is {@code null}.
      */
     public String put(String key, String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Null value is not supported");
+        }
         KeyValueList targetBucket = bucket(key);
         KeyValueList.Entry foundPosition = targetBucket.find(key);
         if (foundPosition == null) {

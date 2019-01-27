@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HashTableTest {
@@ -33,9 +34,7 @@ class HashTableTest {
         assertTrue(testTable.contains("aaa"));
         assertFalse(testTable.contains("xxx"));
 
-        testTable.put("ccc", null);
-
-        assertTrue(testTable.contains("ccc"));
+        assertThrows(IllegalArgumentException.class, () -> testTable.put("ccc", null));
     }
 
     @Test
@@ -53,10 +52,6 @@ class HashTableTest {
         testTable.put("aaa", "bbb");
 
         assertEquals("bbb", testTable.get("aaa"));
-
-        testTable.put("ccc", null);
-
-        assertNull(testTable.get("ccc"));
     }
 
     @Test
