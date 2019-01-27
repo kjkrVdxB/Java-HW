@@ -18,13 +18,13 @@ public class Trie implements Serializable {
 
     /** Recursively serialize tree rooted in {@code node}. */
     private static void serializeTree(Node node, DataOutputStream dataOut) throws IOException {
-        dataOut.writeInt(node.children.size());
-        for (Map.Entry<Character, Node> entry : node.children.entrySet()) {
+        dataOut.writeInt(node.getChildren().size());
+        for (Map.Entry<Character, Node> entry : node.getChildren().entrySet()) {
             dataOut.writeChar(entry.getKey());
             serializeTree(entry.getValue(), dataOut);
         }
 
-        dataOut.writeBoolean(node.isEnd);
+        dataOut.writeBoolean(node.getMarked());
     }
 
     /** Recursively deserialize tree and return it's root. */
@@ -36,16 +36,16 @@ public class Trie implements Serializable {
         for (int i = 0; i < numKeys; ++i) {
             char key = dataInput.readChar();
             var child = deserializeTree(dataInput);
-            node.children.put(key, child);
-            subtreeSize += child.subtreeSize;
+            node.getChildren().put(key, child);
+            subtreeSize += child.getSubtreeSize();
         }
 
-        node.isEnd = dataInput.readBoolean();
-        if (node.isEnd) {
+        node.setMarked(dataInput.readBoolean());
+        if (node.getMarked()) {
             subtreeSize += 1;
         }
 
-        node.subtreeSize = subtreeSize;
+        node.setSubtreeSize(subtreeSize);
 
         return node;
     }
@@ -62,7 +62,7 @@ public class Trie implements Serializable {
         }
         Node current = root;
         for (char c : element.toCharArray()) {
-            var next = current.children.get(c);
+            var next = current.getChildren().get(c);
             if (next == null) {
                 var newNode = new Node();
 
@@ -74,20 +74,20 @@ public class Trie implements Serializable {
                 // But we don't check that the string is a valid unicode string anyway. The user
                 // is responsible for that.
 
-                current.children.put(c, newNode);
+                current.getChildren().put(c, newNode);
                 next = newNode;
             }
             current = next;
         }
-        boolean wasBefore = current.isEnd;
-        current.isEnd = true;
+        boolean wasBefore = current.getMarked();
+        current.setMarked(true);
         if (!wasBefore) {
             current = root;
             for (char c : element.toCharArray()) {
-                current.subtreeSize += 1;
-                current = current.children.get(c);
+                current.setSubtreeSize(current.getSubtreeSize() + 1);
+                current = current.getChildren().get(c);
             }
-            current.subtreeSize += 1;
+            current.setSubtreeSize(current.getSubtreeSize() + 1);
         }
         return wasBefore;
     }
@@ -103,13 +103,13 @@ public class Trie implements Serializable {
         }
         Node current = root;
         for (char c : element.toCharArray()) {
-            var next = current.children.get(c);
+            var next = current.getChildren().get(c);
             if (next == null) {
                 return false;
             }
             current = next;
         }
-        return current.isEnd;
+        return current.getMarked();
     }
 
     /**
@@ -126,23 +126,23 @@ public class Trie implements Serializable {
             return false;
         }
         Node current = root;
-        current.subtreeSize -= 1;
+        current.setSubtreeSize(current.getSubtreeSize() - 1);
         for (char c : element.toCharArray()) {
-            var next = current.children.get(c);
-            next.subtreeSize -= 1;
-            if (next.subtreeSize == 0) {
-                current.children.remove(c);
+            var next = current.getChildren().get(c);
+            next.setSubtreeSize(next.getSubtreeSize() - 1);
+            if (next.getSubtreeSize() == 0) {
+                current.getChildren().remove(c);
                 return true;
             }
             current = next;
         }
-        current.isEnd = false;
+        current.setMarked(false);
         return true;
     }
 
     /** Return number of unique strings in the trie. */
     public int size() {
-        return root.subtreeSize;
+        return root.getSubtreeSize();
     }
 
     /**
@@ -156,13 +156,13 @@ public class Trie implements Serializable {
         }
         Node current = root;
         for (char c : prefix.toCharArray()) {
-            var next = current.children.get(c);
+            var next = current.getChildren().get(c);
             if (next == null) {
                 return 0;
             }
             current = next;
         }
-        return current.subtreeSize;
+        return current.getSubtreeSize();
     }
 
     public void serialize(OutputStream out) throws IOException {
@@ -178,12 +178,32 @@ public class Trie implements Serializable {
     }
 
     private static class Node {
-        public Hashtable<Character, Node> children;
-        public int subtreeSize;
-        public boolean isEnd;
+        final private Hashtable<Character, Node> children;
+        private int subtreeSize;
+        private boolean isMarked;
 
         public Node() {
             children = new Hashtable<>();
+        }
+
+        public boolean getMarked() {
+            return isMarked;
+        }
+
+        public void setMarked(boolean marked) {
+            isMarked = marked;
+        }
+
+        public Hashtable<Character, Node> getChildren() {
+            return children;
+        }
+
+        public int getSubtreeSize() {
+            return subtreeSize;
+        }
+
+        public void setSubtreeSize(int subtreeSize) {
+            this.subtreeSize = subtreeSize;
         }
     }
 }
