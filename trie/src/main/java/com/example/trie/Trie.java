@@ -2,15 +2,26 @@ package com.example.trie;
 
 import java.util.Hashtable;
 
+/**
+ * A set-like structure that can store non-{@code null} {@code String}s.
+ */
 public class Trie {
     private Node root;
+
+    public Trie() {
+        root = new Node();
+    }
 
     /**
      * Add {@code element} to trie.
      *
      * @return Whether the {@code element} was already in the trie.
+     * @throws IllegalArgumentException if {@code element} is {@code null}
      */
     public boolean add(String element) {
+        if (element == null) {
+            throw new IllegalArgumentException("Trie does not handle null Strings");
+        }
         Node current = root;
         for (char c : element.toCharArray()) {
             var next = current.children.get(c);
@@ -44,8 +55,12 @@ public class Trie {
 
     /**
      * Test if the trie contains the {@code element}.
+     * @throws IllegalArgumentException if {@code element} is {@code null}
      */
     public boolean contains(String element) {
+        if (element == null) {
+            throw new IllegalArgumentException("Trie does not handle null Strings");
+        }
         Node current = root;
         for (char c : element.toCharArray()) {
             var next = current.children.get(c);
@@ -61,8 +76,12 @@ public class Trie {
      * Remove {@code element} from trie.
      *
      * @return Whether the trie contained the {@code element}.
+     * @throws IllegalArgumentException if {@code element} is {@code null}
      */
     public boolean remove(String element) {
+        if (element == null) {
+            throw new IllegalArgumentException("Trie does not handle null Strings");
+        }
         if (!contains(element)) {
             return false;
         }
@@ -89,9 +108,13 @@ public class Trie {
     }
 
     /**
-     * Return number of unique string in the trie starting with the {@code prefix}.
+     * Return number of unique strings in the trie starting with the {@code prefix}.
+     * @throws IllegalArgumentException if {@code prefix} is {@code null}
      */
     public int howManyStartWithPrefix(String prefix) {
+        if (prefix == null) {
+            throw new IllegalArgumentException("Prefix can not be null");
+        }
         Node current = root;
         for (char c : prefix.toCharArray()) {
             var next = current.children.get(c);
