@@ -44,6 +44,7 @@ public class Trie {
         boolean wasBefore = current.isEnd;
         current.isEnd = true;
         if (!wasBefore) {
+            current = root;
             for (char c : element.toCharArray()) {
                 current.subtreeSize += 1;
                 current = current.children.get(c);
