@@ -1,13 +1,53 @@
 package com.example.trie;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Hashtable;
+import java.util.Map;
 
 /** A set-like structure that can store non-{@code null} {@code String}s. */
-public class Trie {
+public class Trie implements Serializable {
     private Node root;
 
     public Trie() {
         root = new Node();
+    }
+
+    /** Recursively serialize tree rooted in {@code node}. */
+    private static void serializeTree(Node node, DataOutputStream dataOut) throws IOException {
+        dataOut.writeInt(node.children.size());
+        for (Map.Entry<Character, Node> entry : node.children.entrySet()) {
+            dataOut.writeChar(entry.getKey());
+            serializeTree(entry.getValue(), dataOut);
+        }
+
+        dataOut.writeBoolean(node.isEnd);
+    }
+
+    /** Recursively deserialize tree and return it's root. */
+    private static Node deserializeTree(DataInputStream dataInput) throws IOException {
+        var node = new Node();
+        int subtreeSize = 0;
+
+        int numKeys = dataInput.readInt();
+        for (int i = 0; i < numKeys; ++i) {
+            char key = dataInput.readChar();
+            var child = deserializeTree(dataInput);
+            node.children.put(key, child);
+            subtreeSize += child.subtreeSize;
+        }
+
+        node.isEnd = dataInput.readBoolean();
+        if (node.isEnd) {
+            subtreeSize += 1;
+        }
+
+        node.subtreeSize = subtreeSize;
+
+        return node;
     }
 
     /**
@@ -125,7 +165,19 @@ public class Trie {
         return current.subtreeSize;
     }
 
-    private class Node {
+    public void serialize(OutputStream out) throws IOException {
+        var dataOut = new DataOutputStream(out);
+        serializeTree(root, dataOut);
+        dataOut.close();
+    }
+
+    public void deserialize(InputStream in) throws IOException {
+        var dataIn = new DataInputStream(in);
+        root = deserializeTree(dataIn);
+        dataIn.close();
+    }
+
+    private static class Node {
         public Hashtable<Character, Node> children;
         public int subtreeSize;
         public boolean isEnd;

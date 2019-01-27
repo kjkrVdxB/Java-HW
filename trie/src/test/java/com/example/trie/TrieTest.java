@@ -3,6 +3,10 @@ package com.example.trie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -143,5 +147,33 @@ class TrieTest {
         assertEquals(1, testTrie.howManyStartWithPrefix("aab"));
 
         assertThrows(IllegalArgumentException.class, () -> testTrie.howManyStartWithPrefix(null));
+    }
+
+    @Test
+    void testSerializeDeserialize() {
+        testTrie.add("aaa");
+        testTrie.add("aab");
+        testTrie.add("caa");
+        testTrie.add("c");
+        testTrie.add("");
+
+        var dummyOutputStream = new ByteArrayOutputStream(100);
+
+        assertDoesNotThrow(() -> testTrie.serialize(dummyOutputStream));
+
+        var dummyInputStream = new ByteArrayInputStream(dummyOutputStream.toByteArray());
+
+        var deserializedTrie = new Trie();
+        assertDoesNotThrow(() -> deserializedTrie.deserialize(dummyInputStream));
+
+        assertEquals(5, deserializedTrie.size());
+        assertTrue(deserializedTrie.contains("aaa"));
+        assertTrue(deserializedTrie.contains("aab"));
+        assertTrue(deserializedTrie.contains("caa"));
+        assertTrue(deserializedTrie.contains("c"));
+        assertTrue(deserializedTrie.contains(""));
+        assertEquals(2, deserializedTrie.howManyStartWithPrefix("a"));
+        assertEquals(2, deserializedTrie.howManyStartWithPrefix("c"));
+        assertEquals(1, deserializedTrie.howManyStartWithPrefix("ca"));
     }
 }
