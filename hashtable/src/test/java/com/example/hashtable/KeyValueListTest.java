@@ -36,7 +36,7 @@ class KeyValueListTest {
         testList.remove("aaa");
         assertEquals("ccc", testList.popFront().getKey());
         assertEquals("aaa", testList.popFront().getKey());
-        assertDoesNotThrow(() -> testList.remove("aaa"));
+        testList.remove("aaa");
     }
 
     @Test
@@ -49,6 +49,6 @@ class KeyValueListTest {
     @Test
     void testRegressionWithNullKey() {
         testList.append(new KeyValueList.Entry(null, "aaa"));
-        assertDoesNotThrow(() -> testList.find("xxx"));
+        testList.find("xxx");
     }
 }
