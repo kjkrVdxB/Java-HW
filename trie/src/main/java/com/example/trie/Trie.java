@@ -2,9 +2,7 @@ package com.example.trie;
 
 import java.util.Hashtable;
 
-/**
- * A set-like structure that can store non-{@code null} {@code String}s.
- */
+/** A set-like structure that can store non-{@code null} {@code String}s. */
 public class Trie {
     private Node root;
 
@@ -32,9 +30,9 @@ public class Trie {
                 // The trie can branch on the first half of a surrogate pair.
                 // Despite being strange, that does not have any effect on the interface.
                 //
-                // (We allow inserting strings that end in a half of a surrogate pair.
+                // We also allow inserting strings that end in a half of a surrogate pair.
                 // But we don't check that the string is a valid unicode string anyway. The user
-                // is responsible for that.)
+                // is responsible for that.
 
                 current.children.put(c, newNode);
                 next = newNode;
@@ -102,9 +100,7 @@ public class Trie {
         return true;
     }
 
-    /**
-     * Return number of unique strings in the trie.
-     */
+    /** Return number of unique strings in the trie. */
     public int size() {
         return root.subtreeSize;
     }
