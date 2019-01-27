@@ -61,10 +61,9 @@ public class HashTable {
         buckets = newBuckets;
 
         for (int i = 0; i < oldNumBuckets; ++i) {
-            KeyValueList.Link current = oldBuckets[i].getHead();
-            while (current != null) {
-                bucket(current.getKey()).append(current.getKey(), current.getValue());
-                current = current.getNext();
+            KeyValueList.Entry current;
+            while ((current = oldBuckets[i].popFront()) != null) {
+                bucket(current.getKey()).append(current);
             }
         }
     }
@@ -79,12 +78,9 @@ public class HashTable {
         return bucket(key).find(key) != null;
     }
 
-    /**
-     * Get the {@code String} associated with the {@code key}, or {@code null} if there is none. Note that {@code null}
-     * is also returned if the associated {@code String} is {@code null}. Use {@code contains} to resolve the ambiguity.
-     */
+    /** Get the {@code String} associated with the {@code key}, or {@code null} if there is none. */
     public String get(String key) {
-        KeyValueList.Link foundPosition = bucket(key).find(key);
+        KeyValueList.Entry foundPosition = bucket(key).find(key);
         if (foundPosition == null) return null;
         return foundPosition.getValue();
     }
@@ -98,9 +94,9 @@ public class HashTable {
      */
     public String put(String key, String value) {
         KeyValueList targetBucket = bucket(key);
-        KeyValueList.Link foundPosition = targetBucket.find(key);
+        KeyValueList.Entry foundPosition = targetBucket.find(key);
         if (foundPosition == null) {
-            targetBucket.append(key, value);
+            targetBucket.append(new KeyValueList.Entry(key, value));
             ++size;
             if (size * INVERSE_PUT_REHASH_THRESHOLD >= buckets.length) {
                 rehash(size * PUT_REHASH_RELATIVE_BUCKETS_NUMBER);
@@ -116,12 +112,11 @@ public class HashTable {
     /**
      * Remove the pair associated with {@code key}. Memory used by buckets is reclaimed.
      *
-     * @return Value associated with {@code key} before removal. Note that {@code null} is also returned if the previous
-     * associated {@code String} was {@code null}. Use {@code contains} to resolve the ambiguity.
+     * @return Value associated with {@code key} before removal.
      */
     public String remove(String key) {
         KeyValueList targetBucket = bucket(key);
-        KeyValueList.Link foundPosition = targetBucket.find(key);
+        KeyValueList.Entry foundPosition = targetBucket.find(key);
         if (foundPosition == null) {
             return null;
         }

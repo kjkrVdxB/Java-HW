@@ -6,32 +6,32 @@ class KeyValueList {
     private Link head;
 
     /**
-     * Find a {@code Link} containing the {@code key}.
+     * Find an {@code Entry} containing the {@code key}.
      *
-     * @return The found {@code Link}, or {@code null} if none contains the {@code key}.
+     * @return The found {@code Entry}, or {@code null} if none contains the {@code key}.
      */
-    public Link find(String key) {
-        Link current = getHead();
+    public Entry find(String key) {
+        Link current = head;
         while (current != null) {
-            if (Objects.equals(current.getKey(), key)) {
-                return current;
+            if (Objects.equals(current.getElement().getKey(), key)) {
+                return current.getElement();
             }
             current = current.getNext();
         }
         return null;
     }
 
-    /** Remove first {@code Link} containing the {@code key}, if there is any. */
+    /** Remove first {@code Entry} containing the {@code key}, if there is any. */
     public void remove(String key) {
-        Link current = getHead();
+        Link current = head;
         Link previous = null;
         while (current != null) {
-            if (Objects.equals(current.getKey(), key)) {
+            if (Objects.equals(current.getElement().getKey(), key)) {
                 if (previous == null) {
                     head = current.getNext();
                     return;
                 }
-                previous.next = current.getNext();
+                previous.setNext(current.getNext());
                 return;
             }
             previous = current;
@@ -39,25 +39,48 @@ class KeyValueList {
         }
     }
 
-    /** Append {@code key: value} pair to the list. */
-    public void append(String key, String value) {
-        head = new Link(key, value, head);
+    /** Append {@code Entry} to the beginning of the list. */
+    public void append(Entry element) {
+        head = new Link(element, head);
     }
 
-    /** Get the first {@code Link} in the list. */
-    public Link getHead() {
-        return head;
+    /** Remove the first element in the list and return it. Return {@code null} if the list is empty; */
+    public Entry popFront() {
+        if (head == null) return null;
+        var oldHead = head;
+        head = head.next;
+        return oldHead.element;
     }
 
-    public class Link {
-        final private String key;
-        private String value;
+    private static class Link {
+        final private Entry element;
         private Link next;
 
-        private Link(String key, String value, Link next) {
+        public Link(Entry element, Link next) {
+            this.element = element;
+            this.next = next;
+        }
+
+        public Entry getElement() {
+            return element;
+        }
+
+        public Link getNext() {
+            return next;
+        }
+
+        public void setNext(Link next) {
+            this.next = next;
+        }
+    }
+
+    public static class Entry {
+        final private String key;
+        private String value;
+
+        public Entry(String key, String value) {
             this.key = key;
             this.value = value;
-            this.next = next;
         }
 
         public String getKey() {
@@ -70,11 +93,6 @@ class KeyValueList {
 
         public void setValue(String value) {
             this.value = value;
-        }
-
-        /** Get next {@code Link} in the list. */
-        public Link getNext() {
-            return next;
         }
     }
 }
