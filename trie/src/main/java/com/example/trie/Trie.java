@@ -178,11 +178,11 @@ public class Trie implements Serializable {
     }
 
     private static class Node {
-        public Hashtable<Character, Node> children;
-        public int subtreeSize;
-        public boolean isEnd;
+        private Hashtable<Character, Node> children;
+        private int subtreeSize;
+        private boolean isEnd;
 
-        public Node() {
+        private Node() {
             children = new Hashtable<>();
         }
     }
