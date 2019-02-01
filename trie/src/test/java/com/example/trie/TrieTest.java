@@ -175,5 +175,8 @@ class TrieTest {
         assertEquals(2, deserializedTrie.howManyStartWithPrefix("a"));
         assertEquals(2, deserializedTrie.howManyStartWithPrefix("c"));
         assertEquals(1, deserializedTrie.howManyStartWithPrefix("ca"));
+
+        assertThrows(IllegalArgumentException.class, () -> testTrie.serialize(null));
+        assertThrows(IllegalArgumentException.class, () -> testTrie.deserialize(null));
     }
 }

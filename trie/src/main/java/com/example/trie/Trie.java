@@ -165,13 +165,21 @@ public class Trie implements Serializable {
         return current.subtreeSize;
     }
 
+    /** @throws IllegalArgumentException if {@code out} is {@code null} */
     public void serialize(OutputStream out) throws IOException {
+        if (out == null) {
+            throw new IllegalArgumentException("Output stream can not be null");
+        }
         var dataOut = new DataOutputStream(out);
         serializeTree(root, dataOut);
         dataOut.close();
     }
 
+    /** @throws IllegalArgumentException if {@code in} is {@code null} */
     public void deserialize(InputStream in) throws IOException {
+        if (in == null) {
+            throw new IllegalArgumentException("Input stream can not be null");
+        }
         var dataIn = new DataInputStream(in);
         root = deserializeTree(dataIn);
         dataIn.close();
