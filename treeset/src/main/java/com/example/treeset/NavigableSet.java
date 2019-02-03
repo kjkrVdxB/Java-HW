@@ -2,34 +2,33 @@ package com.example.treeset;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
 
 public interface NavigableSet<E> extends Set<E> {
 
-    /** {@link TreeSet#descendingIterator()} */
+    /** {@link java.util.NavigableSet#descendingIterator} */
     Iterator<E> descendingIterator();
 
-    /** {@link TreeSet#descendingSet()} */
+    /** {@link java.util.NavigableSet#descendingSet} */
     NavigableSet<E> descendingSet();
 
 
-    /** {@link TreeSet#first()} */
+    /** {@link java.util.NavigableSet#first} */
     E first();
 
-    /** {@link TreeSet#last()} */
+    /** {@link java.util.NavigableSet#last} */
     E last();
 
 
-    /** {@link TreeSet#lower(E)} */
+    /** {@link java.util.NavigableSet#lower} */
     E lower(E e);
 
-    /** {@link TreeSet#floor(E)} */
+    /** {@link java.util.NavigableSet#floor} */
     E floor(E e);
 
 
-    /** {@link TreeSet#ceiling(E)} */
+    /** {@link java.util.NavigableSet#ceiling} */
     E ceiling(E e);
 
-    /** {@link TreeSet#higher(E)} */
+    /** {@link java.util.NavigableSet#higher} */
     E higher(E e);
 }

@@ -47,6 +47,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return newSet;
     }
 
+    /** Create new view of the set. All underlying fileds are shared throught mutability, except {@code reverse}. */
     private TreeSet<E> newView() {
         var view = new TreeSet<E>(comparator);
         view.reverse = reverse;
@@ -57,6 +58,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return view;
     }
 
+    /** Comparator-aware left child getter */
     private Node<E> getLeftChildOf(Node<E> node) {
         if (reverse) {
             return node.secondChild;
@@ -65,6 +67,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
+    /** Comparator-aware right child getter */
     private Node<E> getRightChildOf(Node<E> node) {
         if (!reverse) {
             return node.secondChild;
@@ -73,6 +76,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
+    /** Comparator-aware left child setter */
     private void setLeftChildOf(Node<E> node, Node<E> child) {
         if (reverse) {
             node.secondChild = child;
@@ -81,6 +85,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
+    /** Comparator-aware right child setter */
     private void setRightChildOf(Node<E> node, Node<E> child) {
         if (!reverse) {
             node.secondChild = child;
@@ -89,6 +94,12 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
+    /**
+     * Add an element to the TreeSet. If the element is already preset, TreeSet is not modified.
+     *
+     * @param e element to add
+     * @return whether the element was added, that is it was not preset in the TreeSet before
+     */
     @Override
     public boolean add(E e) {
         if (e == null) {
@@ -125,7 +136,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-
+    /** {@inheritDoc} */
     @Override
     public E first() {
         if (size() == 0) {
@@ -138,6 +149,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current.element;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E last() {
         if (size() == 0) {
@@ -242,6 +254,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return higher;
     }
 
+    /** Get comparision-aware least element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * if {@code treeRoot} is {@code null}. */
     private Node<E> getLeast(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
@@ -253,6 +267,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current;
     }
 
+    /** Remove an element in subtree rooted at {@code subtreeRoot}. Returns {@code true} if an element was deleted. */
     private boolean removeInSubtree(Object o, Node<E> subtreeRoot) {
         var current = subtreeRoot;
         while (current != null) {
@@ -298,6 +313,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return false;
     }
 
+    /** Removes the instance of the specified element from this TreeSet, if it is present.
+     *  Returns true if this collection contained the specified element (or equivalently,
+     *  if this collection changed as a result of the call).
+     *
+     * @param o element to be removed from this TreeSet, if present
+     * @return true if an element was removed as a result of this call
+     * @throws IllegalArgumentException if the element specified is {@code null}
+     */
     @Override
     public boolean remove(Object o) {
         if (o == null) {
@@ -306,11 +329,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return removeInSubtree(o, root.getValue());
     }
 
+    /** Returns iterator over the TreeSet. */
     @Override
     public Iterator<E> iterator() {
         return new TreeSetIterator();
     }
 
+    /** Returns number of elements in the TreeSet. */
     @Override
     public int size() {
         return size.intValue();
