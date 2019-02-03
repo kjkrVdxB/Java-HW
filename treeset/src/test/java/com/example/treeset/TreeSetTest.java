@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TreeSetTest {
-    private TreeSet<Integer> testSet;
+    protected NavigableSet<Integer> testSet;
 
     @BeforeEach
     void init() {
-        testSet = new TreeSet<>();
+        testSet = new TreeSet<Integer>();
         testSet.add(2);
         testSet.add(6);
         testSet.add(0);

@@ -1,8 +1,5 @@
 package com.example.treeset;
 
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.lang3.mutable.MutableObject;
-
 import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
@@ -16,10 +13,9 @@ import java.util.NoSuchElementException;
  */
 public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
-    private boolean reverse = false;
-    private MutableInt modificationCount = new MutableInt(0); // mutable so it can be shared among views
-    private MutableInt size = new MutableInt(0); // mutable so it can be shared among views
-    private MutableObject<Node<E>> root = new MutableObject<>(null); // mutable so it can be shared among views
+    protected int modificationCount = 0;
+    private int size = 0;
+    protected Node<E> root = null;
 
     /** Create new TreeSet with natural ordering. */
     public TreeSet() {
@@ -36,8 +32,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @SuppressWarnings("unchecked")
     private int compare(Object a, Object b) {
-        return (reverse ? -1 : 1) * (comparator == null ? ((Comparable<? super E>) a).compareTo((E) b)
-                : comparator.compare((E) a, (E) b));
+        return comparator == null ? ((Comparable<? super E>) a).compareTo((E) b) : comparator.compare((E) a, (E) b);
     }
 
     @Override
@@ -47,96 +42,47 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public NavigableSet<E> descendingSet() {
-        var newSet = newView();
-        newSet.reverse ^= true;
-        return newSet;
-    }
-
-    /** Create new view of the set. All underlying fields are shared through mutability, except {@code reverse}. */
-    private TreeSet<E> newView() {
-        var view = new TreeSet<E>(comparator);
-        view.reverse = reverse;
-        view.modificationCount = modificationCount;
-        view.size = size;
-        view.root = root;
-
-        return view;
-    }
-
-    /** Comparator-aware left child getter */
-    private Node<E> getLeftChildOf(Node<E> node) {
-        if (reverse) {
-            return node.secondChild;
-        } else {
-            return node.firstChild;
-        }
-    }
-
-    /** Comparator-aware right child getter */
-    private Node<E> getRightChildOf(Node<E> node) {
-        if (!reverse) {
-            return node.secondChild;
-        } else {
-            return node.firstChild;
-        }
-    }
-
-    /** Comparator-aware left child setter */
-    private void setLeftChildOf(Node<E> node, Node<E> child) {
-        if (reverse) {
-            node.secondChild = child;
-        } else {
-            node.firstChild = child;
-        }
-    }
-
-    /** Comparator-aware right child setter */
-    private void setRightChildOf(Node<E> node, Node<E> child) {
-        if (!reverse) {
-            node.secondChild = child;
-        } else {
-            node.firstChild = child;
-        }
+        return new DescendingTreeSet<>(this);
     }
 
     /**
-     * Add an element to the TreeSet. If the element is already preset, TreeSet is not modified.
+     * Add an element to the set. If the element is already preset, the set is not modified.
      *
      * @param e element to add
-     * @return whether the element was added, that is it was not preset in the TreeSet before
+     * @return whether the element was added, that is it was not preset in the set before
      */
     @Override
     public boolean add(E e) {
         if (e == null) {
             throw new IllegalArgumentException("null elements are prohibited");
         }
-        if (root.getValue() == null) {
-            root.setValue(new Node<>(null, e));
-            size.add(1);
-            modificationCount.add(1);
+        if (root == null) {
+            root = new Node<>(null, e);
+            ++size;
+            ++modificationCount;
             return true;
         }
-        var current = root.getValue();
+        var current = root;
         while (true) {
             int cmp = compare(e, current.element);
             if (cmp > 0) {
-                if (getRightChildOf(current) == null) {
-                    setRightChildOf(current, new Node<>(current, e));
-                    size.add(1);
-                    modificationCount.add(1);
+                if (current.secondChild == null) {
+                    current.secondChild = new Node<>(current, e);
+                    ++size;
+                    ++modificationCount;
                     return true;
                 }
-                current = getRightChildOf(current);
+                current = current.secondChild;
             } else if (cmp == 0) {
                 return false;
             } else {
-                if (getLeftChildOf(current) == null) {
-                    setLeftChildOf(current, new Node<>(current, e));
-                    size.add(1);
-                    modificationCount.add(1);
+                if (current.firstChild == null) {
+                    current.firstChild = new Node<>(current, e);
+                    ++size;
+                    ++modificationCount;
                     return true;
                 }
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             }
         }
     }
@@ -147,9 +93,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (size() == 0) {
             throw new NoSuchElementException("TreeSet is empty");
         }
-        var current = root.getValue();
-        while (getLeftChildOf(current) != null) {
-            current = getLeftChildOf(current);
+        var current = root;
+        while (current.firstChild != null) {
+            current = current.firstChild;
         }
         return current.element;
     }
@@ -160,17 +106,17 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (size() == 0) {
             throw new NoSuchElementException("TreeSet is empty");
         }
-        var current = root.getValue();
-        while (getRightChildOf(current) != null) {
-            current = getRightChildOf(current);
+        var current = root;
+        while (current.secondChild != null) {
+            current = current.secondChild;
         }
         return current.element;
     }
 
     /**
-     * Returns true if this TreeSet contains the specified element.
+     * Returns true if this set contains the specified element.
      *
-     * @param o element whose presence in this TreeSet is to be tested
+     * @param o element whose presence in this set is to be tested
      * @return true if this set contains the specified element
      * @throws IllegalArgumentException if the specified element is {@code null}
      */
@@ -179,15 +125,15 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (o == null) {
             throw new IllegalArgumentException("null elements are prohibited");
         }
-        var current = root.getValue();
+        var current = root;
         while (current != null) {
             int cmp = compare(o, current.element);
             if (cmp == 0) {
                 break;
             } else if (cmp > 0) {
-                current = getRightChildOf(current);
+                current = current.secondChild;
             } else {
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             }
         }
         return current != null;
@@ -195,7 +141,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public E lower(E e) {
-        var current = root.getValue();
+        var current = root;
         E lower = null;
         while (current != null) {
             int cmp = compare(e, current.element);
@@ -203,9 +149,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (lower == null || compare(current.element, lower) > 0) {
                     lower = current.element;
                 }
-                current = getRightChildOf(current);
+                current = current.secondChild;
             } else {
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             }
         }
         return lower;
@@ -213,7 +159,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public E floor(E e) {
-        var current = root.getValue();
+        var current = root;
         E floor = null;
         while (current != null) {
             int cmp = compare(e, current.element);
@@ -221,11 +167,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (floor == null || compare(current.element, floor) > 0) {
                     floor = current.element;
                 }
-                current = getRightChildOf(current);
+                current = current.secondChild;
             } else if (cmp == 0) {
                 return current.element;
             } else {
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             }
         }
         return floor;
@@ -233,7 +179,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public E ceiling(E e) {
-        var current = root.getValue();
+        var current = root;
         E ceiling = null;
         while (current != null) {
             int cmp = compare(e, current.element);
@@ -241,11 +187,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (ceiling == null || compare(current.element, ceiling) < 0) {
                     ceiling = current.element;
                 }
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             } else if (cmp == 0) {
                 return current.element;
             } else {
-                current = getRightChildOf(current);
+                current = current.secondChild;
             }
         }
         return ceiling;
@@ -253,7 +199,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public E higher(E e) {
-        var current = root.getValue();
+        var current = root;
         E higher = null;
         while (current != null) {
             int cmp = compare(e, current.element);
@@ -261,25 +207,40 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (higher == null || compare(current.element, higher) < 0) {
                     higher = current.element;
                 }
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             } else {
-                current = getRightChildOf(current);
+                current = current.secondChild;
             }
         }
         return higher;
     }
 
     /**
-     * Get comparision-aware least element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    private Node<E> getLeast(Node<E> treeRoot) {
+    protected Node<E> getLeast(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
         }
         Node<E> current = treeRoot;
-        while (getLeftChildOf(current) != null) {
-            current = getLeftChildOf(current);
+        while (current.firstChild != null) {
+            current = current.firstChild;
+        }
+        return current;
+    }
+
+    /**
+     * Get lbiggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * if {@code treeRoot} is {@code null}.
+     */
+    protected Node<E> getBiggest(Node<E> treeRoot) {
+        if (treeRoot == null) {
+            return null;
+        }
+        Node<E> current = treeRoot;
+        while (current.secondChild != null) {
+            current = current.secondChild;
         }
         return current;
     }
@@ -290,52 +251,52 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         while (current != null) {
             int cmp = compare(o, current.element);
             if (cmp > 0) {
-                current = getRightChildOf(current);
+                current = current.secondChild;
             } else if (cmp == 0) {
                 Node<E> newCurrent;
-                if (getLeftChildOf(current) != null && getRightChildOf(current) != null) {
-                    var replacement = getLeast(getRightChildOf(current));
+                if (current.firstChild != null && current.secondChild != null) {
+                    var replacement = getLeast(current.secondChild);
                     removeInSubtree(replacement.element, replacement);
-                    setLeftChildOf(replacement, getLeftChildOf(current));
-                    if (getRightChildOf(current) != null) {
-                        getRightChildOf(current).parent = replacement;
+                    replacement.firstChild = current.firstChild;
+                    if (current.secondChild != null) {
+                        current.secondChild.parent = replacement;
                     }
-                    setRightChildOf(replacement, getRightChildOf(current));
-                    if (getLeftChildOf(current) != null) {
-                        getLeftChildOf(current).parent = replacement;
+                    replacement.secondChild = current.secondChild;
+                    if (current.firstChild != null) {
+                        current.firstChild.parent = replacement;
                     }
                     current.replaceInParent(replacement);
-                    if (current == root.getValue()) {
-                        root.setValue(replacement);
+                    if (current == root) {
+                        root = replacement;
                     }
                     return true;
-                } else if (getLeftChildOf(current) != null) {
-                    newCurrent = getLeftChildOf(current);
-                } else if (getRightChildOf(current) != null) {
-                    newCurrent = getRightChildOf(current);
+                } else if (current.firstChild != null) {
+                    newCurrent = current.firstChild;
+                } else if (current.secondChild != null) {
+                    newCurrent = current.secondChild;
                 } else {
                     newCurrent = null;
                 }
                 current.replaceInParent(newCurrent);
-                if (current == root.getValue()) {
-                    root.setValue(newCurrent);
+                if (current == root) {
+                    root = newCurrent;
                 }
-                size.subtract(1);
-                modificationCount.add(1);
+                --size;
+                ++modificationCount;
                 return true;
             } else {
-                current = getLeftChildOf(current);
+                current = current.firstChild;
             }
         }
         return false;
     }
 
     /**
-     * Removes the instance of the specified element from this TreeSet, if it is present.
+     * Removes the instance of the specified element from this set, if it is present.
      * Returns true if this collection contained the specified element (or equivalently,
      * if this collection changed as a result of the call).
      *
-     * @param o element to be removed from this TreeSet, if present
+     * @param o element to be removed from this set, if present
      * @return true if an element was removed as a result of this call
      * @throws IllegalArgumentException if the element specified is {@code null}
      */
@@ -344,22 +305,22 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (o == null) {
             throw new IllegalArgumentException("null elements are prohibited");
         }
-        return removeInSubtree(o, root.getValue());
+        return removeInSubtree(o, root);
     }
 
-    /** Returns iterator over the TreeSet. */
+    /** Returns iterator over the set. */
     @Override
     public Iterator<E> iterator() {
         return new TreeSetIterator();
     }
 
-    /** Returns number of elements in the TreeSet. */
+    /** Returns number of elements in the set. */
     @Override
     public int size() {
-        return size.intValue();
+        return size;
     }
 
-    private static class Node<NodeE> {
+    protected static class Node<NodeE> {
         Node<NodeE> parent;
         Node<NodeE> firstChild = null, secondChild = null;
         final NodeE element;
@@ -384,18 +345,17 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private class TreeSetIterator implements Iterator<E> {
-        private int acceptedModificationCount;
+        private int acceptedModificationCount = modificationCount;
         private Node<E> nextNode;
         private Node<E> previousNode; // used in remove()
 
         private TreeSetIterator() {
-            acceptedModificationCount = modificationCount.intValue();
             previousNode = null;
-            nextNode = getLeast(root.getValue());
+            nextNode = getLeast(root);
         }
 
         private void checkConcurrentAccess() {
-            if (modificationCount.intValue() != acceptedModificationCount) {
+            if (modificationCount != acceptedModificationCount) {
                 throw new ConcurrentModificationException("TreeSet was modified");
             }
         }
@@ -414,10 +374,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             checkConcurrentAccess();
             previousNode = nextNode;
             var nextElement = nextNode.element;
-            if (getRightChildOf(nextNode) != null) {
-                nextNode = getLeast(getRightChildOf(nextNode));
+            if (nextNode.secondChild != null) {
+                nextNode = getLeast(nextNode.secondChild);
             } else {
-                while (nextNode.parent != null && getRightChildOf(nextNode.parent) == nextNode) {
+                while (nextNode.parent != null && nextNode.parent.secondChild == nextNode) {
                     nextNode = nextNode.parent;
                 }
                 nextNode = nextNode.parent;
@@ -433,7 +393,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             }
             checkConcurrentAccess();
             TreeSet.this.remove(previousNode.element);
-            acceptedModificationCount = modificationCount.intValue();
+            acceptedModificationCount = modificationCount;
 
             previousNode = null;
         }
