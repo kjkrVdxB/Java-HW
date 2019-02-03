@@ -35,11 +35,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return comparator == null ? ((Comparable<? super E>) a).compareTo((E) b) : comparator.compare((E) a, (E) b);
     }
 
+    /** {@inheritDoc} */
     @Override
     public Iterator<E> descendingIterator() {
         return descendingSet().iterator();
     }
 
+    /** {@inheritDoc} */
     @Override
     public NavigableSet<E> descendingSet() {
         return new DescendingTreeSet<>(this);
@@ -394,7 +396,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-    /** A class representing descending version of a set */
+    /** A class representing descending version of a set. */
     private static class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
         private TreeSet<E> inner;
 
@@ -402,11 +404,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             this.inner = inner;
         }
 
+        /** {@link TreeSet#add} */
         @Override
         public boolean add(E e) {
             return inner.add(e);
         }
 
+        /** {@inheritDoc} */
         @Override
         public Iterator<E> descendingIterator() {
             return inner.iterator();
@@ -432,35 +436,42 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return inner.contains(o);
         }
 
+        /** {@inheritDoc} */
         @Override
         public E lower(E e) {
             return inner.higher(e);
         }
 
+        /** {@inheritDoc} */
         @Override
         public E floor(E e) {
             return inner.ceiling(e);
         }
 
+        /** {@inheritDoc} */
         @Override
         public E ceiling(E e) {
             return inner.floor(e);
         }
 
+        /** {@inheritDoc} */
         @Override
         public E higher(E e) {
             return inner.lower(e);
         }
 
+        /** {@link TreeSet#remove} */
         @Override
         public boolean remove(Object o) {
             return inner.remove(o);
         }
 
+        /** {@link TreeSet#iterator} */
         public Iterator<E> iterator() {
             return new DescendingTreeSetIterator();
         }
 
+        /** {@link TreeSet#size()} */
         @Override
         public int size() {
             return inner.size();
