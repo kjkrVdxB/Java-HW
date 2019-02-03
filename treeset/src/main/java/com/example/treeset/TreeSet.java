@@ -228,7 +228,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /**
-     * Get lbiggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * Get the biggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
     private Node<E> getBiggest(Node<E> treeRoot) {
@@ -397,7 +397,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     /** A class representing descending version of a set. */
     private static class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
-        private TreeSet<E> inner;
+        final private TreeSet<E> inner;
 
         private DescendingTreeSet(TreeSet<E> inner) {
             this.inner = inner;

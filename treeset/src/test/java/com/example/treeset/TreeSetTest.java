@@ -17,7 +17,7 @@ class TreeSetTest {
 
     @BeforeEach
     void init() {
-        testSet = new TreeSet<Integer>();
+        testSet = new TreeSet<>();
         testSet.add(2);
         testSet.add(6);
         testSet.add(0);
