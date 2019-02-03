@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
  */
 public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
-    protected int modificationCount = 0;
+    int modificationCount = 0;
     private int size = 0;
-    protected Node<E> root = null;
+    Node<E> root = null;
 
     /** Create new TreeSet with natural ordering. */
     public TreeSet() {
@@ -139,6 +139,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current != null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E lower(E e) {
         var current = root;
@@ -157,6 +158,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return lower;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E floor(E e) {
         var current = root;
@@ -177,6 +179,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return floor;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E ceiling(E e) {
         var current = root;
@@ -219,7 +222,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    protected Node<E> getLeast(Node<E> treeRoot) {
+    Node<E> getLeast(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
         }
@@ -234,7 +237,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get lbiggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    protected Node<E> getBiggest(Node<E> treeRoot) {
+    Node<E> getBiggest(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
         }
@@ -320,7 +323,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return size;
     }
 
-    protected static class Node<NodeE> {
+    static class Node<NodeE> {
         Node<NodeE> parent;
         Node<NodeE> firstChild = null, secondChild = null;
         final NodeE element;

@@ -10,7 +10,7 @@ class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
 
     private TreeSet<E> inner;
 
-    public DescendingTreeSet(TreeSet<E> base) {
+    DescendingTreeSet(TreeSet<E> base) {
         inner = base;
     }
 
