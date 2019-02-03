@@ -269,8 +269,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return higher;
     }
 
-    /** Get comparision-aware least element in the tree rooted in {@code treeRoot}. Returns {@code null}
-     * if {@code treeRoot} is {@code null}. */
+    /**
+     * Get comparision-aware least element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * if {@code treeRoot} is {@code null}.
+     */
     private Node<E> getLeast(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
@@ -328,9 +330,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return false;
     }
 
-    /** Removes the instance of the specified element from this TreeSet, if it is present.
-     *  Returns true if this collection contained the specified element (or equivalently,
-     *  if this collection changed as a result of the call).
+    /**
+     * Removes the instance of the specified element from this TreeSet, if it is present.
+     * Returns true if this collection contained the specified element (or equivalently,
+     * if this collection changed as a result of the call).
      *
      * @param o element to be removed from this TreeSet, if present
      * @return true if an element was removed as a result of this call
