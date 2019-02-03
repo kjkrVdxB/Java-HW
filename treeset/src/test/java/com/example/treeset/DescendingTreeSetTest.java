@@ -8,7 +8,7 @@ class DescendingTreeSetTest extends TreeSetTest {
     @Override
     @BeforeEach
     void init() {
-        testSet = new DescendingTreeSet<>(new TreeSet<Integer>(Collections.reverseOrder()));
+        testSet = new TreeSet.DescendingTreeSet<>(new TreeSet<Integer>(Collections.reverseOrder()));
         testSet.add(2);
         testSet.add(6);
         testSet.add(0);

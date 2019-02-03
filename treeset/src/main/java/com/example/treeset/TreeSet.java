@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
  */
 public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
-    int modificationCount = 0;
+    private int modificationCount = 0;
     private int size = 0;
-    Node<E> root = null;
+    private Node<E> root = null;
 
     /** Create new TreeSet with natural ordering. */
     public TreeSet() {
@@ -66,23 +66,23 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         while (true) {
             int cmp = compare(e, current.element);
             if (cmp > 0) {
-                if (current.secondChild == null) {
-                    current.secondChild = new Node<>(current, e);
+                if (current.rightChild == null) {
+                    current.rightChild = new Node<>(current, e);
                     ++size;
                     ++modificationCount;
                     return true;
                 }
-                current = current.secondChild;
+                current = current.rightChild;
             } else if (cmp == 0) {
                 return false;
             } else {
-                if (current.firstChild == null) {
-                    current.firstChild = new Node<>(current, e);
+                if (current.leftChild == null) {
+                    current.leftChild = new Node<>(current, e);
                     ++size;
                     ++modificationCount;
                     return true;
                 }
-                current = current.firstChild;
+                current = current.leftChild;
             }
         }
     }
@@ -94,8 +94,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             throw new NoSuchElementException("TreeSet is empty");
         }
         var current = root;
-        while (current.firstChild != null) {
-            current = current.firstChild;
+        while (current.leftChild != null) {
+            current = current.leftChild;
         }
         return current.element;
     }
@@ -107,8 +107,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             throw new NoSuchElementException("TreeSet is empty");
         }
         var current = root;
-        while (current.secondChild != null) {
-            current = current.secondChild;
+        while (current.rightChild != null) {
+            current = current.rightChild;
         }
         return current.element;
     }
@@ -131,9 +131,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             if (cmp == 0) {
                 break;
             } else if (cmp > 0) {
-                current = current.secondChild;
+                current = current.rightChild;
             } else {
-                current = current.firstChild;
+                current = current.leftChild;
             }
         }
         return current != null;
@@ -150,9 +150,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (lower == null || compare(current.element, lower) > 0) {
                     lower = current.element;
                 }
-                current = current.secondChild;
+                current = current.rightChild;
             } else {
-                current = current.firstChild;
+                current = current.leftChild;
             }
         }
         return lower;
@@ -169,11 +169,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (floor == null || compare(current.element, floor) > 0) {
                     floor = current.element;
                 }
-                current = current.secondChild;
+                current = current.rightChild;
             } else if (cmp == 0) {
                 return current.element;
             } else {
-                current = current.firstChild;
+                current = current.leftChild;
             }
         }
         return floor;
@@ -190,11 +190,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (ceiling == null || compare(current.element, ceiling) < 0) {
                     ceiling = current.element;
                 }
-                current = current.firstChild;
+                current = current.leftChild;
             } else if (cmp == 0) {
                 return current.element;
             } else {
-                current = current.secondChild;
+                current = current.rightChild;
             }
         }
         return ceiling;
@@ -210,9 +210,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (higher == null || compare(current.element, higher) < 0) {
                     higher = current.element;
                 }
-                current = current.firstChild;
+                current = current.leftChild;
             } else {
-                current = current.secondChild;
+                current = current.rightChild;
             }
         }
         return higher;
@@ -222,13 +222,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    Node<E> getLeast(Node<E> treeRoot) {
+    private Node<E> getLeast(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
         }
         Node<E> current = treeRoot;
-        while (current.firstChild != null) {
-            current = current.firstChild;
+        while (current.leftChild != null) {
+            current = current.leftChild;
         }
         return current;
     }
@@ -237,13 +237,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get lbiggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    Node<E> getBiggest(Node<E> treeRoot) {
+    private Node<E> getBiggest(Node<E> treeRoot) {
         if (treeRoot == null) {
             return null;
         }
         Node<E> current = treeRoot;
-        while (current.secondChild != null) {
-            current = current.secondChild;
+        while (current.rightChild != null) {
+            current = current.rightChild;
         }
         return current;
     }
@@ -254,29 +254,29 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         while (current != null) {
             int cmp = compare(o, current.element);
             if (cmp > 0) {
-                current = current.secondChild;
+                current = current.rightChild;
             } else if (cmp == 0) {
                 Node<E> newCurrent;
-                if (current.firstChild != null && current.secondChild != null) {
-                    var replacement = getLeast(current.secondChild);
+                if (current.leftChild != null && current.rightChild != null) {
+                    var replacement = getLeast(current.rightChild);
                     removeInSubtree(replacement.element, replacement);
-                    replacement.firstChild = current.firstChild;
-                    if (current.secondChild != null) {
-                        current.secondChild.parent = replacement;
+                    replacement.leftChild = current.leftChild;
+                    if (current.rightChild != null) {
+                        current.rightChild.parent = replacement;
                     }
-                    replacement.secondChild = current.secondChild;
-                    if (current.firstChild != null) {
-                        current.firstChild.parent = replacement;
+                    replacement.rightChild = current.rightChild;
+                    if (current.leftChild != null) {
+                        current.leftChild.parent = replacement;
                     }
                     current.replaceInParent(replacement);
                     if (current == root) {
                         root = replacement;
                     }
                     return true;
-                } else if (current.firstChild != null) {
-                    newCurrent = current.firstChild;
-                } else if (current.secondChild != null) {
-                    newCurrent = current.secondChild;
+                } else if (current.leftChild != null) {
+                    newCurrent = current.leftChild;
+                } else if (current.rightChild != null) {
+                    newCurrent = current.rightChild;
                 } else {
                     newCurrent = null;
                 }
@@ -288,7 +288,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 ++modificationCount;
                 return true;
             } else {
-                current = current.firstChild;
+                current = current.leftChild;
             }
         }
         return false;
@@ -323,10 +323,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return size;
     }
 
-    static class Node<NodeE> {
-        Node<NodeE> parent;
-        Node<NodeE> firstChild = null, secondChild = null;
-        final NodeE element;
+    private static class Node<NodeE> {
+        private Node<NodeE> parent;
+        private Node<NodeE> leftChild = null, rightChild = null;
+        private final NodeE element;
 
         private Node(Node<NodeE> parent, NodeE element) {
             this.parent = parent;
@@ -335,10 +335,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         private void replaceInParent(Node<NodeE> newNode) {
             if (parent != null) {
-                if (this == parent.firstChild) {
-                    parent.firstChild = newNode;
+                if (this == parent.leftChild) {
+                    parent.leftChild = newNode;
                 } else {
-                    parent.secondChild = newNode;
+                    parent.rightChild = newNode;
                 }
             }
             if (newNode != null) {
@@ -377,10 +377,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             checkConcurrentAccess();
             previousNode = nextNode;
             var nextElement = nextNode.element;
-            if (nextNode.secondChild != null) {
-                nextNode = getLeast(nextNode.secondChild);
+            if (nextNode.rightChild != null) {
+                nextNode = getLeast(nextNode.rightChild);
             } else {
-                while (nextNode.parent != null && nextNode.parent.secondChild == nextNode) {
+                while (nextNode.parent != null && nextNode.parent.rightChild == nextNode) {
                     nextNode = nextNode.parent;
                 }
                 nextNode = nextNode.parent;
@@ -399,6 +399,133 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             acceptedModificationCount = modificationCount;
 
             previousNode = null;
+        }
+    }
+
+    private static class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
+        private TreeSet<E> inner;
+
+        private DescendingTreeSet(TreeSet<E> base) {
+            inner = base;
+        }
+
+        @Override
+        public boolean add(E e) {
+            return inner.add(e);
+        }
+
+        @Override
+        public Iterator<E> descendingIterator() {
+            return inner.iterator();
+        }
+
+        @Override
+        public NavigableSet<E> descendingSet() {
+            return inner;
+        }
+
+        @Override
+        public E first() {
+            return inner.last();
+        }
+
+        @Override
+        public E last() {
+            return inner.first();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return inner.contains(o);
+        }
+
+        @Override
+        public E lower(E e) {
+            return inner.higher(e);
+        }
+
+        @Override
+        public E floor(E e) {
+            return inner.ceiling(e);
+        }
+
+        @Override
+        public E ceiling(E e) {
+            return inner.floor(e);
+        }
+
+        @Override
+        public E higher(E e) {
+            return inner.lower(e);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return inner.remove(o);
+        }
+
+        public Iterator<E> iterator() {
+            return new DescendingTreeSetIterator();
+        }
+
+        @Override
+        public int size() {
+            return inner.size();
+        }
+
+        private class DescendingTreeSetIterator implements Iterator<E> {
+            private int acceptedModificationCount = inner.modificationCount;
+            private TreeSet.Node<E> nextNode;
+            private TreeSet.Node<E> previousNode; // used in remove()
+
+            private DescendingTreeSetIterator() {
+                previousNode = null;
+                nextNode = inner.getBiggest(inner.root);
+            }
+
+            private void checkConcurrentAccess() {
+                if (inner.modificationCount != acceptedModificationCount) {
+                    throw new ConcurrentModificationException("TreeSet was modified");
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                checkConcurrentAccess();
+                return nextNode != null;
+            }
+
+            @Override
+            public E next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException("There is no next element");
+                }
+                checkConcurrentAccess();
+                previousNode = nextNode;
+                var nextElement = nextNode.element;
+                if (nextNode.leftChild != null) {
+                    nextNode = inner.getBiggest(nextNode.leftChild);
+                } else {
+                    while (nextNode.parent != null && nextNode.parent.leftChild == nextNode) {
+                        nextNode = nextNode.parent;
+                    }
+                    nextNode = nextNode.parent;
+                }
+                return nextElement;
+            }
+
+            @Override
+            public void remove() {
+                if (previousNode == null) {
+                    throw new IllegalStateException("remove() already called after last call " +
+                            "to next() or no call to next() was made");
+                }
+                checkConcurrentAccess();
+                inner.remove(previousNode.element);
+                acceptedModificationCount = inner.modificationCount;
+
+                previousNode = null;
+            }
         }
     }
 }
