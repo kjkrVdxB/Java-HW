@@ -391,7 +391,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             checkConcurrentAccess();
             TreeSet.this.remove(previousNode.element);
             acceptedModificationCount = modificationCount;
-
             previousNode = null;
         }
     }
@@ -416,21 +415,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return inner.iterator();
         }
 
+        /** {@inheritDoc} */
         @Override
         public NavigableSet<E> descendingSet() {
             return inner;
         }
 
+        /** {@inheritDoc} */
         @Override
         public E first() {
             return inner.last();
         }
 
+        /** {@inheritDoc} */
         @Override
         public E last() {
             return inner.first();
         }
 
+        /** {@link TreeSet#contains} */
         @Override
         public boolean contains(Object o) {
             return inner.contains(o);
@@ -527,7 +530,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 checkConcurrentAccess();
                 inner.remove(previousNode.element);
                 acceptedModificationCount = inner.modificationCount;
-
                 previousNode = null;
             }
         }
