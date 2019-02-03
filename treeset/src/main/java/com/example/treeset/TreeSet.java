@@ -91,6 +91,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public boolean add(E e) {
+        if (e == null) {
+            throw new IllegalArgumentException("null elements are prohibited");
+        }
         if (root.getValue() == null) {
             root.setValue(new Node<>(null, e));
             size.add(1);
@@ -297,6 +300,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public boolean remove(Object o) {
+        if (o == null) {
+            throw new IllegalArgumentException("null element are prohibited");
+        }
         return removeInSubtree(o, root.getValue());
     }
 

@@ -38,6 +38,14 @@ class TreeSetTest {
         assertTrue(testSet.contains(4));
         assertTrue(testSet.contains(6));
         assertTrue(testSet.contains(8));
+
+        assertFalse(testSet.add(2));
+        assertFalse(testSet.add(8));
+
+        assertTrue(testSet.add(10));
+        assertTrue(testSet.add(3));
+
+        assertThrows(IllegalArgumentException.class, () -> testSet.add(null));
     }
 
 
@@ -95,6 +103,8 @@ class TreeSetTest {
         assertFalse(testSet.contains(4));
         assertTrue(testSet.contains(0));
         assertEquals(1, testSet.size());
+
+        assertThrows(IllegalArgumentException.class, () -> testSet.remove(null));
     }
 
     @Test
