@@ -93,11 +93,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (size() == 0) {
             throw new NoSuchElementException("TreeSet is empty");
         }
-        var current = root;
-        while (current.leftChild != null) {
-            current = current.leftChild;
-        }
-        return current.element;
+        return getLeast(root).element;
     }
 
     /** {@inheritDoc} */
@@ -106,11 +102,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         if (size() == 0) {
             throw new NoSuchElementException("TreeSet is empty");
         }
-        var current = root;
-        while (current.rightChild != null) {
-            current = current.rightChild;
-        }
-        return current.element;
+        return getBiggest(root).element;
     }
 
     /**
@@ -402,11 +394,12 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
+    /** A class representing descending version of a set */
     private static class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
         private TreeSet<E> inner;
 
-        private DescendingTreeSet(TreeSet<E> base) {
-            inner = base;
+        private DescendingTreeSet(TreeSet<E> inner) {
+            this.inner = inner;
         }
 
         @Override
