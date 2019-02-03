@@ -47,7 +47,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return newSet;
     }
 
-    /** Create new view of the set. All underlying fileds are shared throught mutability, except {@code reverse}. */
+    /** Create new view of the set. All underlying fields are shared through mutability, except {@code reverse}. */
     private TreeSet<E> newView() {
         var view = new TreeSet<E>(comparator);
         view.reverse = reverse;

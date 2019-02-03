@@ -60,7 +60,7 @@ class TreeSetTest {
         assertEquals(1, (int) singletonTestSet.floor(0));
         assertEquals(1, (int) singletonTestSet.ceiling(2));
 
-        var stringTestSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        var stringTestSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         stringTestSet.add("aB");
         assertTrue(stringTestSet.contains("ab"));
         assertTrue(stringTestSet.contains("AB"));
@@ -163,9 +163,9 @@ class TreeSetTest {
     void testIterator() {
         testSet.add(-1);
         testSet.add(1);
-        int[] ints = {-1, 0, 1, 2, 4, 6, 8};
+        int[] expectedContent = {-1, 0, 1, 2, 4, 6, 8};
         var it = testSet.iterator();
-        for (int a : ints) {
+        for (int a : expectedContent) {
             if (a == -1) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
@@ -196,9 +196,9 @@ class TreeSetTest {
     void testDescendingIterator() {
         testSet.add(-1);
         testSet.add(1);
-        int[] ints = {8, 6, 4, 2, 1, 0, -1};
+        int[] expectedContent = {8, 6, 4, 2, 1, 0, -1};
         var it = testSet.descendingIterator();
-        for (int a : ints) {
+        for (int a : expectedContent) {
             if (a == 8) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
@@ -234,7 +234,11 @@ class TreeSetTest {
         testSet.add(1);
 
         assertThrows(ConcurrentModificationException.class, () -> it1.next());
-        assertThrows(ConcurrentModificationException.class, () -> it2.hasNext());
+        assertThrows(ConcurrentModificationException.class, () -> {
+            if (it2.hasNext()) {
+                it2.next();
+            }
+        });
 
         var it3 = testSet.descendingIterator();
 
