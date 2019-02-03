@@ -344,7 +344,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private static class Node<NodeE> {
         Node<NodeE> parent;
         Node<NodeE> firstChild = null, secondChild = null;
-        NodeE element;
+        final NodeE element;
 
         private Node(Node<NodeE> parent, NodeE element) {
             this.parent = parent;
