@@ -162,8 +162,18 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current.element;
     }
 
+    /**
+     * Returns true if this TreeSet contains the specified element.
+     *
+     * @param o element whose presence in this TreeSet is to be tested
+     * @return true if this set contains the specified element
+     * @throws IllegalArgumentException if the specified element is {@code null}
+     */
     @Override
     public boolean contains(Object o) {
+        if (o == null) {
+            throw new IllegalArgumentException("null elements are prohibited");
+        }
         var current = root.getValue();
         while (current != null) {
             int cmp = compare(o, current.element);
@@ -324,7 +334,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     @Override
     public boolean remove(Object o) {
         if (o == null) {
-            throw new IllegalArgumentException("null element are prohibited");
+            throw new IllegalArgumentException("null elements are prohibited");
         }
         return removeInSubtree(o, root.getValue());
     }

@@ -46,6 +46,7 @@ class TreeSetTest {
         assertTrue(testSet.add(3));
 
         assertThrows(IllegalArgumentException.class, () -> testSet.add(null));
+        assertThrows(IllegalArgumentException.class, () -> testSet.contains(null));
     }
 
 
