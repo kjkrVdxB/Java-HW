@@ -9,6 +9,11 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Binary search tree based TreeSet implementation.
+ *
+ * @param <E> element type
+ */
 public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
     private boolean reverse = false;
