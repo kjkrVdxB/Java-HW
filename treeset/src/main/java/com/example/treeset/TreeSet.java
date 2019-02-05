@@ -30,6 +30,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         this.comparator = comparator;
     }
 
+    /** Compare using comparator if there is one, or using natural ordering otherwise. */
     @SuppressWarnings("unchecked")
     private int compare(Object a, Object b) {
         return comparator == null ? ((Comparable<? super E>) a).compareTo((E) b) : comparator.compare((E) a, (E) b);
@@ -194,6 +195,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return ceiling;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E higher(E e) {
         var current = root;
@@ -308,7 +310,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** Returns iterator over the set. */
     @Override
     public Iterator<E> iterator() {
-        return new TreeSetIterator();
+        return new TreeSetIterator<>(this);
     }
 
     /** Returns number of elements in the set. */
@@ -341,18 +343,27 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-    private class TreeSetIterator implements Iterator<E> {
-        private int acceptedModificationCount = modificationCount;
-        private Node<E> nextNode;
-        private Node<E> previousNode; // used in remove()
+    /**
+     * @implNote This is not an inner class because it is used as a base class for
+     * DescendingTreeSetIterator, and DescendingTreeSet dos not inherit TreeSet
+     */
+    private static class TreeSetIterator<ItE> implements Iterator<ItE> {
+        protected TreeSet<ItE> tree;
+        protected int acceptedModificationCount;
+        protected Node<ItE> nextNode;
+        protected Node<ItE> previousNode; // used in remove()
 
-        private TreeSetIterator() {
+        protected TreeSetIterator() { }
+
+        private TreeSetIterator(TreeSet<ItE> tree) {
+            this.tree = tree;
+            acceptedModificationCount = tree.modificationCount;
+            nextNode = tree.getLeast(tree.root);
             previousNode = null;
-            nextNode = getLeast(root);
         }
 
-        private void checkConcurrentAccess() {
-            if (modificationCount != acceptedModificationCount) {
+        protected void checkConcurrentAccess() {
+            if (tree.modificationCount != acceptedModificationCount) {
                 throw new ConcurrentModificationException("TreeSet was modified");
             }
         }
@@ -364,7 +375,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
 
         @Override
-        public E next() {
+        public ItE next() {
             if (!hasNext()) {
                 throw new NoSuchElementException("There is no next element");
             }
@@ -372,7 +383,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             previousNode = nextNode;
             var nextElement = nextNode.element;
             if (nextNode.rightChild != null) {
-                nextNode = getLeast(nextNode.rightChild);
+                nextNode = tree.getLeast(nextNode.rightChild);
             } else {
                 while (nextNode.parent != null && nextNode.parent.rightChild == nextNode) {
                     nextNode = nextNode.parent;
@@ -389,14 +400,18 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                                                 "to next() or no call to next() was made");
             }
             checkConcurrentAccess();
-            TreeSet.this.remove(previousNode.element);
-            acceptedModificationCount = modificationCount;
+            tree.remove(previousNode.element);
+            acceptedModificationCount = tree.modificationCount;
             previousNode = null;
         }
     }
 
-    /** A class representing descending version of a set. */
-    private static class DescendingTreeSet <E> extends AbstractSet<E> implements NavigableSet<E> {
+    /**
+     * A class representing descending version of a set.
+     * @implNote This class does not inherit TreeSet, but rather has it as a member. This is
+     * because we want a wrapper around existing TreeSet object that can coexist with it.
+     */
+    private static class DescendingTreeSet<E> extends TreeSet<E> implements NavigableSet<E> {
         final private TreeSet<E> inner;
 
         private DescendingTreeSet(TreeSet<E> inner) {
@@ -471,7 +486,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         /** {@link TreeSet#iterator} */
         public Iterator<E> iterator() {
-            return new DescendingTreeSetIterator();
+            return new DescendingTreeSetIterator<>(inner);
         }
 
         /** {@link TreeSet#size()} */
@@ -480,30 +495,16 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return inner.size();
         }
 
-        private class DescendingTreeSetIterator implements Iterator<E> {
-            private int acceptedModificationCount = inner.modificationCount;
-            private TreeSet.Node<E> nextNode;
-            private TreeSet.Node<E> previousNode; // used in remove()
-
-            private DescendingTreeSetIterator() {
+        private static class DescendingTreeSetIterator<ItE> extends TreeSetIterator<ItE> implements Iterator<ItE> {
+            private DescendingTreeSetIterator(TreeSet<ItE> tree) {
+                this.tree = tree;
+                acceptedModificationCount = tree.modificationCount;
+                nextNode = tree.getBiggest(tree.root);
                 previousNode = null;
-                nextNode = inner.getBiggest(inner.root);
-            }
-
-            private void checkConcurrentAccess() {
-                if (inner.modificationCount != acceptedModificationCount) {
-                    throw new ConcurrentModificationException("TreeSet was modified");
-                }
             }
 
             @Override
-            public boolean hasNext() {
-                checkConcurrentAccess();
-                return nextNode != null;
-            }
-
-            @Override
-            public E next() {
+            public ItE next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("There is no next element");
                 }
@@ -511,7 +512,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 previousNode = nextNode;
                 var nextElement = nextNode.element;
                 if (nextNode.leftChild != null) {
-                    nextNode = inner.getBiggest(nextNode.leftChild);
+                    nextNode = tree.getBiggest(nextNode.leftChild);
                 } else {
                     while (nextNode.parent != null && nextNode.parent.leftChild == nextNode) {
                         nextNode = nextNode.parent;
@@ -519,18 +520,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                     nextNode = nextNode.parent;
                 }
                 return nextElement;
-            }
-
-            @Override
-            public void remove() {
-                if (previousNode == null) {
-                    throw new IllegalStateException("remove() already called after last call " +
-                            "to next() or no call to next() was made");
-                }
-                checkConcurrentAccess();
-                inner.remove(previousNode.element);
-                acceptedModificationCount = inner.modificationCount;
-                previousNode = null;
             }
         }
     }
