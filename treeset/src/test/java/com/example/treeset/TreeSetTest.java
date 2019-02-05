@@ -123,6 +123,16 @@ class TreeSetTest {
     }
 
     @Test
+    void testNavigation() {
+        assertEquals(8, (int) testSet.higher(6));
+        assertNull(testSet.lower(0));
+        assertEquals(6, (int) testSet.floor(6));
+        assertEquals(4, (int) testSet.floor(5));
+        assertEquals(6, (int) testSet.ceiling(6));
+        assertEquals(6, (int) testSet.ceiling(5));
+    }
+
+    @Test
     void testFirstLast() {
         assertEquals(0, (int) testSet.first());
         assertEquals(8, (int) testSet.last());
@@ -142,6 +152,7 @@ class TreeSetTest {
         assertEquals(6, (int) descendingTestSet.floor(5));
         assertEquals(6, (int) descendingTestSet.ceiling(6));
         assertEquals(4, (int) descendingTestSet.ceiling(5));
+        assertNull(descendingTestSet.lower(8));
 
         assertEquals(5, descendingTestSet.size());
 
