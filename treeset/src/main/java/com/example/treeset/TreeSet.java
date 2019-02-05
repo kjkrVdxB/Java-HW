@@ -345,7 +345,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     /**
      * @implNote This is not an inner class because it is used as a base class for
-     * DescendingTreeSetIterator, and DescendingTreeSet dos not inherit TreeSet
+     * DescendingTreeSetIterator, and DescendingTreeSet does not inherit TreeSet.
      */
     private static class TreeSetIterator<ItE> implements Iterator<ItE> {
         protected TreeSet<ItE> tree;
