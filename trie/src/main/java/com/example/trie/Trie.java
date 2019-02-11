@@ -10,11 +10,7 @@ import java.util.Map;
 
 /** A set-like structure that can store non-{@code null} {@code String}s. */
 public class Trie implements Serializable {
-    private Node root;
-
-    public Trie() {
-        root = new Node();
-    }
+    private Node root = new Node();
 
     /** Recursively serialize tree rooted in {@code node}. */
     private static void serializeTree(Node node, DataOutputStream dataOut) throws IOException {
@@ -186,12 +182,10 @@ public class Trie implements Serializable {
     }
 
     private static class Node {
-        private Hashtable<Character, Node> children;
+        private Hashtable<Character, Node> children = new Hashtable<>();
         private int subtreeSize;
         private boolean isEnd;
 
-        private Node() {
-            children = new Hashtable<>();
-        }
+        private Node() { }
     }
 }
