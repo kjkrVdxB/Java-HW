@@ -188,7 +188,7 @@ class TrieTest {
         assertEquals('a', serializedTrieInput.readChar());
         assertTrue(serializedTrieInput.readBoolean());
         assertEquals(0, serializedTrieInput.readInt());
-        assertThrows(EOFException.class, () -> serializedTrieInput.readByte());
+        assertEquals(-1, serializedTrieInput.read());
 
         assertThrows(IllegalArgumentException.class, () -> this.testTrie.serialize(null));
     }
