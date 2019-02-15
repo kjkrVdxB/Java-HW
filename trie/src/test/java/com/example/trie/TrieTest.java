@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -150,33 +153,90 @@ class TrieTest {
     }
 
     @Test
-    void testSerializeDeserialize() {
-        testTrie.add("aaa");
+    void testSerialize() throws IOException {
+        testTrie.add("ca");
         testTrie.add("aab");
-        testTrie.add("caa");
-        testTrie.add("c");
         testTrie.add("");
+        testTrie.add("aaa");
+        testTrie.add("c");
 
-        var dummyOutputStream = new ByteArrayOutputStream(100);
+        var serializedTrieOutput = new ByteArrayOutputStream(100);
 
-        assertDoesNotThrow(() -> testTrie.serialize(dummyOutputStream));
+        testTrie.serialize(serializedTrieOutput);
 
-        var dummyInputStream = new ByteArrayInputStream(dummyOutputStream.toByteArray());
+        assertEquals(47, serializedTrieOutput.size());
 
-        var deserializedTrie = new Trie();
-        assertDoesNotThrow(() -> deserializedTrie.deserialize(dummyInputStream));
+        var serializedTrieInput = new DataInputStream(new ByteArrayInputStream(serializedTrieOutput.toByteArray()));
 
-        assertEquals(5, deserializedTrie.size());
-        assertTrue(deserializedTrie.contains("aaa"));
-        assertTrue(deserializedTrie.contains("aab"));
-        assertTrue(deserializedTrie.contains("caa"));
-        assertTrue(deserializedTrie.contains("c"));
-        assertTrue(deserializedTrie.contains(""));
-        assertEquals(2, deserializedTrie.howManyStartWithPrefix("a"));
-        assertEquals(2, deserializedTrie.howManyStartWithPrefix("c"));
-        assertEquals(1, deserializedTrie.howManyStartWithPrefix("ca"));
+        assertTrue(serializedTrieInput.readBoolean());
+        assertEquals(2, serializedTrieInput.readInt());
+        assertEquals('a', serializedTrieInput.readChar());
+        assertFalse(serializedTrieInput.readBoolean());
+        assertEquals(1, serializedTrieInput.readInt());
+        assertEquals('a', serializedTrieInput.readChar());
+        assertFalse(serializedTrieInput.readBoolean());
+        assertEquals(2, serializedTrieInput.readInt());
+        assertEquals('a', serializedTrieInput.readChar());
+        assertTrue(serializedTrieInput.readBoolean());
+        assertEquals(0, serializedTrieInput.readInt());
+        assertEquals('b', serializedTrieInput.readChar());
+        assertTrue(serializedTrieInput.readBoolean());
+        assertEquals(0, serializedTrieInput.readInt());
+        assertEquals('c', serializedTrieInput.readChar());
+        assertTrue(serializedTrieInput.readBoolean());
+        assertEquals(1, serializedTrieInput.readInt());
+        assertEquals('a', serializedTrieInput.readChar());
+        assertTrue(serializedTrieInput.readBoolean());
+        assertEquals(0, serializedTrieInput.readInt());
+        assertThrows(EOFException.class, () -> serializedTrieInput.readByte());
 
-        assertThrows(IllegalArgumentException.class, () -> testTrie.serialize(null));
-        assertThrows(IllegalArgumentException.class, () -> testTrie.deserialize(null));
+        assertThrows(IllegalArgumentException.class, () -> this.testTrie.serialize(null));
+    }
+
+    @Test
+    void testDeserialize() throws IOException {
+        var dummyByteOutput = new ByteArrayOutputStream(100);
+        var serializedTrieOutput = new DataOutputStream(dummyByteOutput);
+
+        serializedTrieOutput.writeBoolean(true);
+        serializedTrieOutput.writeInt(2);
+        serializedTrieOutput.writeChar('a');
+        serializedTrieOutput.writeBoolean(false);
+        serializedTrieOutput.writeInt(1);
+        serializedTrieOutput.writeChar('a');
+        serializedTrieOutput.writeBoolean(false);
+        serializedTrieOutput.writeInt(2);
+        serializedTrieOutput.writeChar('a');
+        serializedTrieOutput.writeBoolean(true);
+        serializedTrieOutput.writeInt(0);
+        serializedTrieOutput.writeChar('b');
+        serializedTrieOutput.writeBoolean(true);
+        serializedTrieOutput.writeInt(0);
+        serializedTrieOutput.writeChar('c');
+        serializedTrieOutput.writeBoolean(true);
+        serializedTrieOutput.writeInt(1);
+        serializedTrieOutput.writeChar('a');
+        serializedTrieOutput.writeBoolean(true);
+        serializedTrieOutput.writeInt(0);
+
+        assertEquals(47, serializedTrieOutput.size());
+
+        var dummyByteInput = new ByteArrayInputStream(dummyByteOutput.toByteArray());
+
+        testTrie.deserialize(dummyByteInput);
+
+        assertEquals(-1, dummyByteInput.read());
+
+        assertEquals(5, testTrie.size());
+        assertTrue(testTrie.contains("aaa"));
+        assertTrue(testTrie.contains("aab"));
+        assertTrue(testTrie.contains("ca"));
+        assertTrue(testTrie.contains("c"));
+        assertTrue(testTrie.contains(""));
+        assertEquals(2, testTrie.howManyStartWithPrefix("a"));
+        assertEquals(2, testTrie.howManyStartWithPrefix("c"));
+        assertEquals(1, testTrie.howManyStartWithPrefix("ca"));
+
+        assertThrows(IllegalArgumentException.class, () -> this.testTrie.deserialize(null));
     }
 }

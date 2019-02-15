@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Hashtable;
-import java.util.Map;
+import java.util.TreeMap;
 
 /** A set-like structure that can store non-{@code null} {@code String}s. */
 public class Trie implements Serializable {
@@ -14,13 +14,12 @@ public class Trie implements Serializable {
 
     /** Recursively serialize tree rooted in {@code node}. */
     private static void serializeTree(Node node, DataOutputStream dataOut) throws IOException {
+        dataOut.writeBoolean(node.isEnd);
         dataOut.writeInt(node.children.size());
-        for (Map.Entry<Character, Node> entry : node.children.entrySet()) {
+        for (var entry : new TreeMap<>(node.children).entrySet()) {
             dataOut.writeChar(entry.getKey());
             serializeTree(entry.getValue(), dataOut);
         }
-
-        dataOut.writeBoolean(node.isEnd);
     }
 
     /** Recursively deserialize tree and return it's root. */
@@ -28,17 +27,17 @@ public class Trie implements Serializable {
         var node = new Node();
         int subtreeSize = 0;
 
+        node.isEnd = dataInput.readBoolean();
+        if (node.isEnd) {
+            subtreeSize += 1;
+        }
+
         int numKeys = dataInput.readInt();
         for (int i = 0; i < numKeys; ++i) {
             char key = dataInput.readChar();
             var child = deserializeTree(dataInput);
             node.children.put(key, child);
             subtreeSize += child.subtreeSize;
-        }
-
-        node.isEnd = dataInput.readBoolean();
-        if (node.isEnd) {
-            subtreeSize += 1;
         }
 
         node.subtreeSize = subtreeSize;
@@ -182,9 +181,9 @@ public class Trie implements Serializable {
     }
 
     private static class Node {
-        private Hashtable<Character, Node> children = new Hashtable<>();
         private int subtreeSize;
         private boolean isEnd;
+        private Hashtable<Character, Node> children = new Hashtable<>();
 
         private Node() { }
     }
