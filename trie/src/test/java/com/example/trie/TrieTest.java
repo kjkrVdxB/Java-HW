@@ -23,26 +23,42 @@ class TrieTest {
     }
 
     @Test
-    void testAddContains() {
-        assertFalse(testTrie.contains(""));
+    void testAdd() {
+        assertTrue(testTrie.add(""));
         assertFalse(testTrie.add(""));
+
+        assertTrue(testTrie.add("aaa"));
+        assertFalse(testTrie.add("aaa"));
+
+        assertTrue(testTrie.add("aab"));
+        assertFalse(testTrie.add("aab"));
+
+        assertTrue(testTrie.add("aa"));
+        assertFalse(testTrie.add("aa"));
+
+        assertThrows(IllegalArgumentException.class, () -> testTrie.add(null));
+    }
+
+    @Test
+    void testContains() {
+        assertFalse(testTrie.contains(""));
+        testTrie.add("");
         assertTrue(testTrie.contains(""));
 
         assertFalse(testTrie.contains("aaa"));
-        assertFalse(testTrie.add("aaa"));
+        testTrie.add("aaa");
         assertTrue(testTrie.contains("aaa"));
         assertFalse(testTrie.contains("aa"));
         assertFalse(testTrie.contains("aaaa"));
 
         assertFalse(testTrie.contains("aab"));
-        assertFalse(testTrie.add("aab"));
+        testTrie.add("aab");
         assertTrue(testTrie.contains("aab"));
 
         assertFalse(testTrie.contains("aa"));
-        assertFalse(testTrie.add("aa"));
+        testTrie.add("aa");
         assertTrue(testTrie.contains("aa"));
 
-        assertThrows(IllegalArgumentException.class, () -> testTrie.add(null));
         assertThrows(IllegalArgumentException.class, () -> testTrie.contains(null));
     }
 

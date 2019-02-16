@@ -84,7 +84,7 @@ public class Trie implements Serializable {
             }
             current.subtreeSize += 1;
         }
-        return wasBefore;
+        return !wasBefore;
     }
 
     /**
