@@ -329,6 +329,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             this.element = element;
         }
 
+        /** Replace the parent's child corresponding to this node with {@code newNode} */
         private void replaceInParent(Node<NodeE> newNode) {
             if (parent != null) {
                 if (this == parent.leftChild) {
@@ -362,18 +363,21 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             previousNode = null;
         }
 
+        /** Check whether the set was modified by something other that this iterator */
         protected void checkConcurrentAccess() {
             if (tree.modificationCount != acceptedModificationCount) {
                 throw new ConcurrentModificationException("TreeSet was modified");
             }
         }
 
+        /** {@inheritDoc} */
         @Override
         public boolean hasNext() {
             checkConcurrentAccess();
             return nextNode != null;
         }
 
+        /** {@inheritDoc} */
         @Override
         public ItE next() {
             if (!hasNext()) {
@@ -393,11 +397,12 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return nextElement;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void remove() {
             if (previousNode == null) {
                 throw new IllegalStateException("remove() already called after last call " +
-                                                "to next() or no call to next() was made");
+                        "to next() or no call to next() was made");
             }
             checkConcurrentAccess();
             tree.remove(previousNode.element);
@@ -408,6 +413,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     /**
      * A class representing descending version of a set.
+     *
      * @implNote This class does not inherit TreeSet, but rather has it as a member. This is
      * because we want a wrapper around existing TreeSet object that can coexist with it.
      */
@@ -503,6 +509,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 previousNode = null;
             }
 
+            /** {@inheritDoc} */
             @Override
             public ItE next() {
                 if (!hasNext()) {
