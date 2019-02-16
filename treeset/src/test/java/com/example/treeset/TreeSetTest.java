@@ -26,7 +26,21 @@ class TreeSetTest {
     }
 
     @Test
-    void testAddContains() {
+    void testAdd() {
+        assertFalse(testSet.add(2));
+        assertFalse(testSet.add(8));
+
+        assertTrue(testSet.add(10));
+        assertFalse(testSet.add(10));
+
+        assertTrue(testSet.add(3));
+        assertFalse(testSet.add(3));
+
+        assertThrows(IllegalArgumentException.class, () -> testSet.add(null));
+    }
+
+    @Test
+    void testContains() {
         assertFalse(testSet.contains(9));
         assertFalse(testSet.contains(7));
         assertFalse(testSet.contains(5));
@@ -39,13 +53,12 @@ class TreeSetTest {
         assertTrue(testSet.contains(6));
         assertTrue(testSet.contains(8));
 
-        assertFalse(testSet.add(2));
-        assertFalse(testSet.add(8));
+        testSet.add(3);
+        testSet.add(7);
 
-        assertTrue(testSet.add(10));
-        assertTrue(testSet.add(3));
+        assertTrue(testSet.contains(3));
+        assertTrue(testSet.contains(7));
 
-        assertThrows(IllegalArgumentException.class, () -> testSet.add(null));
         assertThrows(IllegalArgumentException.class, () -> testSet.contains(null));
     }
 
