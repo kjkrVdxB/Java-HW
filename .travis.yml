@@ -1,0 +1,6 @@
+language: java
+jdk: openjdk11
+env:
+    - PROJECT_DIR=treeset
+before_install:
+    - cd "$PROJECT_DIR"
