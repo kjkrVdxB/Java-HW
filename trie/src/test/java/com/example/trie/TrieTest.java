@@ -205,7 +205,7 @@ class TrieTest {
         assertEquals(0, serializedTrieInput.readInt());
         assertEquals(-1, serializedTrieInput.read());
 
-        assertThrows(IllegalArgumentException.class, () -> this.testTrie.serialize(null));
+        assertThrows(IllegalArgumentException.class, () -> testTrie.serialize(null));
     }
 
     @Test
@@ -252,6 +252,6 @@ class TrieTest {
         assertEquals(2, testTrie.howManyStartWithPrefix("c"));
         assertEquals(1, testTrie.howManyStartWithPrefix("ca"));
 
-        assertThrows(IllegalArgumentException.class, () -> this.testTrie.deserialize(null));
+        assertThrows(IllegalArgumentException.class, () -> testTrie.deserialize(null));
     }
 }
