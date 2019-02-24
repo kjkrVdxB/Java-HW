@@ -1,5 +1,6 @@
 package com.example.phonebook;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,10 +17,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class PhoneBookTest {
     private PhoneBook phonebook;
     private Connection connection;
+    private File tmpFile;
 
     @BeforeEach
     public void init() throws IOException, PhoneBookStorageException, SQLException {
-        var tmpFile = File.createTempFile("phone_book_test", ".db");
+        tmpFile = File.createTempFile("phone_book_test", ".db");
         phonebook = new PhoneBook(tmpFile.getAbsolutePath());
         connection = DriverManager.getConnection("jdbc:sqlite:" + tmpFile.getAbsolutePath());
 
@@ -27,6 +29,13 @@ class PhoneBookTest {
         phonebook.addEntry("aaa", "111");
         phonebook.addEntry("bbb", "000");
         phonebook.addEntry("aaa", "000");
+    }
+
+    @AfterEach
+    public void finish() throws PhoneBookStorageException, SQLException {
+        phonebook.close();
+        connection.close();
+        assertTrue(tmpFile.delete());
     }
 
     @Test
