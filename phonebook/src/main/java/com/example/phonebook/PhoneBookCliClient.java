@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.sql.SQLException;
 
 public class PhoneBookCliClient {
     private static final String HELP_STRING = "Enter one of the following numbers:\n" +
@@ -20,12 +19,12 @@ public class PhoneBookCliClient {
                                               "8 - delete all entries\n" +
                                               "and then fill in the requested fields\n";
 
-    public static void main(String[] args) throws SQLException, IOException {
+    public static void main(String[] args) throws IOException {
         String dbPath = args.length == 0 ? ":memory:" : args[0];
         runCli(System.in, System.out, dbPath);
     }
 
-    public static void runCli(InputStream in, PrintStream out, String dbPath) throws SQLException, IOException {
+    public static void runCli(InputStream in, PrintStream out, String dbPath) throws IOException {
         var inputReader = new BufferedReader(new InputStreamReader(in));
         try (var phoneBook = new PhoneBook(dbPath)) {
             out.println("Phone book CLI client. Try 'help' for a list of supported commands.");
@@ -96,6 +95,8 @@ public class PhoneBookCliClient {
                     phoneBook.deleteAllEntries();
                 }
             }
+        } catch (PhoneBookStorageException exception) {
+            exception.printStackTrace();
         }
     }
 
