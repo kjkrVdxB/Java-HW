@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"com.example.phonebook","l":"PhoneBook.Entry"},{"p":"com.example.phonebook","l":"PhoneBook"},{"p":"com.example.phonebook","l":"PhoneBookCliClient"},{"p":"com.example.phonebook","l":"PhoneBookStorageException"}]
