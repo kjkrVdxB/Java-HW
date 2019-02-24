@@ -16,12 +16,21 @@ public class PhoneBook implements AutoCloseable {
      * SQLite-jdbc library accepts in connection string after 'jdbc:sqlite:', for example ':memory:'.
      */
     public PhoneBook(String dbPath) throws PhoneBookStorageException {
-        try (var connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath)) {
-            dbConnection = connection;
-            dbConnection.setAutoCommit(false);
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+            connection.setAutoCommit(false);
         } catch (SQLException exception) {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException closingException) {
+                    exception.addSuppressed(closingException);
+                }
+            }
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
         }
+        dbConnection = connection;
         try (var create = dbConnection.createStatement()) {
             create.executeUpdate("create table if not exists Person " +
                                  "(Id integer primary key asc, Name text unique not null)");
