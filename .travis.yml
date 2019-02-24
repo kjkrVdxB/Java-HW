@@ -4,3 +4,7 @@ env:
     - PROJECT_DIR=hashtable
 before_install:
     - cd "$PROJECT_DIR"
+script:
+    - ./gradlew check && ./gradlew javadoc
+after_success:
+    - cd .. && bash .travis/deploy_to_pages.sh
