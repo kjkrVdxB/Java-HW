@@ -14,6 +14,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PhoneBookCliClientTest {
 
     @Test
+    void testHelpMessage() {
+        testCli("Phone book CLI client. Try 'help' for a list of supported commands.\n" +
+                "Enter one of the following numbers:\n" +
+                "0 - exit\n" +
+                "1 - add record\n" +
+                "2 - list numbers by name\n" +
+                "3 - list names by number\n" +
+                "4 - delete an entry by name and number\n" +
+                "5 - update name in the entry specified by current name and number\n" +
+                "6 - update number in the entry specified by current name and number\n" +
+                "7 - list all entries\n" +
+                "8 - delete all entries\n" +
+                "and then fill in the requested fields\n", "help\n0\n");
+    }
+
+    @Test
     void testSmallSession() {
         var input = "1\n" +
                     "Dave\n" +

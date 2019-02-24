@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PhoneBook implements AutoCloseable {
     private final Connection dbConnection;
@@ -297,6 +298,25 @@ public class PhoneBook implements AutoCloseable {
 
         public String getNumber() {
             return number;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj.getClass() == Entry.class) {
+                Entry other = (Entry) obj;
+                return name.equals(other.name) && number.equals(other.number);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, number);
+        }
+
+        @Override
+        public String toString() {
+            return "Entry{name: " + name + ", number: " + number + "}";
         }
     }
 }
