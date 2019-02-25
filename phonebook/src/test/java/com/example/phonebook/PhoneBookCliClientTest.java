@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PhoneBookCliClientTest {
 
     @Test
-    void testHelpMessage() {
+    void testMessages() {
         testCli("Phone book CLI client. Try 'help' for a list of supported commands.\n" +
                 "Enter one of the following numbers:\n" +
                 "0 - exit\n" +
@@ -26,7 +26,9 @@ class PhoneBookCliClientTest {
                 "6 - update number in the entry specified by current name and number\n" +
                 "7 - list all entries\n" +
                 "8 - delete all entries\n" +
-                "and then fill in the requested fields\n", "help\n0\n");
+                "and then fill in the requested fields\n" +
+                "Number from range [0;8] or 'help' expected, got 'aaa'. Try again.\n" +
+                "Number from range [0;8] or 'help' expected, got '9'. Try again.\n", "help\naaa\n9\n0\n");
     }
 
     @Test
@@ -43,6 +45,21 @@ class PhoneBookCliClientTest {
                     "Dave\n" +
                     "0000\n" +
                     "7\n" +
+                    "1\n" +
+                    "John\n" +
+                    "0001\n" +
+                    "5\n" +
+                    "John\n" +
+                    "0001\n" +
+                    "Dave\n" +
+                    "7\n" +
+                    "6\n" +
+                    "Dave\n" +
+                    "0001\n" +
+                    "0002\n" +
+                    "7\n" +
+                    "8\n" +
+                    "7\n" +
                     "0\n";
         var expectedOutput = "Phone book CLI client. Try 'help' for a list of supported commands.\n" +
                              "Name: " +
@@ -53,7 +70,17 @@ class PhoneBookCliClientTest {
                              "0000\n" +
                              "Dave: 0000\n" +
                              "Name: " +
-                             "Number: ";
+                             "Number: " +
+                             "Name: " +
+                             "Number: " +
+                             "Current name: " +
+                             "Current number: " +
+                             "New name: " +
+                             "Dave: 0001\n" +
+                             "Current name: " +
+                             "Current number: " +
+                             "New number: " +
+                             "Dave: 0002\n";
         testCli(expectedOutput, input);
     }
 
