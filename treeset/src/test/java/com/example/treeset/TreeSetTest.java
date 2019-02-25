@@ -13,66 +13,66 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TreeSetTest {
-    NavigableSet<Integer> testSet;
+    NavigableSet<String> testSet;
 
     @BeforeEach
     void init() {
         testSet = new TreeSet<>();
-        testSet.add(2);
-        testSet.add(6);
-        testSet.add(0);
-        testSet.add(4);
-        testSet.add(8);
+        testSet.add("2");
+        testSet.add("6");
+        testSet.add("0");
+        testSet.add("4");
+        testSet.add("8");
     }
 
     @Test
     void testAdd() {
-        assertFalse(testSet.add(2));
-        assertFalse(testSet.add(8));
+        assertFalse(testSet.add("2"));
+        assertFalse(testSet.add("8"));
 
-        assertTrue(testSet.add(10));
-        assertFalse(testSet.add(10));
+        assertTrue(testSet.add("9"));
+        assertFalse(testSet.add("9"));
 
-        assertTrue(testSet.add(3));
-        assertFalse(testSet.add(3));
+        assertTrue(testSet.add("3"));
+        assertFalse(testSet.add("3"));
 
-        assertThrows(IllegalArgumentException.class, () -> testSet.add(null));
+        assertThrows(NullPointerException.class, () -> testSet.add(null));
     }
 
     @Test
     void testContains() {
-        assertFalse(testSet.contains(9));
-        assertFalse(testSet.contains(7));
-        assertFalse(testSet.contains(5));
-        assertFalse(testSet.contains(3));
-        assertFalse(testSet.contains(1));
-        assertFalse(testSet.contains(-1));
-        assertTrue(testSet.contains(0));
-        assertTrue(testSet.contains(2));
-        assertTrue(testSet.contains(4));
-        assertTrue(testSet.contains(6));
-        assertTrue(testSet.contains(8));
+        assertFalse(testSet.contains("9"));
+        assertFalse(testSet.contains("7"));
+        assertFalse(testSet.contains("5"));
+        assertFalse(testSet.contains("3"));
+        assertFalse(testSet.contains("1"));
+        assertFalse(testSet.contains("("));
+        assertTrue(testSet.contains("0"));
+        assertTrue(testSet.contains("2"));
+        assertTrue(testSet.contains("4"));
+        assertTrue(testSet.contains("6"));
+        assertTrue(testSet.contains("8"));
 
-        testSet.add(3);
-        testSet.add(7);
+        testSet.add("3");
+        testSet.add("7");
 
-        assertTrue(testSet.contains(3));
-        assertTrue(testSet.contains(7));
+        assertTrue(testSet.contains("3"));
+        assertTrue(testSet.contains("7"));
 
-        assertThrows(IllegalArgumentException.class, () -> testSet.contains(null));
+        assertThrows(NullPointerException.class, () -> testSet.contains(null));
     }
 
 
     @Test
     void testComparator() {
-        var singletonTestSet = new TreeSet<Integer>((a, b) -> 0);
-        assertTrue(singletonTestSet.add(1));
-        assertFalse(singletonTestSet.add(0));
-        assertTrue(singletonTestSet.contains(2));
-        assertNull(singletonTestSet.lower(2));
-        assertNull(singletonTestSet.higher(0));
-        assertEquals(1, (int) singletonTestSet.floor(0));
-        assertEquals(1, (int) singletonTestSet.ceiling(2));
+        var singletonTestSet = new TreeSet<String>((a, b) -> 0);
+        assertTrue(singletonTestSet.add("1"));
+        assertFalse(singletonTestSet.add("0"));
+        assertTrue(singletonTestSet.contains("2"));
+        assertNull(singletonTestSet.lower("2"));
+        assertNull(singletonTestSet.higher("0"));
+        assertEquals("1", singletonTestSet.floor("0"));
+        assertEquals("1", singletonTestSet.ceiling("2"));
 
         var stringTestSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         stringTestSet.add("aB");
@@ -82,90 +82,94 @@ class TreeSetTest {
 
     @Test
     void testRemove() {
-        assertFalse(testSet.remove(7));
-        assertFalse(testSet.remove(1));
+        assertFalse(testSet.remove("7"));
+        assertFalse(testSet.remove("1"));
 
         assertEquals(5, testSet.size());
 
-        assertTrue(testSet.remove(2));
+        assertTrue(testSet.remove("2"));
 
-        assertFalse(testSet.contains(2));
-        assertTrue(testSet.contains(4));
+        assertFalse(testSet.contains("2"));
+        assertTrue(testSet.contains("4"));
         assertEquals(4, testSet.size());
 
-        assertTrue(testSet.remove(0));
+        assertTrue(testSet.remove("0"));
 
-        assertFalse(testSet.contains(0));
-        assertTrue(testSet.contains(4));
+        assertFalse(testSet.contains("0"));
+        assertTrue(testSet.contains("4"));
         assertEquals(3, testSet.size());
 
-        assertTrue(testSet.remove(8));
+        assertTrue(testSet.remove("8"));
 
-        assertFalse(testSet.contains(8));
-        assertTrue(testSet.contains(4));
+        assertFalse(testSet.contains("8"));
+        assertTrue(testSet.contains("4"));
         assertEquals(2, testSet.size());
 
-        assertTrue(testSet.remove(6));
+        assertTrue(testSet.remove("6"));
 
-        assertFalse(testSet.contains(6));
-        assertTrue(testSet.contains(4));
+        assertFalse(testSet.contains("6"));
+        assertTrue(testSet.contains("4"));
         assertEquals(1, testSet.size());
 
-        testSet.add(0);
-        assertTrue(testSet.remove(4));
+        testSet.add("0");
+        assertTrue(testSet.remove("4"));
 
-        assertFalse(testSet.contains(4));
-        assertTrue(testSet.contains(0));
+        assertFalse(testSet.contains("4"));
+        assertTrue(testSet.contains("0"));
         assertEquals(1, testSet.size());
 
-        assertThrows(IllegalArgumentException.class, () -> testSet.remove(null));
+        assertThrows(NullPointerException.class, () -> testSet.remove(null));
     }
 
     @Test
     void testSize() {
         assertEquals(5, testSet.size());
 
-        testSet.add(10);
+        testSet.add("10");
 
         assertEquals(6, testSet.size());
 
-        testSet.remove(6);
-        testSet.remove(2);
+        testSet.remove("6");
+        testSet.remove("2");
 
         assertEquals(4, testSet.size());
     }
 
     @Test
     void testLower() {
-        assertEquals(6, (int) testSet.lower(7));
-        assertEquals(6, (int) testSet.lower(8));
-        assertNull(testSet.lower(0));
+        assertEquals("6", testSet.lower("7"));
+        assertEquals("6", testSet.lower("8"));
+        assertNull(testSet.lower("0"));
+        assertThrows(NullPointerException.class, () -> testSet.lower(null));
     }
 
     @Test
     void testFloor() {
-        assertEquals(6, (int) testSet.floor(6));
-        assertEquals(6, (int) testSet.floor(7));
-        assertNull(testSet.floor(-1));
+        assertEquals("6", testSet.floor("6"));
+        assertEquals("6", testSet.floor("7"));
+        assertNull(testSet.floor("("));
+        assertThrows(NullPointerException.class, () -> testSet.floor(null));
     }
 
     @Test
     void testCeiling() {
-        assertEquals(6, (int) testSet.ceiling(6));
-        assertEquals(6, (int) testSet.ceiling(5));
-        assertNull(testSet.ceiling(9));
+        assertEquals("6", testSet.ceiling("6"));
+        assertEquals("6", testSet.ceiling("5"));
+        assertNull(testSet.ceiling("9"));
+        assertThrows(NullPointerException.class, () -> testSet.ceiling(null));
     }
 
     @Test
     void testHigher() {
-        assertEquals(6, (int) testSet.higher(4));
-        assertEquals(6, (int) testSet.higher(5));
-        assertNull(testSet.higher(8));
+        assertEquals("6", testSet.higher("4"));
+        assertEquals("6", testSet.higher("5"));
+        assertNull(testSet.higher("8"));
+        assertThrows(NullPointerException.class, () -> testSet.higher(null));
     }
 
     @Test
     void testFirst() {
-        assertEquals(0, (int) testSet.first());
+        assertEquals("0", testSet.first());
 
         var emptySet = new TreeSet<Integer>();
         assertThrows(NoSuchElementException.class, () -> emptySet.first());
@@ -173,7 +177,7 @@ class TreeSetTest {
 
     @Test
     void testLast() {
-        assertEquals(8, (int) testSet.last());
+        assertEquals("8", testSet.last());
 
         var emptySet = new TreeSet<Integer>();
         assertThrows(NoSuchElementException.class, () -> emptySet.last());
@@ -183,50 +187,50 @@ class TreeSetTest {
     void testDescendingSet() {
         var descendingTestSet = testSet.descendingSet();
 
-        assertEquals(4, (int) descendingTestSet.higher(6));
-        assertEquals(2, (int) descendingTestSet.lower(0));
-        assertEquals(6, (int) descendingTestSet.floor(6));
-        assertEquals(6, (int) descendingTestSet.floor(5));
-        assertEquals(6, (int) descendingTestSet.ceiling(6));
-        assertEquals(4, (int) descendingTestSet.ceiling(5));
-        assertNull(descendingTestSet.lower(8));
+        assertEquals("4", descendingTestSet.higher("6"));
+        assertEquals("2", descendingTestSet.lower("0"));
+        assertEquals("6", descendingTestSet.floor("6"));
+        assertEquals("6", descendingTestSet.floor("5"));
+        assertEquals("6", descendingTestSet.ceiling("6"));
+        assertEquals("4", descendingTestSet.ceiling("5"));
+        assertNull(descendingTestSet.lower("8"));
 
         assertEquals(5, descendingTestSet.size());
 
-        testSet.add(5);
+        testSet.add("5");
         assertEquals(6, descendingTestSet.size());
-        assertTrue(descendingTestSet.contains(5));
+        assertTrue(descendingTestSet.contains("5"));
 
-        descendingTestSet.add(3);
-        descendingTestSet.add(11);
+        descendingTestSet.add("3");
+        descendingTestSet.add("a");
 
         assertEquals(8, testSet.size());
-        assertTrue(testSet.contains(3));
-        assertTrue(testSet.contains(11));
+        assertTrue(testSet.contains("3"));
+        assertTrue(testSet.contains("a"));
 
-        assertEquals(11, (int) descendingTestSet.first());
-        assertEquals(0, (int) descendingTestSet.last());
+        assertEquals("a", descendingTestSet.first());
+        assertEquals("0", descendingTestSet.last());
     }
 
     @Test
     void testIterator() {
-        testSet.add(-1);
-        testSet.add(1);
-        int[] expectedContent = {-1, 0, 1, 2, 4, 6, 8};
+        testSet.add("(");
+        testSet.add("1");
+        String[] expectedContent = {"(", "0", "1", "2", "4", "6", "8"};
         var it = testSet.iterator();
-        for (int a : expectedContent) {
-            if (a == -1) {
+        for (String a : expectedContent) {
+            if (a.equals("(")) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
 
             assertTrue(it.hasNext());
-            assertEquals(a, (int) it.next());
+            assertEquals(a, it.next());
 
-            if (a == 2 || a == 0) {
+            if (a.equals("2") || a.equals("0")) {
                 it.remove();
             }
 
-            if (a == 2) {
+            if (a.equals("2")) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
         }
@@ -234,8 +238,8 @@ class TreeSetTest {
         assertThrows(NoSuchElementException.class, () -> it.next());
 
         assertEquals(5, testSet.size());
-        assertFalse(testSet.contains(2));
-        assertFalse(testSet.contains(0));
+        assertFalse(testSet.contains("2"));
+        assertFalse(testSet.contains("0"));
 
         testSet = new TreeSet<>();
         assertFalse(testSet.iterator().hasNext());
@@ -243,33 +247,32 @@ class TreeSetTest {
 
     @Test
     void testDescendingIterator() {
-        testSet.add(-1);
-        testSet.add(1);
-        int[] expectedContent = {8, 6, 4, 2, 1, 0, -1};
+        testSet.add("(");
+        testSet.add("1");
+        String[] expectedContent = {"8", "6", "4", "2", "1", "0", "("};
         var it = testSet.descendingIterator();
-        for (int a : expectedContent) {
-            if (a == 8) {
+        for (String a : expectedContent) {
+            if (a.equals("8")) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
 
             assertTrue(it.hasNext());
-            assertEquals(a, (int) it.next());
+            assertEquals(a, it.next());
 
-            if (a == 2 || a == 0) {
+            if (a.equals("2") || a.equals("0")) {
                 it.remove();
             }
 
-            if (a == 2) {
+            if (a.equals("2")) {
                 assertThrows(IllegalStateException.class, () -> it.remove());
             }
-
         }
         assertFalse(it.hasNext());
         assertThrows(NoSuchElementException.class, () -> it.next());
 
         assertEquals(5, testSet.size());
-        assertFalse(testSet.contains(2));
-        assertFalse(testSet.contains(0));
+        assertFalse(testSet.contains("2"));
+        assertFalse(testSet.contains("0"));
 
         testSet = new TreeSet<>();
         assertFalse(testSet.descendingIterator().hasNext());
@@ -280,7 +283,7 @@ class TreeSetTest {
         var it1 = testSet.iterator();
         var it2 = testSet.iterator();
 
-        testSet.add(1);
+        testSet.add("1");
 
         assertThrows(ConcurrentModificationException.class, () -> it1.next());
         assertThrows(ConcurrentModificationException.class, () -> {
@@ -291,12 +294,12 @@ class TreeSetTest {
 
         var it3 = testSet.descendingIterator();
 
-        testSet.remove(3);
+        testSet.remove("3");
 
         assertTrue(it3.hasNext());
         it3.next();
 
-        testSet.remove(2);
+        testSet.remove("2");
 
         assertThrows(ConcurrentModificationException.class, () -> it3.next());
     }

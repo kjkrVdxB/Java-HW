@@ -17,6 +17,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private int size = 0;
     private Node<E> root = null;
 
+    private final String NULL_ARGUMENT_EXCEPTION_MESSAGE = "null elements are prohibited when natural ordering is used";
+
     /** Create new TreeSet with natural ordering. */
     public TreeSet() {
         comparator = null;
@@ -32,8 +34,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     /** Compare using comparator if there is one, or using natural ordering otherwise. */
     @SuppressWarnings("unchecked")
-    private int compare(Object a, Object b) {
-        return comparator == null ? ((Comparable<? super E>) a).compareTo((E) b) : comparator.compare((E) a, (E) b);
+    private int compare(Object a, E b) {
+        return comparator == null ? ((Comparable<? super E>) a).compareTo(b) : comparator.compare((E) a, b);
     }
 
     /** {@inheritDoc} */
@@ -53,11 +55,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param e element to add
      * @return whether the element was added, that is it was not preset in the set before
+     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws NullPointerException if the specified element is {@code null} and this set uses natural ordering,
+     * or its comparator does not permit {@code null} elements
      */
     @Override
     public boolean add(E e) {
-        if (e == null) {
-            throw new IllegalArgumentException("null elements are prohibited");
+        if (e == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
         }
         if (root == null) {
             root = new Node<>(null, e);
@@ -113,12 +118,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param o element whose presence in this set is to be tested
      * @return true if this set contains the specified element
-     * @throws IllegalArgumentException if the specified element is {@code null}
+     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws NullPointerException if the specified element is {@code null} and this set uses natural ordering,
+     * or its comparator does not permit {@code null} elements
      */
     @Override
     public boolean contains(Object o) {
-        if (o == null) {
-            throw new IllegalArgumentException("null elements are prohibited");
+        if (o == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
         }
         var current = root;
         while (current != null) {
@@ -137,6 +144,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public E lower(E e) {
+        if (e == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+        }
         var current = root;
         E lower = null;
         while (current != null) {
@@ -156,6 +166,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public E floor(E e) {
+        if (e == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+        }
         var current = root;
         E floor = null;
         while (current != null) {
@@ -177,6 +190,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public E ceiling(E e) {
+        if (e == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+        }
         var current = root;
         E ceiling = null;
         while (current != null) {
@@ -198,6 +214,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public E higher(E e) {
+        if (e == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+        }
         var current = root;
         E higher = null;
         while (current != null) {
@@ -297,12 +316,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param o element to be removed from this set, if present
      * @return true if an element was removed as a result of this call
-     * @throws IllegalArgumentException if the element specified is {@code null}
+     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws NullPointerException if the specified element is null and this set uses natural ordering,
+     * or its comparator does not permit null elements
      */
     @Override
     public boolean remove(Object o) {
-        if (o == null) {
-            throw new IllegalArgumentException("null elements are prohibited");
+        if (o == null && comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
         }
         return removeInSubtree(o, root);
     }
