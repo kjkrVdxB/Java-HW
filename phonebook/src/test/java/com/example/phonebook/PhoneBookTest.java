@@ -10,9 +10,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+
 import com.example.phonebook.PhoneBook.Entry;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PhoneBookTest {
     private PhoneBook phonebook;
@@ -39,7 +43,29 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testAddEntry() throws PhoneBookStorageException {
+    public void testAddEntry() throws SQLException {
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("aaa", "111"),
+                            new Entry("bbb", "000"),
+                            new Entry("ddd", "aaa")),
+                    List.of("000", "111", "aaa"));
+    }
+
+    @Test
+    public void testAddEntryDuplicates() throws PhoneBookStorageException, SQLException {
+        phonebook.addEntry("ddd", "aaa");
+        phonebook.addEntry("aaa", "000");
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("aaa", "111"),
+                            new Entry("bbb", "000"),
+                            new Entry("ddd", "aaa")),
+                    List.of("000", "111", "aaa"));
+    }
+
+    @Test
+    public void testGetEntries() throws PhoneBookStorageException {
         assertEquals(List.of(new Entry("aaa", "000"),
                              new Entry("aaa", "111"),
                              new Entry("bbb", "000"),
@@ -63,55 +89,67 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testDeleteEntry() throws PhoneBookStorageException {
+    public void testDeleteEntry() throws PhoneBookStorageException, SQLException {
         phonebook.deleteEntry("ddd", "aaa");
         phonebook.deleteEntry("aaa", "000");
-        assertEquals(List.of(new Entry("aaa", "111"),
-                             new Entry("bbb", "000")), phonebook.getEntries());
+        checkTables(List.of("aaa", "bbb"),
+                    List.of(new Entry("aaa", "111"),
+                            new Entry("bbb", "000")),
+                    List.of("000", "111"));
     }
 
     @Test
-    public void testUpdateName() throws PhoneBookStorageException {
+    public void testUpdateName() throws PhoneBookStorageException, SQLException {
         phonebook.updateName("aaa", "111", "bbb");
         phonebook.updateName("ddd", "aaa", "kkk");
         phonebook.updateName("aba", "000", "cab");
-        assertEquals(List.of(new Entry("aaa", "000"),
-                             new Entry("bbb", "000"),
-                             new Entry("bbb", "111"),
-                             new Entry("kkk", "aaa")), phonebook.getEntries());
+        checkTables(List.of("aaa", "bbb", "kkk"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("bbb", "000"),
+                            new Entry("bbb", "111"),
+                            new Entry("kkk", "aaa")),
+                    List.of("000", "111", "aaa"));
     }
 
     @Test
-    public void testUpdateNameMerge() throws PhoneBookStorageException {
+    public void testUpdateNameMerge() throws PhoneBookStorageException, SQLException {
         phonebook.updateName("aaa", "000", "bbb");
-        assertEquals(List.of(new Entry("aaa", "111"),
-                             new Entry("bbb", "000"),
-                             new Entry("ddd", "aaa")), phonebook.getEntries());
+        phonebook.updateName("aaa", "111", "bbb");
+        checkTables(List.of("bbb", "ddd"),
+                    List.of(new Entry("bbb", "000"),
+                            new Entry("bbb", "111"),
+                            new Entry("ddd", "aaa")),
+                    List.of("000", "111", "aaa"));
     }
 
     @Test
-    public void testUpdateNumber() throws PhoneBookStorageException {
+    public void testUpdateNumber() throws PhoneBookStorageException, SQLException {
         phonebook.updateNumber("aaa", "111", "222");
         phonebook.updateNumber("ddd", "aaa", "222");
         phonebook.updateNumber("aba", "000", "010");
-        assertEquals(List.of(new Entry("aaa", "000"),
-                             new Entry("aaa", "222"),
-                             new Entry("bbb", "000"),
-                             new Entry("ddd", "222")), phonebook.getEntries());
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("aaa", "222"),
+                            new Entry("bbb", "000"),
+                            new Entry("ddd", "222")),
+                    List.of("000", "222"));
     }
 
     @Test
-    public void testUpdateNumberMerge() throws PhoneBookStorageException {
+    public void testUpdateNumberMerge() throws PhoneBookStorageException, SQLException {
         phonebook.updateNumber("aaa", "000", "111");
-        assertEquals(List.of(new Entry("aaa", "111"),
-                             new Entry("bbb", "000"),
-                             new Entry("ddd", "aaa")), phonebook.getEntries());
+        phonebook.updateNumber("bbb", "000", "111");
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "111"),
+                            new Entry("bbb", "111"),
+                            new Entry("ddd", "aaa")),
+                    List.of("111", "aaa"));
     }
 
     @Test
-    public void testDeleteAllEntries() throws PhoneBookStorageException {
+    public void testDeleteAllEntries() throws PhoneBookStorageException, SQLException {
         phonebook.deleteAllEntries();
-        assertEquals(List.of(), phonebook.getEntries());
+        checkTables(List.of(), List.of(), List.of());
     }
 
     @Test
@@ -125,5 +163,35 @@ class PhoneBookTest {
         assertThrows(PhoneBookStorageException.class, () -> phonebook.updateName("aaa", "000", "ccc"));
         assertThrows(PhoneBookStorageException.class, () -> phonebook.getEntries());
         assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteAllEntries());
+    }
+
+    private void checkTables(List<String> names, List<Entry> entries, List<String> numbers) throws SQLException {
+        var resultNames = connection.createStatement().executeQuery("select Name from Person order by Name");
+        var namesIterator = names.iterator();
+        while (resultNames.next()) {
+            assertTrue(namesIterator.hasNext());
+            assertEquals(namesIterator.next(), resultNames.getString(1));
+        }
+        assertFalse(namesIterator.hasNext());
+
+        var resultEntries = connection.createStatement().executeQuery("select Name, Number from Entry " +
+                                                                      "inner join Person on Person.Id = PersonId " +
+                                                                      "inner join Phone on Phone.Id = PhoneId " +
+                                                                      "order by Name, Number");
+        var entriesIterator = entries.iterator();
+        while (resultEntries.next()) {
+            assertTrue(entriesIterator.hasNext());
+            assertEquals(entriesIterator.next(),
+                         new Entry(resultEntries.getString(1), resultEntries.getString(2)));
+        }
+        assertFalse(entriesIterator.hasNext());
+
+        var resultNumbers = connection.createStatement().executeQuery("select Number from Phone order by Number");
+        var numbersIterator = numbers.iterator();
+        while (resultNumbers.next()) {
+            assertTrue(numbersIterator.hasNext());
+            assertEquals(numbersIterator.next(), resultNumbers.getString(1));
+        }
+        assertFalse(numbersIterator.hasNext());
     }
 }
