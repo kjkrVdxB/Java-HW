@@ -36,7 +36,7 @@ public class PhoneBook implements AutoCloseable {
             create.executeUpdate("create table if not exists Person " +
                                  "(Id integer primary key asc, Name text unique not null)");
             create.executeUpdate("create table if not exists Entry " +
-                                 "(PersonId integer not null, PhoneId integer not null)");
+                                 "(PersonId integer not null, PhoneId integer not null, unique(PersonId, PhoneId))");
             create.executeUpdate("create table if not exists Phone " +
                                  "(Id integer primary key asc, Number text unique not null)");
             dbConnection.commit();
@@ -152,10 +152,14 @@ public class PhoneBook implements AutoCloseable {
         }
     }
 
-    /** Update name in entry with given name and number. Does nothing if no such entry exist. */
+    /**
+     * Update name in entry with given name and number. Does nothing if no such entry exist. If the operation
+     * creates an entry equivalent to an already existing entry, they are merged.
+     */
     public void updateName(String currentName, String currentNumber, String newName) throws PhoneBookStorageException {
         insertPersonIfNotExists(newName);
-        var updateString = "update Entry set PersonId = (select Id from Person where Name = ?) where " +
+        // Note that here we use SQLite-specific clause "or replace"
+        var updateString = "update or replace Entry set PersonId = (select Id from Person where Name = ?) where " +
                            "PersonId = (select Id from Person where Name = ?) and " +
                            "PhoneId = (select Id from Phone where Number = ?)";
         try (var update = dbConnection.prepareStatement(updateString)) {
@@ -176,10 +180,14 @@ public class PhoneBook implements AutoCloseable {
         }
     }
 
-    /** Update number in entry with given name and number. Does nothing if no such entry exist. */
+    /**
+     * Update number in entry with given name and number. Does nothing if no such entry exist. If the operation
+     * creates an entry equivalent to an already existing entry, they are merged.
+     */
     public void updateNumber(String currentName, String currentNumber, String newNumber) throws PhoneBookStorageException {
         insertPhoneIfNotExists(newNumber);
-        var updateString = "update Entry set PhoneId = (select Id from Phone where Number = ?) where " +
+        // Note that here we use SQLite-specific clause "or replace"
+        var updateString = "update or replace Entry set PhoneId = (select Id from Phone where Number = ?) where " +
                            "PersonId = (select Id from Person where Name = ?) and " +
                            "PhoneId = (select Id from Phone where Number = ?)";
         try (var update = dbConnection.prepareStatement(updateString)) {
@@ -224,9 +232,9 @@ public class PhoneBook implements AutoCloseable {
 
     /**
      * Insert new name into Person table, if it is not already present there.
-     * Note that it uses SQLite-specific clause "or ignore".
      */
     private void insertPersonIfNotExists(String name) throws PhoneBookStorageException {
+        // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Person (Name) values (?)")) {
             update.setString(1, name);
             update.execute();
@@ -238,9 +246,9 @@ public class PhoneBook implements AutoCloseable {
 
     /**
      * Insert new number into Phone table, if it is not already present there.
-     * Note that it uses SQLite-specific clause "or ignore".
      */
     private void insertPhoneIfNotExists(String number) throws PhoneBookStorageException {
+        // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Phone (Number) values (?)")) {
             update.setString(1, number);
             update.execute();

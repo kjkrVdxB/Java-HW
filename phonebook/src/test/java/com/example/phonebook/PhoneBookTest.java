@@ -33,8 +33,8 @@ class PhoneBookTest {
 
     @AfterEach
     public void finish() throws PhoneBookStorageException, SQLException {
-        phonebook.close();
         connection.close();
+        phonebook.close();
         assertTrue(tmpFile.delete());
     }
 
@@ -82,6 +82,14 @@ class PhoneBookTest {
     }
 
     @Test
+    public void testUpdateNameMerge() throws PhoneBookStorageException {
+        phonebook.updateName("aaa", "000", "bbb");
+        assertEquals(List.of(new Entry("aaa", "111"),
+                             new Entry("bbb", "000"),
+                             new Entry("ddd", "aaa")), phonebook.getEntries());
+    }
+
+    @Test
     public void testUpdateNumber() throws PhoneBookStorageException {
         phonebook.updateNumber("aaa", "111", "222");
         phonebook.updateNumber("ddd", "aaa", "222");
@@ -90,6 +98,14 @@ class PhoneBookTest {
                              new Entry("aaa", "222"),
                              new Entry("bbb", "000"),
                              new Entry("ddd", "222")), phonebook.getEntries());
+    }
+
+    @Test
+    public void testUpdateNumberMerge() throws PhoneBookStorageException {
+        phonebook.updateNumber("aaa", "000", "111");
+        assertEquals(List.of(new Entry("aaa", "111"),
+                             new Entry("bbb", "000"),
+                             new Entry("ddd", "aaa")), phonebook.getEntries());
     }
 
     @Test
