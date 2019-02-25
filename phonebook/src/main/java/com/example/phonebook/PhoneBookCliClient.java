@@ -95,8 +95,6 @@ public class PhoneBookCliClient {
                     phoneBook.deleteAllEntries();
                 }
             }
-        } catch (PhoneBookStorageException exception) {
-            exception.printStackTrace();
         }
     }
 
