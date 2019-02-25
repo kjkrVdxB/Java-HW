@@ -142,95 +142,58 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public E lower(E e) {
+
+    private E before(E e, boolean distinct, boolean reverse) {
         if (e == null && comparator == null) {
             throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
         }
         var current = root;
-        E lower = null;
+        E before = null;
         while (current != null) {
-            int cmp = compare(e, current.element);
+            int cmp = compare(e, current.element) * (reverse ? -1 : 1);
             if (cmp > 0) {
-                if (lower == null || compare(current.element, lower) > 0) {
-                    lower = current.element;
+                if (before == null || compare(current.element, before) * (reverse ? -1 : 1) > 0) {
+                    before = current.element;
                 }
-                current = current.rightChild;
+                if (reverse) {
+                    current = current.leftChild;
+                } else {
+                    current = current.rightChild;
+                }
+            } else if (cmp == 0 && !distinct) {
+                return current.element;
             } else {
-                current = current.leftChild;
+                if (!reverse) {
+                    current = current.leftChild;
+                } else {
+                    current = current.rightChild;
+                }
             }
         }
-        return lower;
+        return before;
+    }
+
+    @Override
+    public E lower(E e) {
+        return before(e, true, false);
     }
 
     /** {@inheritDoc} */
     @Override
     public E floor(E e) {
-        if (e == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
-        var current = root;
-        E floor = null;
-        while (current != null) {
-            int cmp = compare(e, current.element);
-            if (cmp > 0) {
-                if (floor == null || compare(current.element, floor) > 0) {
-                    floor = current.element;
-                }
-                current = current.rightChild;
-            } else if (cmp == 0) {
-                return current.element;
-            } else {
-                current = current.leftChild;
-            }
-        }
-        return floor;
+        return before(e, false, false);
     }
 
     /** {@inheritDoc} */
     @Override
     public E ceiling(E e) {
-        if (e == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
-        var current = root;
-        E ceiling = null;
-        while (current != null) {
-            int cmp = compare(e, current.element);
-            if (cmp < 0) {
-                if (ceiling == null || compare(current.element, ceiling) < 0) {
-                    ceiling = current.element;
-                }
-                current = current.leftChild;
-            } else if (cmp == 0) {
-                return current.element;
-            } else {
-                current = current.rightChild;
-            }
-        }
-        return ceiling;
+        return before(e, false, true);
     }
 
     /** {@inheritDoc} */
     @Override
     public E higher(E e) {
-        if (e == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
-        var current = root;
-        E higher = null;
-        while (current != null) {
-            int cmp = compare(e, current.element);
-            if (cmp < 0) {
-                if (higher == null || compare(current.element, higher) < 0) {
-                    higher = current.element;
-                }
-                current = current.leftChild;
-            } else {
-                current = current.rightChild;
-            }
-        }
-        return higher;
+        return before(e, true, true);
     }
 
     /**
@@ -366,9 +329,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private class TreeSetIterator implements Iterator<E> {
-        protected int acceptedModificationCount;
-        protected Node<E> nextNode;
-        protected Node<E> previousNode; // used in remove()
+        int acceptedModificationCount;
+        Node<E> nextNode;
+        Node<E> previousNode; // used in remove()
 
         private TreeSetIterator() {
             acceptedModificationCount = modificationCount;
@@ -376,13 +339,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             previousNode = null;
         }
 
-        // split off from constructor so it can be overloaded in subclass
+        // split off from constructor so it can be overloaded in DescendingTreeSetIterator
         protected void initNextNode() {
             nextNode = getLeast(root);
         }
 
         /** Check whether the set was modified by something other that this iterator */
-        protected void checkConcurrentAccess() {
+        void checkConcurrentAccess() {
             if (modificationCount != acceptedModificationCount) {
                 throw new ConcurrentModificationException("TreeSet was modified");
             }
@@ -420,7 +383,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         public void remove() {
             if (previousNode == null) {
                 throw new IllegalStateException("remove() already called after last call " +
-                        "to next() or no call to next() was made");
+                                                "to next() or no call to next() was made");
             }
             checkConcurrentAccess();
             TreeSet.this.remove(previousNode.element);
