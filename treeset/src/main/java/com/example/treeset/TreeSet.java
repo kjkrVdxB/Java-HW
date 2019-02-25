@@ -417,7 +417,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * @implNote This class does not inherit TreeSet, but rather has it as a member. This is
      * because we want a wrapper around existing TreeSet object that can coexist with it.
      */
-    private static class DescendingTreeSet<E> extends TreeSet<E> implements NavigableSet<E> {
+    private static class DescendingTreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         final private TreeSet<E> inner;
 
         private DescendingTreeSet(TreeSet<E> inner) {
