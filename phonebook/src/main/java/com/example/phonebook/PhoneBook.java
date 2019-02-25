@@ -110,7 +110,7 @@ public class PhoneBook implements AutoCloseable {
 
     /**
      * Returns a list with entries present in the phone book. Entries are sorted by name, and then by number
-     * if names is equal.
+     * if names are equal.
      */
     public List<Entry> getEntries() throws PhoneBookStorageException {
         var queryString = "select Name, Number from Entry " +
