@@ -45,7 +45,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public NavigableSet<E> descendingSet() {
-        return new DescendingTreeSet<>(this);
+        return new DescendingTreeSet();
     }
 
     /**
@@ -310,7 +310,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** Returns iterator over the set. */
     @Override
     public Iterator<E> iterator() {
-        return new TreeSetIterator<>(this);
+        return new TreeSetIterator();
     }
 
     /** Returns number of elements in the set. */
@@ -344,28 +344,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
     }
 
-    /**
-     * @implNote This is not an inner class because it is used as a base class for
-     * DescendingTreeSetIterator, and DescendingTreeSet does not inherit TreeSet.
-     */
-    private static class TreeSetIterator<ItE> implements Iterator<ItE> {
-        protected TreeSet<ItE> tree;
+    private class TreeSetIterator implements Iterator<E> {
         protected int acceptedModificationCount;
-        protected Node<ItE> nextNode;
-        protected Node<ItE> previousNode; // used in remove()
+        protected Node<E> nextNode;
+        protected Node<E> previousNode; // used in remove()
 
-        protected TreeSetIterator() { }
-
-        private TreeSetIterator(TreeSet<ItE> tree) {
-            this.tree = tree;
-            acceptedModificationCount = tree.modificationCount;
-            nextNode = tree.getLeast(tree.root);
+        private TreeSetIterator() {
+            acceptedModificationCount = modificationCount;
+            initNextNode();
             previousNode = null;
+        }
+
+        // split off from constructor so it can be overloaded in subclass
+        protected void initNextNode() {
+            nextNode = getLeast(root);
         }
 
         /** Check whether the set was modified by something other that this iterator */
         protected void checkConcurrentAccess() {
-            if (tree.modificationCount != acceptedModificationCount) {
+            if (modificationCount != acceptedModificationCount) {
                 throw new ConcurrentModificationException("TreeSet was modified");
             }
         }
@@ -379,7 +376,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         /** {@inheritDoc} */
         @Override
-        public ItE next() {
+        public E next() {
             if (!hasNext()) {
                 throw new NoSuchElementException("There is no next element");
             }
@@ -387,7 +384,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             previousNode = nextNode;
             var nextElement = nextNode.element;
             if (nextNode.rightChild != null) {
-                nextNode = tree.getLeast(nextNode.rightChild);
+                nextNode = getLeast(nextNode.rightChild);
             } else {
                 while (nextNode.parent != null && nextNode.parent.rightChild == nextNode) {
                     nextNode = nextNode.parent;
@@ -405,113 +402,107 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                         "to next() or no call to next() was made");
             }
             checkConcurrentAccess();
-            tree.remove(previousNode.element);
-            acceptedModificationCount = tree.modificationCount;
+            TreeSet.this.remove(previousNode.element);
+            acceptedModificationCount = modificationCount;
             previousNode = null;
         }
     }
 
     /**
      * A class representing descending version of a set.
-     *
-     * @implNote This class does not inherit TreeSet, but rather has it as a member. This is
-     * because we want a wrapper around existing TreeSet object that can coexist with it.
      */
-    private static class DescendingTreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
-        final private TreeSet<E> inner;
+    private class DescendingTreeSet extends AbstractSet<E> implements NavigableSet<E> {
 
-        private DescendingTreeSet(TreeSet<E> inner) {
-            this.inner = inner;
-        }
+        private DescendingTreeSet() { }
 
         /** {@link TreeSet#add} */
         @Override
         public boolean add(E e) {
-            return inner.add(e);
+            return TreeSet.this.add(e);
         }
 
         /** {@inheritDoc} */
         @Override
         public Iterator<E> descendingIterator() {
-            return inner.iterator();
+            return TreeSet.this.iterator();
         }
 
         /** {@inheritDoc} */
         @Override
         public NavigableSet<E> descendingSet() {
-            return inner;
+            return TreeSet.this;
         }
 
         /** {@inheritDoc} */
         @Override
         public E first() {
-            return inner.last();
+            return TreeSet.this.last();
         }
 
         /** {@inheritDoc} */
         @Override
         public E last() {
-            return inner.first();
+            return TreeSet.this.first();
         }
 
         /** {@link TreeSet#contains} */
         @Override
         public boolean contains(Object o) {
-            return inner.contains(o);
+            return TreeSet.this.contains(o);
         }
 
         /** {@inheritDoc} */
         @Override
         public E lower(E e) {
-            return inner.higher(e);
+            return TreeSet.this.higher(e);
         }
 
         /** {@inheritDoc} */
         @Override
         public E floor(E e) {
-            return inner.ceiling(e);
+            return TreeSet.this.ceiling(e);
         }
 
         /** {@inheritDoc} */
         @Override
         public E ceiling(E e) {
-            return inner.floor(e);
+            return TreeSet.this.floor(e);
         }
 
         /** {@inheritDoc} */
         @Override
         public E higher(E e) {
-            return inner.lower(e);
+            return TreeSet.this.lower(e);
         }
 
         /** {@link TreeSet#remove} */
         @Override
         public boolean remove(Object o) {
-            return inner.remove(o);
+            return TreeSet.this.remove(o);
         }
 
         /** {@link TreeSet#iterator} */
         public Iterator<E> iterator() {
-            return new DescendingTreeSetIterator<>(inner);
+            return new DescendingTreeSetIterator();
         }
 
         /** {@link TreeSet#size()} */
         @Override
         public int size() {
-            return inner.size();
+            return TreeSet.this.size();
         }
 
-        private static class DescendingTreeSetIterator<ItE> extends TreeSetIterator<ItE> implements Iterator<ItE> {
-            private DescendingTreeSetIterator(TreeSet<ItE> tree) {
-                this.tree = tree;
-                acceptedModificationCount = tree.modificationCount;
-                nextNode = tree.getBiggest(tree.root);
-                previousNode = null;
+        private final class DescendingTreeSetIterator extends TreeSetIterator implements Iterator<E> {
+            private DescendingTreeSetIterator() { }
+
+            @Override
+            protected void initNextNode() {
+                nextNode = TreeSet.this.getBiggest(root);
             }
 
             /** {@inheritDoc} */
             @Override
-            public ItE next() {
+            public E next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException("There is no next element");
                 }
@@ -519,7 +510,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 previousNode = nextNode;
                 var nextElement = nextNode.element;
                 if (nextNode.leftChild != null) {
-                    nextNode = tree.getBiggest(nextNode.leftChild);
+                    nextNode = getBiggest(nextNode.leftChild);
                 } else {
                     while (nextNode.parent != null && nextNode.parent.leftChild == nextNode) {
                         nextNode = nextNode.parent;
