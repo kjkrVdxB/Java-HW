@@ -124,11 +124,21 @@ class PhoneBookTest {
     @Test
     public void testUpdateNameMerge() throws SQLException {
         phonebook.updateName("aaa", "000", "bbb");
-        phonebook.updateName("aaa", "111", "bbb");
-        checkTables(List.of("bbb", "ddd"),
-                    List.of(new Entry("bbb", "000"),
-                            new Entry("bbb", "111"),
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "111"),
+                            new Entry("bbb", "000"),
                             new Entry("ddd", "aaa")),
+                    List.of("000", "111", "aaa"));
+    }
+
+    @Test
+    public void testUpdateNameUnreferencedName() throws SQLException {
+        phonebook.updateName("ddd", "aaa", "aaa");
+        checkTables(List.of("aaa", "bbb"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("aaa", "111"),
+                            new Entry("aaa", "aaa"),
+                            new Entry("bbb", "000")),
                     List.of("000", "111", "aaa"));
     }
 
@@ -150,9 +160,20 @@ class PhoneBookTest {
         phonebook.updateNumber("aaa", "000", "111");
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "111"),
-                            new Entry("bbb", "111"),
+                            new Entry("bbb", "000"),
                             new Entry("ddd", "aaa")),
-                    List.of("111", "aaa"));
+                    List.of("000", "111", "aaa"));
+    }
+
+    @Test
+    public void testUpdateNumberUnreferencedNumber() throws SQLException {
+        phonebook.updateNumber("ddd", "aaa", "000");
+        checkTables(List.of("aaa", "bbb", "ddd"),
+                    List.of(new Entry("aaa", "000"),
+                            new Entry("aaa", "111"),
+                            new Entry("bbb", "000"),
+                            new Entry("ddd", "000")),
+                    List.of("000", "111"));
     }
 
     @Test
