@@ -55,7 +55,8 @@ public class PhoneBook implements AutoCloseable {
     public void addEntry(String name, String number) throws PhoneBookStorageException {
         insertPersonIfNotExists(name);
         insertPhoneIfNotExists(number);
-        var updateString = "insert into Entry values " +
+        // Note that here we use SQLite-specific clause "or ignore"
+        var updateString = "insert or ignore into Entry values " +
                            "((select Id from Person where Name = ?), (select Id from Phone where Number = ?))";
         try (var update = dbConnection.prepareStatement(updateString)) {
             update.setString(1, name);
