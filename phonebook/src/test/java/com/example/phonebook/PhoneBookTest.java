@@ -113,4 +113,17 @@ class PhoneBookTest {
         phonebook.deleteAllEntries();
         assertEquals(List.of(), phonebook.getEntries());
     }
+
+    @Test
+    public void testPhoneBookStorageException() throws SQLException {
+        connection.createStatement().execute("drop table Entry");
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.addEntry("aaa", "bbb"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.getNamesByNumber("000"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.getNumbersByName("aaa"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteEntry("aaa", "000"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.updateNumber("aaa", "000", "222"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.updateName("aaa", "000", "ccc"));
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.getEntries());
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteAllEntries());
+    }
 }
