@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.phonebook.PhoneBook.Entry;
@@ -195,33 +196,31 @@ class PhoneBookTest {
         assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteAllEntries());
     }
 
-    private void checkTables(List<String> names, List<Entry> entries, List<String> numbers) throws SQLException {
+    private void checkTables(List<String> expectedNames,
+                             List<Entry> expectedEntries,
+                             List<String> expectedNumbers) throws SQLException {
         var resultNames = connection.createStatement().executeQuery("select Name from Person order by Name");
-        var namesIterator = names.iterator();
+        var names = new ArrayList<String>();
         while (resultNames.next()) {
-            assertTrue(namesIterator.hasNext());
-            assertEquals(namesIterator.next(), resultNames.getString(1));
+            names.add(resultNames.getString(1));
         }
-        assertFalse(namesIterator.hasNext());
+        assertEquals(expectedNames, names);
 
         var resultEntries = connection.createStatement().executeQuery("select Name, Number from Entry " +
                                                                       "inner join Person on Person.Id = PersonId " +
                                                                       "inner join Phone on Phone.Id = PhoneId " +
                                                                       "order by Name, Number");
-        var entriesIterator = entries.iterator();
+        var entries = new ArrayList<Entry>();
         while (resultEntries.next()) {
-            assertTrue(entriesIterator.hasNext());
-            assertEquals(entriesIterator.next(),
-                         new Entry(resultEntries.getString(1), resultEntries.getString(2)));
+            entries.add(new Entry(resultEntries.getString(1), resultEntries.getString(2)));
         }
-        assertFalse(entriesIterator.hasNext());
+        assertEquals(expectedEntries, entries);
 
         var resultNumbers = connection.createStatement().executeQuery("select Number from Phone order by Number");
-        var numbersIterator = numbers.iterator();
+        var numbers = new ArrayList<String>();
         while (resultNumbers.next()) {
-            assertTrue(numbersIterator.hasNext());
-            assertEquals(numbersIterator.next(), resultNumbers.getString(1));
+            numbers.add(resultNumbers.getString(1));
         }
-        assertFalse(numbersIterator.hasNext());
+        assertEquals(expectedNumbers, numbers);
     }
 }
