@@ -152,12 +152,18 @@ class TreeSetTest {
     }
 
     @Test
-    void testFirstLast() {
+    void testFirst() {
         assertEquals(0, (int) testSet.first());
-        assertEquals(8, (int) testSet.last());
 
         var emptySet = new TreeSet<Integer>();
         assertThrows(NoSuchElementException.class, () -> emptySet.first());
+    }
+
+    @Test
+    void testLast() {
+        assertEquals(8, (int) testSet.last());
+
+        var emptySet = new TreeSet<Integer>();
         assertThrows(NoSuchElementException.class, () -> emptySet.last());
     }
 
