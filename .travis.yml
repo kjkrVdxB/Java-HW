@@ -1,0 +1,10 @@
+language: java
+jdk: openjdk11
+env:
+    - PROJECT_DIR=reflector
+before_install:
+    - cd "$PROJECT_DIR"
+script:
+    - ./gradlew check && ./gradlew javadoc
+after_success:
+    - cd .. && bash .travis/deploy_to_pages.sh
