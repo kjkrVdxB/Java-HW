@@ -412,7 +412,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * A class representing descending version of a set.
      */
     private final class DescendingTreeSet extends AbstractSet<E> implements NavigableSet<E> {
-
         private DescendingTreeSet() { }
 
         /** {@link TreeSet#add} */
