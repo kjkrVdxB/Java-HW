@@ -50,6 +50,16 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return new DescendingTreeSet();
     }
 
+    private void checkNull(Object o) {
+        if (o != null) {
+            return;
+        }
+        if (comparator == null) {
+            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+        }
+        compare(null, null);
+    }
+
     /**
      * Add an element to the set. If the element is already preset, the set is not modified.
      *
@@ -61,9 +71,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      */
     @Override
     public boolean add(E e) {
-        if (e == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
+        checkNull(e);
         if (root == null) {
             root = new Node(null, e);
             ++size;
@@ -124,9 +132,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      */
     @Override
     public boolean contains(Object o) {
-        if (o == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
+        checkNull(o);
         var current = root;
         while (current != null) {
             int cmp = compare(o, current.element);
@@ -142,9 +148,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private E before(E e, boolean distinct, boolean reverse) {
-        if (e == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
+        checkNull(e);
         var current = root;
         E before = null;
         while (current != null) {
@@ -275,9 +279,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      */
     @Override
     public boolean remove(Object o) {
-        if (o == null && comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
-        }
+        checkNull(o);
         return removeInSubtree(o, root);
     }
 

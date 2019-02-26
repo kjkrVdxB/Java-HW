@@ -3,6 +3,7 @@ package com.example.treeset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 
@@ -78,6 +79,60 @@ class TreeSetTest {
         stringTestSet.add("aB");
         assertTrue(stringTestSet.contains("ab"));
         assertTrue(stringTestSet.contains("AB"));
+    }
+
+    @Test
+    void testComparatorProhibitingNulls() {
+        testSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        testSet.add("a");
+
+        assertThrows(NullPointerException.class, () -> testSet.add(null));
+        assertThrows(NullPointerException.class, () -> testSet.contains(null));
+        assertThrows(NullPointerException.class, () -> testSet.remove(null));
+        assertThrows(NullPointerException.class, () -> testSet.lower(null));
+        assertThrows(NullPointerException.class, () -> testSet.floor(null));
+        assertThrows(NullPointerException.class, () -> testSet.higher(null));
+        assertThrows(NullPointerException.class, () -> testSet.ceiling(null));
+    }
+
+    @Test
+    void testComparatorThatIsOkWithNulls() {
+        testSet = new TreeSet<>(Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER));
+        testSet.add("a");
+        testSet.add(null);
+
+        assertEquals(2, testSet.size());
+
+        assertTrue(testSet.contains(null));
+        assertNull(testSet.first());
+        assertEquals("a", testSet.last());
+        assertNull(testSet.lower("a"));
+        assertNull(testSet.floor(null));
+        assertNull(testSet.lower(null));
+        assertNull(testSet.higher("a"));
+
+        testSet.remove(null);
+        assertNull(testSet.lower("a"));
+        assertEquals(1, testSet.size());
+
+        testSet = new TreeSet<>(Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+
+        testSet.add("a");
+        testSet.add(null);
+
+        assertEquals(2, testSet.size());
+
+        assertTrue(testSet.contains(null));
+        assertNull(testSet.last());
+        assertEquals("a", testSet.first());
+        assertNull(testSet.higher("a"));
+        assertNull(testSet.ceiling(null));
+        assertNull(testSet.higher(null));
+        assertNull(testSet.lower("a"));
+
+        testSet.remove(null);
+        assertNull(testSet.higher("a"));
+        assertEquals(1, testSet.size());
     }
 
     @Test
