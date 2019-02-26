@@ -141,8 +141,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current != null;
     }
 
-    /** {@inheritDoc} */
-
     private E before(E e, boolean distinct, boolean reverse) {
         if (e == null && comparator == null) {
             throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
@@ -294,7 +292,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** Returns iterator over the set. */
     @Override
     public Iterator<E> iterator() {
-        return new TreeSetIterator();
+        return new TreeSetIterator(false);
     }
 
     /** Returns number of elements in the set. */
@@ -329,19 +327,16 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private class TreeSetIterator implements Iterator<E> {
-        int acceptedModificationCount;
-        Node<E> nextNode;
-        Node<E> previousNode; // used in remove()
+        private int acceptedModificationCount;
+        private Node<E> previousNode; // used in remove()
+        private boolean reverse;
+        private Node<E> nextNode;
 
-        private TreeSetIterator() {
+        private TreeSetIterator(boolean reverse) {
             acceptedModificationCount = modificationCount;
-            initNextNode();
             previousNode = null;
-        }
-
-        // split off from constructor so it can be overloaded in DescendingTreeSetIterator
-        protected void initNextNode() {
-            nextNode = getLeast(root);
+            this.reverse = reverse;
+            nextNode = reverse ? getBiggest(root) : getLeast(root);
         }
 
         /** Check whether the set was modified by something other that this iterator */
@@ -367,10 +362,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             checkConcurrentAccess();
             previousNode = nextNode;
             var nextElement = nextNode.element;
-            if (nextNode.rightChild != null) {
-                nextNode = getLeast(nextNode.rightChild);
+            if ((reverse ? nextNode.leftChild : nextNode.rightChild) != null) {
+                nextNode = reverse ? getBiggest(nextNode.leftChild) : getLeast(nextNode.rightChild);
             } else {
-                while (nextNode.parent != null && nextNode.parent.rightChild == nextNode) {
+                while (nextNode.parent != null &&
+                       (reverse ? nextNode.parent.leftChild : nextNode.parent.rightChild) == nextNode) {
                     nextNode = nextNode.parent;
                 }
                 nextNode = nextNode.parent;
@@ -466,42 +462,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         /** {@link TreeSet#iterator} */
         public Iterator<E> iterator() {
-            return new DescendingTreeSetIterator();
+            return new TreeSetIterator(true);
         }
 
         /** {@link TreeSet#size()} */
         @Override
         public int size() {
             return TreeSet.this.size();
-        }
-
-        private final class DescendingTreeSetIterator extends TreeSetIterator implements Iterator<E> {
-            private DescendingTreeSetIterator() { }
-
-            @Override
-            protected void initNextNode() {
-                nextNode = TreeSet.this.getBiggest(root);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public E next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException("There is no next element");
-                }
-                checkConcurrentAccess();
-                previousNode = nextNode;
-                var nextElement = nextNode.element;
-                if (nextNode.leftChild != null) {
-                    nextNode = getBiggest(nextNode.leftChild);
-                } else {
-                    while (nextNode.parent != null && nextNode.parent.leftChild == nextNode) {
-                        nextNode = nextNode.parent;
-                    }
-                    nextNode = nextNode.parent;
-                }
-                return nextElement;
-            }
         }
     }
 }
