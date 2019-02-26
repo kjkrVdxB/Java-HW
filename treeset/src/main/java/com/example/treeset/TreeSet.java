@@ -153,19 +153,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 if (before == null || compare(current.element, before) * (reverse ? -1 : 1) > 0) {
                     before = current.element;
                 }
-                if (reverse) {
-                    current = current.leftChild;
-                } else {
-                    current = current.rightChild;
-                }
+                current = reverse ? current.leftChild : current.rightChild;
             } else if (cmp == 0 && !distinct) {
                 return current.element;
             } else {
-                if (!reverse) {
-                    current = current.leftChild;
-                } else {
-                    current = current.rightChild;
-                }
+                current = reverse ? current.rightChild : current.leftChild;
             }
         }
         return before;
