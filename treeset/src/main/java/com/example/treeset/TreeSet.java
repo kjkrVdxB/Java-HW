@@ -15,7 +15,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private final Comparator<? super E> comparator;
     private int modificationCount = 0;
     private int size = 0;
-    private Node<E> root = null;
+    private Node root = null;
 
     private final String NULL_ARGUMENT_EXCEPTION_MESSAGE = "null elements are prohibited when natural ordering is used";
 
@@ -65,7 +65,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
         }
         if (root == null) {
-            root = new Node<>(null, e);
+            root = new Node(null, e);
             ++size;
             ++modificationCount;
             return true;
@@ -75,7 +75,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             int cmp = compare(e, current.element);
             if (cmp > 0) {
                 if (current.rightChild == null) {
-                    current.rightChild = new Node<>(current, e);
+                    current.rightChild = new Node(current, e);
                     ++size;
                     ++modificationCount;
                     return true;
@@ -85,7 +85,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 return false;
             } else {
                 if (current.leftChild == null) {
-                    current.leftChild = new Node<>(current, e);
+                    current.leftChild = new Node(current, e);
                     ++size;
                     ++modificationCount;
                     return true;
@@ -190,11 +190,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    private Node<E> getLeast(Node<E> treeRoot) {
+    private Node getLeast(Node treeRoot) {
         if (treeRoot == null) {
             return null;
         }
-        Node<E> current = treeRoot;
+        Node current = treeRoot;
         while (current.leftChild != null) {
             current = current.leftChild;
         }
@@ -205,11 +205,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * Get the biggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    private Node<E> getBiggest(Node<E> treeRoot) {
+    private Node getBiggest(Node treeRoot) {
         if (treeRoot == null) {
             return null;
         }
-        Node<E> current = treeRoot;
+        Node current = treeRoot;
         while (current.rightChild != null) {
             current = current.rightChild;
         }
@@ -217,14 +217,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /** Remove an element in subtree rooted at {@code subtreeRoot}. Returns {@code true} if an element was deleted. */
-    private boolean removeInSubtree(Object o, Node<E> subtreeRoot) {
+    private boolean removeInSubtree(Object o, Node subtreeRoot) {
         var current = subtreeRoot;
         while (current != null) {
             int cmp = compare(o, current.element);
             if (cmp > 0) {
                 current = current.rightChild;
             } else if (cmp == 0) {
-                Node<E> newCurrent;
+                Node newCurrent;
                 if (current.leftChild != null && current.rightChild != null) {
                     var replacement = getLeast(current.rightChild);
                     removeInSubtree(replacement.element, replacement);
@@ -293,18 +293,18 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return size;
     }
 
-    private static class Node<NodeE> {
-        private Node<NodeE> parent;
-        private Node<NodeE> leftChild = null, rightChild = null;
-        private final NodeE element;
+    private class Node {
+        private Node parent;
+        private Node leftChild = null, rightChild = null;
+        private final E element;
 
-        private Node(Node<NodeE> parent, NodeE element) {
+        private Node(Node parent, E element) {
             this.parent = parent;
             this.element = element;
         }
 
         /** Replace the parent's child corresponding to this node with {@code newNode} */
-        private void replaceInParent(Node<NodeE> newNode) {
+        private void replaceInParent(Node newNode) {
             if (parent != null) {
                 if (this == parent.leftChild) {
                     parent.leftChild = newNode;
@@ -320,9 +320,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     private class TreeSetIterator implements Iterator<E> {
         private int acceptedModificationCount;
-        private Node<E> previousNode; // used in remove()
+        private Node previousNode; // used in remove()
         private boolean reverse;
-        private Node<E> nextNode;
+        private Node nextNode;
 
         private TreeSetIterator(boolean reverse) {
             acceptedModificationCount = modificationCount;
