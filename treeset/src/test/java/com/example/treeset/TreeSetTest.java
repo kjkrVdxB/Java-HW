@@ -98,6 +98,9 @@ class TreeSetTest {
     @Test
     void testComparatorThatIsOkWithNulls() {
         testSet = new TreeSet<>(Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER));
+
+        assertFalse(testSet.contains(null));
+
         testSet.add("a");
         testSet.add(null);
 
@@ -116,6 +119,8 @@ class TreeSetTest {
         assertEquals(1, testSet.size());
 
         testSet = new TreeSet<>(Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+
+        assertFalse(testSet.contains(null));
 
         testSet.add("a");
         testSet.add(null);
