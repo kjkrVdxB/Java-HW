@@ -141,6 +141,67 @@ class TreeSetTest {
     }
 
     @Test
+    void testComparingForeignObject() {
+        class A implements Comparable<A> {
+            private int value;
+
+            A(int value) {
+                this.value = value;
+            }
+
+            @Override
+            public int compareTo(A a) {
+                return a.value - value;
+            }
+        }
+
+        class B extends A {
+            private int otherValue;
+
+            B(int otherValue, int value) {
+                super(value);
+                this.otherValue = otherValue;
+            }
+        }
+
+        class C extends A {
+            private int anotherValue;
+
+            C(int anotherValue, int value) {
+                super(value);
+                this.anotherValue = anotherValue;
+            }
+        }
+
+        var tree = new TreeSet<B>();
+
+        tree.add(new B(1, 0));
+        tree.add(new B(2, 3));
+
+        assertThrows(ClassCastException.class, () -> tree.contains(new Object()));
+        assertThrows(ClassCastException.class, () -> tree.remove(new Object()));
+
+        assertTrue(tree.contains(new C(100, 0)));
+        assertTrue(tree.contains(new C(200, 3)));
+        assertFalse(tree.contains(new C(1, 1)));
+        assertFalse(tree.contains(new C(2, 2)));
+
+        assertTrue(tree.contains(new A(0)));
+        assertTrue(tree.contains(new A(3)));
+        assertFalse(tree.contains(new A(1)));
+        assertFalse(tree.contains(new A( 2)));
+
+        tree.remove(new C(300, 3));
+
+        assertEquals(1, tree.size());
+        assertTrue(tree.contains(new C(100, 0)));
+
+        tree.remove(new A(0));
+
+        assertTrue(tree.isEmpty());
+    }
+
+    @Test
     void testRemove() {
         assertFalse(testSet.remove("7"));
         assertFalse(testSet.remove("1"));
