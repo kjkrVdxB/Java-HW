@@ -147,7 +147,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current != null;
     }
 
-
+    /**
+     * Find the element before given, according to {@code direction}, possibly equal to given if
+     * {@code onEqual} is {@code OnEqual.ACCEPT}.
+     */
     private E before(E e, OnEqual onEqual, Direction direction) {
         checkNull(e);
         boolean distinct = onEqual == OnEqual.REJECT;
