@@ -152,6 +152,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      * {@code onEqual} is {@code OnEqual.ACCEPT}.
      */
     private E before(E e, OnEqual onEqual, Direction direction) {
+        assert onEqual != null;
+        assert direction != null;
         checkNull(e);
         boolean distinct = onEqual == OnEqual.REJECT;
         boolean reverse = direction == Direction.REVERSED;
@@ -326,6 +328,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
          * Also update root in case it was this node.
          */
         private void replaceWith(Node newNode) {
+            assert newNode != null;
             newNode.leftChild = leftChild;
             if (rightChild != null) {
                 rightChild.parent = newNode;
@@ -352,6 +355,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
 
         private TreeSetIterator(Direction direction) {
+            assert direction != null;
             acceptedModificationCount = modificationCount;
             previousNode = null;
             this.reverse = direction == Direction.REVERSED;
