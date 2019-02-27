@@ -309,7 +309,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     private class Node {
         private Node parent;
-        private Node leftChild = null, rightChild = null;
+        private Node leftChild = null;
+        private Node rightChild = null;
         private final E element;
 
         private Node(Node parent, E element) {
