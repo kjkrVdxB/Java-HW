@@ -65,9 +65,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param e element to add
      * @return whether the element was added, that is it was not preset in the set before
-     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws ClassCastException   if the specified element cannot be compared with the elements currently in the set
      * @throws NullPointerException if the specified element is {@code null} and this set uses natural ordering,
-     * or its comparator does not permit {@code null} elements
+     *                              or its comparator does not permit {@code null} elements
      */
     @Override
     public boolean add(E e) {
@@ -126,9 +126,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param o element whose presence in this set is to be tested
      * @return true if this set contains the specified element
-     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws ClassCastException   if the specified element cannot be compared with the elements currently in the set
      * @throws NullPointerException if the specified element is {@code null} and this set uses natural ordering,
-     * or its comparator does not permit {@code null} elements
+     *                              or its comparator does not permit {@code null} elements
      */
     @Override
     public boolean contains(Object o) {
@@ -147,17 +147,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current != null;
     }
 
-    enum OnEqual {
-        ACCEPT,
-        REJECT,
-    }
 
-    enum Direction {
-        NORMAL,
-        REVERSED
-    }
-
-    private E before(E e, OnEqual onEqual , Direction direction) {
+    private E before(E e, OnEqual onEqual, Direction direction) {
         checkNull(e);
         boolean distinct = onEqual == OnEqual.REJECT;
         boolean reverse = direction == Direction.REVERSED;
@@ -285,9 +276,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
      *
      * @param o element to be removed from this set, if present
      * @return true if an element was removed as a result of this call
-     * @throws ClassCastException if the specified element cannot be compared with the elements currently in the set
+     * @throws ClassCastException   if the specified element cannot be compared with the elements currently in the set
      * @throws NullPointerException if the specified element is null and this set uses natural ordering,
-     * or its comparator does not permit null elements
+     *                              or its comparator does not permit null elements
      */
     @Override
     public boolean remove(Object o) {
@@ -305,6 +296,16 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     @Override
     public int size() {
         return size;
+    }
+
+    private enum OnEqual {
+        ACCEPT,
+        REJECT,
+    }
+
+    private enum Direction {
+        NORMAL,
+        REVERSED
     }
 
     private class Node {
