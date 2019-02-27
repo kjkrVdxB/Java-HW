@@ -324,7 +324,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         }
 
         /**
-         * Replace replace this node with another node completely, including information in children.
+         * Replace this node with another node completely, including information in children.
          * Also update root in case it was this node.
          */
         private void replaceWith(Node newNode) {
