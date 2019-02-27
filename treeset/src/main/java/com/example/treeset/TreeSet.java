@@ -147,8 +147,20 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return current != null;
     }
 
-    private E before(E e, boolean distinct, boolean reverse) {
+    enum OnEqual {
+        ACCEPT,
+        REJECT,
+    }
+
+    enum Direction {
+        NORMAL,
+        REVERSED
+    }
+
+    private E before(E e, OnEqual onEqual , Direction direction) {
         checkNull(e);
+        boolean distinct = onEqual == OnEqual.REJECT;
+        boolean reverse = direction == Direction.REVERSED;
         var current = root;
         E before = null;
         while (current != null) {
@@ -169,25 +181,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
     @Override
     public E lower(E e) {
-        return before(e, true, false);
+        return before(e, OnEqual.REJECT, Direction.NORMAL);
     }
 
     /** {@inheritDoc} */
     @Override
     public E floor(E e) {
-        return before(e, false, false);
+        return before(e, OnEqual.ACCEPT, Direction.NORMAL);
     }
 
     /** {@inheritDoc} */
     @Override
     public E ceiling(E e) {
-        return before(e, false, true);
+        return before(e, OnEqual.ACCEPT, Direction.REVERSED);
     }
 
     /** {@inheritDoc} */
     @Override
     public E higher(E e) {
-        return before(e, true, true);
+        return before(e, OnEqual.REJECT, Direction.REVERSED);
     }
 
     /**
@@ -286,7 +298,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** Returns iterator over the set. */
     @Override
     public Iterator<E> iterator() {
-        return new TreeSetIterator(false);
+        return new TreeSetIterator();
     }
 
     /** Returns number of elements in the set. */
@@ -326,10 +338,14 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         private boolean reverse;
         private Node nextNode;
 
-        private TreeSetIterator(boolean reverse) {
+        private TreeSetIterator() {
+            this(Direction.NORMAL);
+        }
+
+        private TreeSetIterator(Direction direction) {
             acceptedModificationCount = modificationCount;
             previousNode = null;
-            this.reverse = reverse;
+            this.reverse = direction == Direction.REVERSED;
             nextNode = reverse ? getBiggest(root) : getLeast(root);
         }
 
@@ -456,7 +472,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         /** {@link TreeSet#iterator} */
         public Iterator<E> iterator() {
-            return new TreeSetIterator(true);
+            return new TreeSetIterator(Direction.REVERSED);
         }
 
         /** {@link TreeSet#size()} */
