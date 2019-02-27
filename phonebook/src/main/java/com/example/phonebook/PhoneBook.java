@@ -11,6 +11,8 @@ import java.util.Objects;
  * Phone book implementation backed by SQLite database.
  *
  * Constructor and all methods throw {@code PhoneBookStorageException} in case of a database failure.
+ * Constructor and all methods throw {@code IllegalArgumentException} in case any of {@code String} parameters
+ * is {@code null}.
  */
 public class PhoneBook implements AutoCloseable {
     private final Connection dbConnection;
@@ -22,6 +24,9 @@ public class PhoneBook implements AutoCloseable {
      * SQLite-jdbc library accepts in connection string after 'jdbc:sqlite:', for example ':memory:'.
      */
     public PhoneBook(String dbPath) {
+        if (dbPath == null) {
+            throw new IllegalArgumentException("Null dbPath is prohibited");
+        }
         Connection connection = null;
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
@@ -58,6 +63,12 @@ public class PhoneBook implements AutoCloseable {
 
     /** Add an entry with given name and number. Does nothing if the entry is already present. */
     public void addEntry(String name, String number) {
+        if (name == null) {
+            throw new IllegalArgumentException("Null name is prohibited");
+        }
+        if (number == null) {
+            throw new IllegalArgumentException("Null number is prohibited");
+        }
         insertPersonIfNotExists(name);
         insertPhoneIfNotExists(number);
         // Note that here we use SQLite-specific clause "or ignore"
@@ -76,6 +87,9 @@ public class PhoneBook implements AutoCloseable {
 
     /** Returns a list with numbers corresponding to the given name. Numbers are sorted lexicographically. */
     public List<String> getNumbersByName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Null name is prohibited");
+        }
         var queryString = "select Number from Entry inner join Phone on " +
                           "PersonId = (select Id from Person where Name = ?) and PhoneId = Id " +
                           "order by Number";
@@ -95,6 +109,9 @@ public class PhoneBook implements AutoCloseable {
 
     /** Returns a list with names corresponding to the given number. Names are sorted lexicographically. */
     public List<String> getNamesByNumber(String number) {
+        if (number == null) {
+            throw new IllegalArgumentException("Null number is prohibited");
+        }
         var queryString = "select Name from Entry " +
                           "inner join Person on " +
                           "PhoneId = (select Id from Phone where Number = ?) and PersonId = Id " +
@@ -137,6 +154,12 @@ public class PhoneBook implements AutoCloseable {
 
     /** Deletes an entry with given name and number. Does nothing if no such entry exist. */
     public void deleteEntry(String name, String number) {
+        if (name == null) {
+            throw new IllegalArgumentException("Null name is prohibited");
+        }
+        if (number == null) {
+            throw new IllegalArgumentException("Null number is prohibited");
+        }
         var updateString = "delete from Entry where " +
                            "PersonId = (select Id from Person where Name = ?) and " +
                            "PhoneId = (select Id from Phone where Number = ?)";
@@ -163,6 +186,15 @@ public class PhoneBook implements AutoCloseable {
      * creates an entry equivalent to an already existing entry, they are merged.
      */
     public void updateName(String currentName, String currentNumber, String newName) {
+        if (currentName == null) {
+            throw new IllegalArgumentException("Null currentName is prohibited");
+        }
+        if (currentNumber == null) {
+            throw new IllegalArgumentException("Null currentNumber is prohibited");
+        }
+        if (newName == null) {
+            throw new IllegalArgumentException("Null newName is prohibited");
+        }
         insertPersonIfNotExists(newName);
         // Note that here we use SQLite-specific clause "or replace"
         var updateString = "update or replace Entry set PersonId = (select Id from Person where Name = ?) where " +
@@ -191,6 +223,15 @@ public class PhoneBook implements AutoCloseable {
      * creates an entry equivalent to an already existing entry, they are merged.
      */
     public void updateNumber(String currentName, String currentNumber, String newNumber) {
+        if (currentName == null) {
+            throw new IllegalArgumentException("Null currentName is prohibited");
+        }
+        if (currentNumber == null) {
+            throw new IllegalArgumentException("Null currentNumber is prohibited");
+        }
+        if (newNumber == null) {
+            throw new IllegalArgumentException("Null newNumber is prohibited");
+        }
         insertPhoneIfNotExists(newNumber);
         // Note that here we use SQLite-specific clause "or replace"
         var updateString = "update or replace Entry set PhoneId = (select Id from Phone where Number = ?) where " +
@@ -240,6 +281,7 @@ public class PhoneBook implements AutoCloseable {
      * Insert new name into Person table, if it is not already present there.
      */
     private void insertPersonIfNotExists(String name) {
+        assert name != null;
         // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Person (Name) values (?)")) {
             update.setString(1, name);
@@ -254,6 +296,7 @@ public class PhoneBook implements AutoCloseable {
      * Insert new number into Phone table, if it is not already present there.
      */
     private void insertPhoneIfNotExists(String number) {
+        assert number != null;
         // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Phone (Number) values (?)")) {
             update.setString(1, number);
@@ -302,6 +345,8 @@ public class PhoneBook implements AutoCloseable {
         private final String number;
 
         public Entry(String name, String number) {
+            assert name != null;
+            assert number != null;
             this.name = name;
             this.number = number;
         }
@@ -316,7 +361,7 @@ public class PhoneBook implements AutoCloseable {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj.getClass() == Entry.class) {
+            if (obj != null && obj.getClass() == Entry.class) {
                 Entry other = (Entry) obj;
                 return name.equals(other.name) && number.equals(other.number);
             }

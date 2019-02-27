@@ -24,7 +24,10 @@ public class PhoneBookCliClient {
         runCli(System.in, System.out, dbPath);
     }
 
-    public static void runCli(InputStream in, PrintStream out, String dbPath) throws IOException {
+    static void runCli(InputStream in, PrintStream out, String dbPath) throws IOException {
+        assert in != null;
+        assert out != null;
+        assert dbPath != null;
         var inputReader = new BufferedReader(new InputStreamReader(in));
         try (var phoneBook = new PhoneBook(dbPath)) {
             out.println("Phone book CLI client. Try 'help' for a list of supported commands.");

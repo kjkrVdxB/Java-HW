@@ -51,6 +51,9 @@ class PhoneBookTest {
                             new Entry("bbb", "000"),
                             new Entry("ddd", "aaa")),
                     List.of("000", "111", "aaa"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.addEntry(null, "999"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.addEntry("zzz", null));
     }
 
     @Test
@@ -79,6 +82,8 @@ class PhoneBookTest {
         assertEquals(List.of("000"), phonebook.getNumbersByName("bbb"));
         assertEquals(List.of("aaa"), phonebook.getNumbersByName("ddd"));
         assertEquals(List.of(), phonebook.getNumbersByName("ccc"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.getNumbersByName(null));
     }
 
     @Test
@@ -87,6 +92,8 @@ class PhoneBookTest {
         assertEquals(List.of("aaa"), phonebook.getNamesByNumber("111"));
         assertEquals(List.of("ddd"), phonebook.getNamesByNumber("aaa"));
         assertEquals(List.of(), phonebook.getNamesByNumber("222"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.getNamesByNumber(null));
     }
 
     @Test
@@ -97,6 +104,9 @@ class PhoneBookTest {
                             new Entry("bbb", "000"),
                             new Entry("ddd", "aaa")),
                     List.of("000", "111", "aaa"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.deleteEntry(null, "999"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.deleteEntry("zzz", null));
     }
 
     @Test
@@ -120,6 +130,10 @@ class PhoneBookTest {
                             new Entry("bbb", "111"),
                             new Entry("kkk", "aaa")),
                     List.of("000", "111", "aaa"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateName(null, "999", "yyy"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateName("zzz", null, "yyy"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateName("zzz", "999", null));
     }
 
     @Test
@@ -154,6 +168,10 @@ class PhoneBookTest {
                             new Entry("bbb", "000"),
                             new Entry("ddd", "222")),
                     List.of("000", "222"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateNumber(null, "999", "888"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateNumber("zzz", null, "888"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.updateNumber("zzz", "999", null));
     }
 
     @Test
