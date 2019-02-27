@@ -202,6 +202,22 @@ class PhoneBookTest {
     }
 
     @Test
+    public void testSQLInjections() throws SQLException {
+        phonebook.addEntry("a);drop table Entry; insert into Phone (Number) values('777'", "333");
+        phonebook.addEntry("a');drop table Entry; insert into Phone (Number) values('888'", "444");
+        checkTables(List.of("a');drop table Entry; insert into Phone (Number) values('888'",
+                            "a);drop table Entry; insert into Phone (Number) values('777'",
+                            "aaa", "bbb", "ddd"),
+                    List.of(new Entry("a');drop table Entry; insert into Phone (Number) values('888'", "444"),
+                            new Entry("a);drop table Entry; insert into Phone (Number) values('777'", "333"),
+                            new Entry("aaa", "000"),
+                            new Entry("aaa", "111"),
+                            new Entry("bbb", "000"),
+                            new Entry("ddd", "aaa")),
+                    List.of("000", "111", "333", "444", "aaa"));
+    }
+
+    @Test
     public void testPhoneBookStorageException() throws SQLException {
         connection.createStatement().execute("drop table Entry");
         assertThrows(PhoneBookStorageException.class, () -> phonebook.addEntry("aaa", "bbb"));
