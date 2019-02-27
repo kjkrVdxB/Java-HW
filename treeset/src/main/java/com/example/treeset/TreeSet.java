@@ -228,43 +228,28 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         var current = subtreeRoot;
         while (current != null) {
             int cmp = compare(o, current.element);
-            if (cmp > 0) {
-                current = current.rightChild;
-            } else if (cmp == 0) {
-                Node newCurrent;
-                if (current.leftChild != null && current.rightChild != null) {
-                    var replacement = getLeast(current.rightChild);
-                    removeInSubtree(replacement.element, replacement);
-                    replacement.leftChild = current.leftChild;
-                    if (current.rightChild != null) {
-                        current.rightChild.parent = replacement;
-                    }
-                    replacement.rightChild = current.rightChild;
-                    if (current.leftChild != null) {
-                        current.leftChild.parent = replacement;
-                    }
-                    current.replaceInParent(replacement);
-                    if (current == root) {
-                        root = replacement;
-                    }
-                    return true;
-                } else if (current.leftChild != null) {
-                    newCurrent = current.leftChild;
-                } else if (current.rightChild != null) {
-                    newCurrent = current.rightChild;
-                } else {
-                    newCurrent = null;
-                }
-                current.replaceInParent(newCurrent);
-                if (current == root) {
-                    root = newCurrent;
-                }
-                --size;
-                ++modificationCount;
-                return true;
-            } else {
-                current = current.leftChild;
+            if (cmp != 0) {
+                current = cmp < 0 ? current.leftChild : current.rightChild;
+                continue;
             }
+            Node newCurrent = null;
+            if (current.leftChild != null && current.rightChild != null) {
+                var replacement = getLeast(current.rightChild);
+                removeInSubtree(replacement.element, replacement);
+                current.replaceWith(replacement);
+                return true;
+            } else if (current.leftChild != null) {
+                newCurrent = current.leftChild;
+            } else if (current.rightChild != null) {
+                newCurrent = current.rightChild;
+            }
+            current.replaceInParent(newCurrent);
+            if (current == root) {
+                root = newCurrent;
+            }
+            --size;
+            ++modificationCount;
+            return true;
         }
         return false;
     }
@@ -330,6 +315,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             }
             if (newNode != null) {
                 newNode.parent = parent;
+            }
+        }
+
+        /**
+         * Replace replace this node with another node completely, including information in children.
+         * Also update root in case it was this node.
+         */
+        private void replaceWith(Node newNode) {
+            newNode.leftChild = leftChild;
+            if (rightChild != null) {
+                rightChild.parent = newNode;
+            }
+            newNode.rightChild = rightChild;
+            if (leftChild != null) {
+                leftChild.parent = newNode;
+            }
+            replaceInParent(newNode);
+            if (this == root) {
+                root = newNode;
             }
         }
     }
