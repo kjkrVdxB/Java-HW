@@ -214,6 +214,11 @@ class PhoneBookTest {
         assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteAllEntries());
     }
 
+    @Test
+    public void testNullDbPath() {
+        assertThrows(IllegalArgumentException.class, () -> new PhoneBook(null));
+    }
+
     private void checkTables(List<String> expectedNames,
                              List<Entry> expectedEntries,
                              List<String> expectedNumbers) throws SQLException {
