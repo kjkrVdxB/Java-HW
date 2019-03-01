@@ -25,7 +25,7 @@ class PhoneBookTest {
     private File tmpFile;
 
     @BeforeEach
-    public void init() throws IOException, SQLException {
+    void init() throws IOException, SQLException {
         tmpFile = File.createTempFile("phone_book_test", ".db");
         phonebook = new PhoneBook(tmpFile.getAbsolutePath());
         connection = DriverManager.getConnection("jdbc:sqlite:" + tmpFile.getAbsolutePath());
@@ -37,14 +37,14 @@ class PhoneBookTest {
     }
 
     @AfterEach
-    public void finish() throws SQLException {
+    void finish() throws SQLException {
         connection.close();
         phonebook.close();
         assertTrue(tmpFile.delete());
     }
 
     @Test
-    public void testAddEntry() throws SQLException {
+    void testAddEntry() throws SQLException {
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "000"),
                             new Entry("aaa", "111"),
@@ -57,7 +57,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testAddEntryDuplicates() throws SQLException {
+    void testAddEntryDuplicates() throws SQLException {
         phonebook.addEntry("ddd", "aaa");
         phonebook.addEntry("aaa", "000");
         checkTables(List.of("aaa", "bbb", "ddd"),
@@ -69,7 +69,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testGetEntries() {
+    void testGetEntries() {
         assertEquals(List.of(new Entry("aaa", "000"),
                              new Entry("aaa", "111"),
                              new Entry("bbb", "000"),
@@ -77,7 +77,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testGetNumbersByName() {
+    void testGetNumbersByName() {
         assertEquals(List.of("000", "111"), phonebook.getNumbersByName("aaa"));
         assertEquals(List.of("000"), phonebook.getNumbersByName("bbb"));
         assertEquals(List.of("aaa"), phonebook.getNumbersByName("ddd"));
@@ -87,7 +87,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testGetNamesByNumber() {
+    void testGetNamesByNumber() {
         assertEquals(List.of("aaa", "bbb"), phonebook.getNamesByNumber("000"));
         assertEquals(List.of("aaa"), phonebook.getNamesByNumber("111"));
         assertEquals(List.of("ddd"), phonebook.getNamesByNumber("aaa"));
@@ -97,7 +97,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testDeleteEntry() throws SQLException {
+    void testDeleteEntry() throws SQLException {
         phonebook.deleteEntry("aaa", "000");
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "111"),
@@ -110,7 +110,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testDeleteEntryUnreferenced() throws SQLException {
+    void testDeleteEntryUnreferenced() throws SQLException {
         phonebook.deleteEntry("ddd", "aaa");
         checkTables(List.of("aaa", "bbb"),
                     List.of(new Entry("aaa", "000"),
@@ -120,7 +120,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateName() throws SQLException {
+    void testUpdateName() throws SQLException {
         phonebook.updateName("aaa", "111", "bbb");
         phonebook.updateName("ddd", "aaa", "kkk");
         phonebook.updateName("aba", "000", "cab");
@@ -137,7 +137,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateNameMerge() throws SQLException {
+    void testUpdateNameMerge() throws SQLException {
         phonebook.updateName("aaa", "000", "bbb");
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "111"),
@@ -147,7 +147,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateNameUnreferencedName() throws SQLException {
+    void testUpdateNameUnreferencedName() throws SQLException {
         phonebook.updateName("ddd", "aaa", "aaa");
         checkTables(List.of("aaa", "bbb"),
                     List.of(new Entry("aaa", "000"),
@@ -158,7 +158,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateNumber() throws SQLException {
+    void testUpdateNumber() throws SQLException {
         phonebook.updateNumber("aaa", "111", "222");
         phonebook.updateNumber("ddd", "aaa", "222");
         phonebook.updateNumber("aba", "000", "010");
@@ -175,7 +175,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateNumberMerge() throws SQLException {
+    void testUpdateNumberMerge() throws SQLException {
         phonebook.updateNumber("aaa", "000", "111");
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "111"),
@@ -185,7 +185,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testUpdateNumberUnreferencedNumber() throws SQLException {
+    void testUpdateNumberUnreferencedNumber() throws SQLException {
         phonebook.updateNumber("ddd", "aaa", "000");
         checkTables(List.of("aaa", "bbb", "ddd"),
                     List.of(new Entry("aaa", "000"),
@@ -196,13 +196,13 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testDeleteAllEntries() throws SQLException {
+    void testDeleteAllEntries() throws SQLException {
         phonebook.deleteAllEntries();
         checkTables(List.of(), List.of(), List.of());
     }
 
     @Test
-    public void testSQLInjections() throws SQLException {
+    void testSQLInjections() throws SQLException {
         phonebook.addEntry("a);drop table Entry; insert into Phone (Number) values('777'", "333");
         phonebook.addEntry("a');drop table Entry; insert into Phone (Number) values('888'", "444");
         checkTables(List.of("a');drop table Entry; insert into Phone (Number) values('888'",
@@ -218,7 +218,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testPhoneBookStorageException() throws SQLException {
+    void testPhoneBookStorageException() throws SQLException {
         connection.createStatement().execute("drop table Entry");
         assertThrows(PhoneBookStorageException.class, () -> phonebook.addEntry("aaa", "bbb"));
         assertThrows(PhoneBookStorageException.class, () -> phonebook.getNamesByNumber("000"));
@@ -231,7 +231,7 @@ class PhoneBookTest {
     }
 
     @Test
-    public void testNullDbPath() {
+    void testNullDbPath() {
         assertThrows(IllegalArgumentException.class, () -> new PhoneBook(null));
     }
 
