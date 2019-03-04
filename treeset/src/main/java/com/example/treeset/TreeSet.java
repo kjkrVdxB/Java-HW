@@ -38,6 +38,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return comparator == null ? ((Comparable<? super E>) a).compareTo(b) : comparator.compare((E) a, b);
     }
 
+    private int compare(Object a, E b, Direction direction) {
+        return compare(a, b) * (direction == Direction.NORMAL ? 1 : -1);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Iterator<E> descendingIterator() {
@@ -155,26 +159,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         assert onEqual != null;
         assert direction != null;
         checkNull(e);
-        boolean distinct = onEqual == OnEqual.REJECT;
-        boolean reverse = direction == Direction.REVERSED;
         var current = root;
         E before = null;
         while (current != null) {
-            int cmp = compare(e, current.element) * (reverse ? -1 : 1);
+            int cmp = compare(e, current.element, direction);
             if (cmp > 0) {
-                if (before == null || compare(current.element, before) * (reverse ? -1 : 1) > 0) {
+                if (before == null || compare(current.element, before, direction) > 0) {
                     before = current.element;
                 }
-                current = reverse ? current.leftChild : current.rightChild;
-            } else if (cmp == 0 && !distinct) {
+                current = current.biggerChild(direction);
+            } else if (cmp == 0 && onEqual == OnEqual.ACCEPT) {
                 return current.element;
             } else {
-                current = reverse ? current.rightChild : current.leftChild;
+                current = current.smallerChild(direction);
             }
         }
         return before;
     }
 
+    /** {@inheritDoc} */
     @Override
     public E lower(E e) {
         return before(e, OnEqual.REJECT, Direction.NORMAL);
@@ -199,33 +202,34 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /**
-     * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * Get least element in the tree rooted in {@code treeRoot}, according to {@code direction}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
-    private Node getLeast(Node treeRoot) {
+    private Node getLeast(Node treeRoot, Direction direction) {
         if (treeRoot == null) {
             return null;
         }
         Node current = treeRoot;
-        while (current.leftChild != null) {
-            current = current.leftChild;
+        while (current.smallerChild(direction) != null) {
+            current = current.smallerChild(direction);
         }
         return current;
     }
 
     /**
-     * Get the biggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * Get least element in the tree rooted in {@code treeRoot}. Returns {@code null}
+     * if {@code treeRoot} is {@code null}.
+     */
+    private Node getLeast(Node treeRoot) {
+        return getLeast(treeRoot, Direction.NORMAL);
+    }
+
+    /**
+     * Get biggest element in the tree rooted in {@code treeRoot}. Returns {@code null}
      * if {@code treeRoot} is {@code null}.
      */
     private Node getBiggest(Node treeRoot) {
-        if (treeRoot == null) {
-            return null;
-        }
-        Node current = treeRoot;
-        while (current.rightChild != null) {
-            current = current.rightChild;
-        }
-        return current;
+        return getLeast(treeRoot, Direction.REVERSED);
     }
 
     /** Remove an element in subtree rooted at {@code subtreeRoot}. Returns {@code true} if an element was deleted. */
@@ -342,12 +346,22 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
                 root = newNode;
             }
         }
+
+        /** Returns smaller child according to {@code direction}. */
+        private Node smallerChild(Direction direction) {
+            return direction == Direction.NORMAL ? leftChild : rightChild;
+        }
+
+        /** Returns bigger child according to {@code direction}. */
+        private Node biggerChild(Direction direction) {
+            return direction == Direction.NORMAL ? rightChild : leftChild;
+        }
     }
 
     private class TreeSetIterator implements Iterator<E> {
         private int acceptedModificationCount;
         private Node previousNode; // used in remove()
-        private boolean reverse;
+        private Direction direction;
         private Node nextNode;
 
         private TreeSetIterator() {
@@ -358,8 +372,8 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             assert direction != null;
             acceptedModificationCount = modificationCount;
             previousNode = null;
-            this.reverse = direction == Direction.REVERSED;
-            nextNode = reverse ? getBiggest(root) : getLeast(root);
+            this.direction = direction;
+            nextNode = getLeast(root, direction);
         }
 
         /** Check whether the set was modified by something other that this iterator */
@@ -385,11 +399,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             checkConcurrentAccess();
             previousNode = nextNode;
             var nextElement = nextNode.element;
-            if ((reverse ? nextNode.leftChild : nextNode.rightChild) != null) {
-                nextNode = reverse ? getBiggest(nextNode.leftChild) : getLeast(nextNode.rightChild);
+            if (nextNode.biggerChild(direction) != null) {
+                nextNode = getLeast(nextNode.biggerChild(direction), direction);
             } else {
-                while (nextNode.parent != null &&
-                       (reverse ? nextNode.parent.leftChild : nextNode.parent.rightChild) == nextNode) {
+                while (nextNode.parent != null && nextNode.parent.biggerChild(direction) == nextNode) {
                     nextNode = nextNode.parent;
                 }
                 nextNode = nextNode.parent;
