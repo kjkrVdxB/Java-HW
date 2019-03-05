@@ -349,11 +349,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
 
         /** Returns smaller child according to {@code direction}. */
         private Node smallerChild(Direction direction) {
+            assert direction != null;
             return direction == Direction.NORMAL ? leftChild : rightChild;
         }
 
         /** Returns bigger child according to {@code direction}. */
         private Node biggerChild(Direction direction) {
+            assert direction != null;
             return direction == Direction.NORMAL ? rightChild : leftChild;
         }
     }
