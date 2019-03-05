@@ -361,8 +361,13 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private class TreeSetIterator implements Iterator<E> {
+        /** Tree modification count that this iterator expects to see, so it can detexd concurrent access. */
         private int acceptedModificationCount;
-        private Node previousNode; // used in remove()
+        /**
+         * Node that is previous to {@code nextNode} in the order. Used in implementation of {@code remove()}
+         * method.
+         */
+        private Node previousNode;
         private Direction direction;
         private Node nextNode;
 
