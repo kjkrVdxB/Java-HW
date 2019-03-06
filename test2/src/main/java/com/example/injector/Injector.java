@@ -18,8 +18,8 @@ public class Injector {
 
 
     /**
-     * Create and initialize object of `rootClassName` class using classes from
-     * `implementationClassNames` for concrete dependencies.
+     * Create and initialize object of {@code className} class using classes from
+     * {@code implementations} for concrete dependencies.
      *
      * @throws ClassNotFoundException           if one of the classes was not found
      * @throws IllegalAccessException           if constructor could not be called because of access violation
