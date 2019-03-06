@@ -21,13 +21,13 @@ public class Injector {
      * Create and initialize object of `rootClassName` class using classes from
      * `implementationClassNames` for concrete dependencies.
      *
-     * @throws ClassNotFoundException if one of the classes was not found
-     * @throws IllegalAccessException if constructor could not be called because of access violation
-     * @throws InstantiationException if constructor could not be called
-     * @throws InvocationTargetException if constructor could not be called
-     * @throws InjectionCycleException if dependency cycle was found
+     * @throws ClassNotFoundException           if one of the classes was not found
+     * @throws IllegalAccessException           if constructor could not be called because of access violation
+     * @throws InstantiationException           if constructor could not be called
+     * @throws InvocationTargetException        if constructor could not be called
+     * @throws InjectionCycleException          if dependency cycle was found
      * @throws AmbiguousImplementationException if there were multiple implementations for required class
-     * @throws ImplementationNotFoundException if one of the dependencies could not be fulfilled
+     * @throws ImplementationNotFoundException  if one of the dependencies could not be fulfilled
      */
     public static Object initialize(String className, List<String> implementations) throws ClassNotFoundException,
                                                                                            IllegalAccessException,
@@ -39,23 +39,27 @@ public class Injector {
         if (className == null) {
             throw new IllegalArgumentException("className can not be null");
         }
-        for (var implementationName: implementations) {
+        for (var implementationName : implementations) {
             if (implementationName == null) {
                 throw new IllegalArgumentException("implementation class name can not be null");
             }
         }
         Class<?> clazz = Class.forName(className);
         availableImplementations.add(clazz);
-        for (var implementationName: implementations) {
+        for (var implementationName : implementations) {
             availableImplementations.add(Class.forName(implementationName));
         }
-        for (var implementation: availableImplementations) {
+        for (var implementation : availableImplementations) {
             statuses.put(implementation, Status.IGNORED);
         }
-        var result = inject(clazz);
-        statuses.clear();
-        instances.clear();
-        availableImplementations.clear();
+        Object result;
+        try {
+            result = inject(clazz);
+        } finally {
+            statuses.clear();
+            instances.clear();
+            availableImplementations.clear();
+        }
         return result;
     }
 
@@ -65,6 +69,7 @@ public class Injector {
                                                         InjectionCycleException,
                                                         AmbiguousImplementationException,
                                                         ImplementationNotFoundException {
+        assert clazz != null;
         var status = statuses.get(clazz);
         if (status == Status.LOADED) {
             return instances.get(clazz);
@@ -73,7 +78,7 @@ public class Injector {
             throw new InjectionCycleException();
         }
         statuses.put(clazz, Status.IN_PROGRESS);
-        var accumulatedParameters = new ArrayList<Object>();
+        var accumulatedParameters = new ArrayList<>();
         for (var dependency : getDependencies(clazz)) {
             accumulatedParameters.add(inject(findImplementation(dependency)));
         }

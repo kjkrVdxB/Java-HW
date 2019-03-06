@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class InjectorTest {
-
     @Test
     public void injectorShouldInitializeClassWithoutDependencies()
             throws Exception {
