@@ -36,7 +36,7 @@ class ReflectorTest {
 
     @Test
     void testClassWithModifiers() throws IOException, ClassNotFoundException {
-        runPrintCompareTest(ClassWithVariousModifiers.class);
+        runPrintCompareTest(ClassWithModifiers.class);
     }
 
     @Test

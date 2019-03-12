@@ -52,6 +52,14 @@ class JavaPrinterTest {
                              "    }\n" +
                              "\n" +
                              "    void e(short arg0, short arg1) { }\n" +
+                             "\n" +
+                             "    char h() {\n" +
+                             "        return ' ';\n" +
+                             "    }\n" +
+                             "\n" +
+                             "    boolean i() {\n" +
+                             "        return false;\n" +
+                             "    }\n" +
                              "}\n";
         assertEquals(expectedOutput, printStructureToString(ClassWithMethods.class));
     }
@@ -60,19 +68,21 @@ class JavaPrinterTest {
     void testClassWithModifiers() {
         var expectedOutput = "package com.example.reflector;\n" +
                              "\n" +
-                             "public class ClassWithVariousModifiers {\n" +
-                             "    private int a;\n" +
-                             "    protected int b;\n" +
+                             "public class ClassWithModifiers {\n" +
+                             "    private transient int a;\n" +
+                             "    protected volatile int b;\n" +
                              "    int c;\n" +
                              "    static int d;\n" +
                              "\n" +
-                             "    private ClassWithVariousModifiers() { }\n" +
+                             "    private ClassWithModifiers() { }\n" +
                              "\n" +
-                             "    protected ClassWithVariousModifiers(int arg0) { }\n" +
+                             "    protected ClassWithModifiers(int arg0) { }\n" +
+                             "\n" +
+                             "    public native java.lang.String f();\n" +
                              "\n" +
                              "    public static void f(int arg0) { }\n" +
                              "}\n";
-        assertEquals(expectedOutput, printStructureToString(ClassWithVariousModifiers.class));
+        assertEquals(expectedOutput, printStructureToString(ClassWithModifiers.class));
     }
 
     @Test
@@ -207,9 +217,9 @@ class JavaPrinterTest {
                              "public class ClassWithTypeMultipleExtends {\n" +
                              "    <P, O extends com.example.reflector.ClassWithTypeMultipleExtends.I1 & com.example.reflector.ClassWithTypeMultipleExtends.I2> ClassWithTypeMultipleExtends(O arg0) { }\n" +
                              "\n" +
-                             "    interface I1 { }\n" +
+                             "    interface I1 {}\n" +
                              "\n" +
-                             "    interface I2 { }\n" +
+                             "    interface I2 {}\n" +
                              "}\n";
         assertEquals(expectedOutput, printStructureToString(ClassWithTypeMultipleExtends.class));
     }
@@ -233,6 +243,9 @@ class JavaPrinterTest {
                              "@org.checkerframework.checker.nullness.qual.Nullable()\n" +
                              "public class ClassWithAnnotations extends java.lang.@org.checkerframework.checker.nullness.qual.Nullable() Object {\n" +
                              "    final java.lang.@org.checkerframework.checker.nullness.qual.NonNull() String a = null;\n" +
+                             "\n" +
+                             "    @java.lang.Deprecated(forRemoval=false, since=\"\")\n" +
+                             "    ClassWithAnnotations() { }\n" +
                              "\n" +
                              "    <@org.checkerframework.checker.nullness.qual.NonNull() T extends java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> ClassWithAnnotations(@org.checkerframework.checker.nullness.qual.Nullable() T @org.checkerframework.checker.nullness.qual.NonNull() [] arg0) { }\n" +
                              "\n" +

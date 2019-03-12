@@ -28,19 +28,25 @@ class ClassWithMethods {
     String c(String d) { return null; }
 
     void e(short f, short g) { }
+
+    char h() { return 0; }
+
+    boolean i() { return true; }
 }
 
-class ClassWithVariousModifiers {
-    private int a;
-    protected int b;
+class ClassWithModifiers {
+    private transient int a;
+    protected volatile int b;
     int c;
     static int d;
 
-    private ClassWithVariousModifiers() { }
+    private ClassWithModifiers() { }
 
-    protected ClassWithVariousModifiers(int a) { }
+    protected ClassWithModifiers(int a) { }
 
     public static void f(final int a) { }
+
+    public native String f();
 }
 
 class ClassWithTypeParameters<U> {
@@ -129,6 +135,9 @@ class ClassWithAnnotations extends @Nullable Object {
     <T> @Nullable Object m(@NonNull T o, Collection<@NonNull ? extends @Nullable Class> c) {
         return null;
     }
+
+    @Deprecated
+    ClassWithAnnotations() { }
 }
 
 class ClassWithInnerEnum {

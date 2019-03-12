@@ -31,9 +31,7 @@ public class JavaPrinter {
 
     private void indent(boolean betweenBraces) {
         // all this is so an interface with no members is printed neatly
-        if (betweenBraces && needIndentBetweenBraces) {
-            writer.print(" ");
-        } else {
+        if (!betweenBraces || !needIndentBetweenBraces) {
             for (int i = 0; i < indentationLevel; ++i) {
                 writer.print("    ");
             }
@@ -154,7 +152,7 @@ public class JavaPrinter {
      * Despite this looks like printTypeArguments(), it is not actually the same since there is no way to get
      * AnnotatedTypeVariables of type parameters.
      */
-    private void printTypeParameters(@NonNull TypeVariable<?>[] typeArguments) {
+    private void printTypeParameters(@NonNull TypeVariable<?> @NonNull [] typeArguments) {
         if (typeArguments.length == 0) {
             return;
         }
@@ -209,7 +207,8 @@ public class JavaPrinter {
         printAnnotationsMultiLine(method.getDeclaredAnnotations());
         indent();
         printMethodHeader(method);
-        if (Modifier.isAbstract(method.getModifiers()) && !method.isDefault()) {
+        if ((Modifier.isAbstract(method.getModifiers()) && !method.isDefault()) ||
+             Modifier.isNative(method.getModifiers())){
             writer.println(";");
         } else {
             if (method.getReturnType() == void.class) {
@@ -259,8 +258,8 @@ public class JavaPrinter {
     }
 
     private void printConstructor(@NonNull Constructor<?> constructor) {
-        indent();
         printAnnotationsMultiLine(constructor.getDeclaredAnnotations());
+        indent();
         int modifiers = constructor.getModifiers();
         if (constructor.getDeclaringClass().isEnum()) {
             // all constructors in enums are private by default
@@ -298,7 +297,7 @@ public class JavaPrinter {
         writer.println(" { }");
     }
 
-    private void printArgumentList(@NonNull Parameter[] parameters) {
+    private void printArgumentList(@NonNull Parameter @NonNull [] parameters) {
         writer.print("(");
         boolean first = true;
         int position = 0;
@@ -353,6 +352,7 @@ public class JavaPrinter {
 
         indent();
         writer.println("    return " + defaultValueForType(returnClass) + ";");
+
         indent();
         writer.println("}");
     }
@@ -474,7 +474,7 @@ public class JavaPrinter {
         writer.print("[]");
     }
 
-    private void printTypeArguments(@NonNull AnnotatedType[] typeParameters) {
+    private void printTypeArguments(@NonNull AnnotatedType @NonNull [] typeParameters) {
         if (typeParameters.length == 0) {
             return;
         }
@@ -492,14 +492,14 @@ public class JavaPrinter {
 
     // Annotations
 
-    private void printAnnotationsOneLine(@NonNull Annotation[] annotations) {
+    private void printAnnotationsOneLine(@NonNull Annotation @NonNull [] annotations) {
         for (var annotation: annotations) {
             printAnnotation(annotation);
             writer.print(" ");
         }
     }
 
-    private void printAnnotationsMultiLine(@NonNull Annotation[] annotations) {
+    private void printAnnotationsMultiLine(@NonNull Annotation @NonNull [] annotations) {
         for (var annotation: annotations) {
             indent();
             printAnnotation(annotation);
@@ -515,6 +515,10 @@ public class JavaPrinter {
 
     private String defaultValueForType(@NonNull Class<?> clazz) {
         assert clazz != void.class;
+
+        if (clazz == char.class) {
+            return "' '";
+        }
 
         var value = Array.get(Array.newInstance(clazz, 1), 0);
         return value == null ? "null" : value.toString();
