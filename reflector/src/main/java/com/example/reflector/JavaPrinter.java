@@ -9,16 +9,15 @@ import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.apache.commons.lang3.math.NumberUtils.*;
-
 import static org.apache.commons.lang3.math.NumberUtils.min;
 
-/** Class for printing java structures to PrintWriter sequentially */
+/** Class for printing java structures to PrintWriter sequentially. */
 public class JavaPrinter {
     private int indentationLevel;
     private final PrintWriter writer;
     private boolean needIndentBetweenBraces;
 
+    /** Create new {@code JavaPrinter} instance with supplied {@code PrintWriter}. */
     public JavaPrinter(@NonNull PrintWriter writer) {
         Validate.notNull(writer, "writer can not be null");
 
@@ -52,6 +51,7 @@ public class JavaPrinter {
 
     // Classes and subclasses
 
+    /** Print given class' structure. */
     public void printClass(@NonNull Class<?> someClass) {
         Validate.notNull(someClass, "someClass can not be null");
 

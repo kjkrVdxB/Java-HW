@@ -21,9 +21,6 @@ public class TestUtils {
 
             printWriter.flush();
             printWriter.close();
-
-            //System.out.println(stringWriter.toString());
-
             result = stringWriter.toString();
         }
         return result;

@@ -9,7 +9,7 @@ import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Comparator;
 
-/** Class for comparing two Java classes */
+/** Class for comparing two Java classes. */
 public class JavaDiff {
     private final PrintWriter writer;
     private final JavaPrinter javaPrinter;
@@ -22,7 +22,7 @@ public class JavaDiff {
         javaPrinter = new JavaPrinter(writer);
     }
 
-    /** Print differences between classes' fields and methods */
+    /** Print differences between classes' fields and methods. */
     public void diffClasses(@NonNull Class<?> classA, @NonNull Class<?> classB) {
         Validate.notNull(classA, "classA can not be null");
         Validate.notNull(classB, "classB can not be null");

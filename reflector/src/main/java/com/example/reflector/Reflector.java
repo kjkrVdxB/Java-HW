@@ -1,11 +1,12 @@
 package com.example.reflector;
 
 import org.checkerframework.checker.nullness.qual.*;
+
 import java.io.*;
 
 import org.apache.commons.lang3.Validate;
 
-/** Reflections utilities, includin class printer and comparator. */
+/** Reflections utilities, including class printer and comparator. */
 public class Reflector {
     /**
      * Prints a class with structure of {@code someClass} to a file named {@code someClass.getName() + ".java"} in

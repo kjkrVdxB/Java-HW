@@ -104,7 +104,6 @@ class ReflectorTest {
 
         var tempDirectory = Files.createTempDirectory("reflectorTest");
         tempDirectory = tempDirectory.toAbsolutePath();
-        System.out.println(tempDirectory.toString());
         var fullPath = tempDirectory.toAbsolutePath().toString() +
                        File.separator +
                        compilationUnit.replace(".", File.separator) + ".java";

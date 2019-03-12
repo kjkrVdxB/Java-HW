@@ -121,7 +121,9 @@ class ClassWithWildcards {
 @Nullable
 class ClassWithAnnotations extends @Nullable Object {
     <@NonNull T extends @Nullable OutputStream> ClassWithAnnotations(@Nullable T @NonNull [] a) { }
-    @NonNull final String a = null;
+
+    @NonNull
+    final String a = null;
 
     @AfterEach
     <T> @Nullable Object m(@NonNull T o, Collection<@NonNull ? extends @Nullable Class> c) {
@@ -136,6 +138,7 @@ class ClassWithInnerEnum {
         C;
 
         E() { }
+
         private E(int a, String b) { }
     }
 }
