@@ -39,7 +39,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     private int compare(Object a, E b, Direction direction) {
-        return compare(a, b) * (direction == Direction.NORMAL ? 1 : -1);
+        if (direction == Direction.NORMAL) {
+            return compare(a, b);
+        }
+        // else reverse the reported order of a and b by multiplying result by -1
+        return -compare(a, b);
     }
 
     /** {@inheritDoc} */
@@ -65,7 +69,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /**
-     * Add an element to the set. If the element is already preset, the set is not modified.
+     * Add an element to the set. If the element is already present, the set is not modified.
      *
      * @param e element to add
      * @return whether the element was added, that is it was not preset in the set before
