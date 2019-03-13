@@ -58,6 +58,10 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return new DescendingTreeSet();
     }
 
+    /**
+     * Check that the element is either not null, or the nulls are accepted. Nulls are accepted if a custom comparator
+     * is used and it accepts nulls.
+     */
     private void checkNull(Object o) {
         if (o != null) {
             return;
