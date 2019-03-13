@@ -248,6 +248,11 @@ public class JavaPrinter {
     }
 
     private void printConstructors(@NonNull Class<?> someClass) {
+        // unfortunately parameters in inner class' constructor for some reason have all generics erased
+        // ignore these constructors.
+        if (!Modifier.isStatic(someClass.getModifiers()) && someClass.isMemberClass()) {
+            return;
+        }
         // sort constructors so the output is stable
         var constructors = someClass.getDeclaredConstructors();
         Arrays.sort(constructors, JavaDiff::compareConstructorsSignatureOnly);
@@ -312,13 +317,6 @@ public class JavaPrinter {
     }
 
     private void printParameter(@NonNull Parameter parameter, int position) {
-        // unfortunately parameters in inner class' constructor for some reason have all generics erased
-        // forbid these constructors to have parameters
-        if ((parameter.getDeclaringExecutable() instanceof Constructor) &&
-            !Modifier.isStatic(parameter.getDeclaringExecutable().getDeclaringClass().getModifiers()) &&
-            parameter.getDeclaringExecutable().getDeclaringClass().isMemberClass()) {
-            throw new IllegalArgumentException("constructors taking arguments in inner classes are forbidden");
-        }
         printModifiers(parameter.getModifiers());
         if (parameter.isVarArgs()) {
             assert parameter.getAnnotatedType() instanceof AnnotatedArrayType;

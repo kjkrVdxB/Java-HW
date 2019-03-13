@@ -134,7 +134,14 @@ class JavaPrinterTest {
 
     @Test
     void testClassWithBadConstructor() {
-        assertThrows(IllegalArgumentException.class, () -> printStructureToString(ClassWithBadConstructor.class));
+        var expectedOutput = "package com.example.reflector;\n" +
+                             "\n" +
+                             "public class ClassWithBadConstructor {\n" +
+                             "    ClassWithBadConstructor() { }\n" +
+                             "\n" +
+                             "    class Inner {}\n" +
+                             "}\n";
+        assertEquals(expectedOutput, printStructureToString(ClassWithBadConstructor.class));
     }
 
     @Test
@@ -193,8 +200,6 @@ class JavaPrinterTest {
                              "    private class B1<T, U> {\n" +
                              "        T a;\n" +
                              "        U b;\n" +
-                             "\n" +
-                             "        private B1() { }\n" +
                              "    }\n" +
                              "}\n";
         assertEquals(expectedOutput, printStructureToString(ClassWithGenericSubclass.class));
