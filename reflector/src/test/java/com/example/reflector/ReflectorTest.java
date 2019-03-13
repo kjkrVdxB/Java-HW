@@ -75,6 +75,12 @@ class ReflectorTest {
     }
 
     @Test
+    void testClassWithExtendsImplements() throws IOException, ClassNotFoundException {
+        runPrintCompareTest(ClassWithExtendsImplements.class);
+    }
+
+
+    @Test
     void testClassWithGenericTypeExtends() throws IOException, ClassNotFoundException {
         runPrintCompareTest(ClassWithGenericTypeExtends.class);
     }

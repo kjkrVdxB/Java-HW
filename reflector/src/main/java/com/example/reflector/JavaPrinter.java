@@ -120,7 +120,7 @@ public class JavaPrinter {
         boolean first = true;
         for (var superinterface: someClass.getAnnotatedInterfaces()) {
             if (!first) {
-                writer.println(", ");
+                writer.print(", ");
             }
             printAnnotatedType(superinterface);
             first = false;

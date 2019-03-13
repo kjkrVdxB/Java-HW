@@ -206,6 +206,18 @@ class JavaPrinterTest {
     }
 
     @Test
+    void testClassWithExtendsImplements() {
+        var expectedOutput = "package com.example.reflector;\n" +
+                             "\n" +
+                             "public class ClassWithExtendsImplements extends java.io.OutputStream implements java.io.Serializable, java.lang.reflect.Type {\n" +
+                             "    ClassWithExtendsImplements() { }\n" +
+                             "\n" +
+                             "    public void write(int arg0) throws java.io.IOException { }\n" +
+                             "}\n";
+        assertEquals(expectedOutput, printStructureToString(ClassWithExtendsImplements.class));
+    }
+
+    @Test
     void testClassWithGenericTypeExtends() {
         var expectedOutput = "package com.example.reflector;\n" +
                              "\n" +

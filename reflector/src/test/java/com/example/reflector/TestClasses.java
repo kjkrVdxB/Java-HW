@@ -4,8 +4,11 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.AfterEach;
 
+import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.lang.reflect.MalformedParametersException;
+import java.lang.reflect.Type;
 import java.util.Collection;
 
 class ClassWithFields {
@@ -103,6 +106,13 @@ class ClassWithGenericSubclass {
     private class B1<T, U> {
         T a;
         U b;
+    }
+}
+
+class ClassWithExtendsImplements extends OutputStream implements Serializable, Type {
+    @Override
+    public void write(int i) throws IOException {
+
     }
 }
 
