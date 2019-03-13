@@ -142,7 +142,7 @@ class ReflectorTest {
     }
 
     static class FirewallClassLoader extends ClassLoader {
-        String blockedCompilationUnit;
+        final String blockedCompilationUnit;
 
         public FirewallClassLoader(ClassLoader parent, String blockedCompilationUnit) {
             super(parent);

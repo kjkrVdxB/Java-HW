@@ -14,7 +14,7 @@ public class TestUtils {
     }
 
     public static String outputFrom(Consumer<PrintWriter> consumer) {
-        String result = null;
+        String result;
         var stringWriter = new StringWriter();
         try (var printWriter = new PrintWriter(stringWriter)) {
             consumer.accept(printWriter);
