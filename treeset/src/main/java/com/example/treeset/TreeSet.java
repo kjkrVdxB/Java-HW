@@ -17,8 +17,6 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     private int size = 0;
     private Node root = null;
 
-    private final String NULL_ARGUMENT_EXCEPTION_MESSAGE = "null elements are prohibited when natural ordering is used";
-
     /** Create new TreeSet with natural ordering. */
     public TreeSet() {
         comparator = null;
@@ -67,7 +65,7 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
             return;
         }
         if (comparator == null) {
-            throw new NullPointerException(NULL_ARGUMENT_EXCEPTION_MESSAGE);
+            throw new NullPointerException("null elements are prohibited when natural ordering is used");
         }
         compare(null, null);
     }
