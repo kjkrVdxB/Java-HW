@@ -161,23 +161,23 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     }
 
     /**
-     * Find the element before given, according to {@code direction}, possibly equal to given if
-     * {@code onEqual} is {@code OnEqual.ACCEPT}.
+     * Find the element before given value, according to {@code direction}, possibly equal to the value if
+     * {@code searchType} is {@code BoundSearchType.LOWER_OR_EQUAL}.
      */
-    private E before(E e, OnEqual onEqual, Direction direction) {
-        assert onEqual != null;
+    private E before(E value, BoundSearchType searchType, Direction direction) {
+        assert searchType != null;
         assert direction != null;
-        checkNull(e);
+        checkNull(value);
         var current = root;
         E before = null;
         while (current != null) {
-            int cmp = compare(e, current.element, direction);
+            int cmp = compare(value, current.element, direction);
             if (cmp > 0) {
                 if (before == null || compare(current.element, before, direction) > 0) {
                     before = current.element;
                 }
                 current = current.biggerChild(direction);
-            } else if (cmp == 0 && onEqual == OnEqual.ACCEPT) {
+            } else if (cmp == 0 && searchType == BoundSearchType.LOWER_OR_EQUAL) {
                 return current.element;
             } else {
                 current = current.smallerChild(direction);
@@ -189,25 +189,25 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /** {@inheritDoc} */
     @Override
     public E lower(E e) {
-        return before(e, OnEqual.REJECT, Direction.NORMAL);
+        return before(e, BoundSearchType.STRICTLY_LOWER, Direction.NORMAL);
     }
 
     /** {@inheritDoc} */
     @Override
     public E floor(E e) {
-        return before(e, OnEqual.ACCEPT, Direction.NORMAL);
+        return before(e, BoundSearchType.LOWER_OR_EQUAL, Direction.NORMAL);
     }
 
     /** {@inheritDoc} */
     @Override
     public E ceiling(E e) {
-        return before(e, OnEqual.ACCEPT, Direction.REVERSED);
+        return before(e, BoundSearchType.LOWER_OR_EQUAL, Direction.REVERSED);
     }
 
     /** {@inheritDoc} */
     @Override
     public E higher(E e) {
-        return before(e, OnEqual.REJECT, Direction.REVERSED);
+        return before(e, BoundSearchType.STRICTLY_LOWER, Direction.REVERSED);
     }
 
     /**
@@ -301,9 +301,11 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
         return size;
     }
 
-    private enum OnEqual {
-        ACCEPT,
-        REJECT,
+    private enum BoundSearchType {
+        /** When searching for a bound consider the elements that are equal to the given value */
+        LOWER_OR_EQUAL,
+        /** When searching for a bound ignore the elements that are equal to the given value */
+        STRICTLY_LOWER
     }
 
     private enum Direction {
