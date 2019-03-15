@@ -59,6 +59,9 @@ public class TreeSet<E> extends AbstractSet<E> implements NavigableSet<E> {
     /**
      * Check that the element is either not null, or the nulls are accepted. Nulls are accepted if a custom comparator
      * is used and it accepts nulls.
+     *
+     * @throws NullPointerException if the specified element is {@code null} and this set uses natural ordering,
+     *                              or its comparator does not permit {@code null} elements
      */
     private void checkNull(Object o) {
         if (o != null) {
