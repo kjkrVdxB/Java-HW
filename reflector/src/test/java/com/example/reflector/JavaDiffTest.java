@@ -13,6 +13,8 @@ import static com.example.reflector.TestUtils.diffClassesToString;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JavaDiffTest {
+    private final static String NEWLINE = System.lineSeparator();
+
     class A1 {
         short a;
         double b;
@@ -27,10 +29,10 @@ class JavaDiffTest {
 
     @Test
     void testDiffBasicFields() {
-        var expectedDiff = "< short a\n" +
-                           "> int a\n" +
-                           "< double b\n" +
-                           "> java.lang.String b\n";
+        var expectedDiff = "< short a" + NEWLINE +
+                           "> int a" + NEWLINE +
+                           "< double b" + NEWLINE +
+                           "> java.lang.String b" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A1.class, B1.class));
     }
 
@@ -46,10 +48,10 @@ class JavaDiffTest {
 
     @Test
     void testDiffFieldsWithoutCounterpart() {
-        var expectedDiff = "< int a\n" +
-                           "< short b\n" +
-                           "> int c\n" +
-                           "> short d\n";
+        var expectedDiff = "< int a" + NEWLINE +
+                           "< short b" + NEWLINE +
+                           "> int c" + NEWLINE +
+                           "> short d" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A2.class, B2.class));
     }
 
@@ -83,8 +85,8 @@ class JavaDiffTest {
 
     @Test
     void testDiffBasicMethods() {
-        var expectedDiff = "< int k(int arg0)\n" +
-                           "> int k(short arg0)\n";
+        var expectedDiff = "< int k(int arg0)" + NEWLINE +
+                           "> int k(short arg0)" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A3.class, B3.class));
     }
 
@@ -110,12 +112,12 @@ class JavaDiffTest {
 
     @Test
     void testDiffFieldsAccessModifiers() {
-        var expectedDiff = "< public int a\n" +
-                           "> private int a\n" +
-                           "< public int b\n" +
-                           "> int b\n" +
-                           "< private int c\n" +
-                           "> protected int c\n";
+        var expectedDiff = "< public int a" + NEWLINE +
+                           "> private int a" + NEWLINE +
+                           "< public int b" + NEWLINE +
+                           "> int b" + NEWLINE +
+                           "< private int c" + NEWLINE +
+                           "> protected int c" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A4.class, B4.class));
     }
 
@@ -141,12 +143,12 @@ class JavaDiffTest {
 
     @Test
     void testDiffMethodsAccessModifiers() {
-        var expectedDiff = "< public void a()\n" +
-                           "> private void a()\n" +
-                           "< public void b()\n" +
-                           "> void b()\n" +
-                           "< private void c()\n" +
-                           "> protected void c()\n";
+        var expectedDiff = "< public void a()" + NEWLINE +
+                           "> private void a()" + NEWLINE +
+                           "< public void b()" + NEWLINE +
+                           "> void b()" + NEWLINE +
+                           "< private void c()" + NEWLINE +
+                           "> protected void c()" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A5.class, B5.class));
     }
 
@@ -166,10 +168,10 @@ class JavaDiffTest {
 
     @Test
     void testDiffGenericMethods() {
-        var expectedDiff = "< <U> void b(U arg0)\n" +
-                           "> <K> void b(K arg0)\n" +
-                           "< <T extends com.example.reflector.JavaDiffTest.A1> void d()\n" +
-                           "> <T extends com.example.reflector.JavaDiffTest.B1> void d()\n";
+        var expectedDiff = "< <U> void b(U arg0)" + NEWLINE +
+                           "> <K> void b(K arg0)" + NEWLINE +
+                           "< <T extends com.example.reflector.JavaDiffTest.A1> void d()" + NEWLINE +
+                           "> <T extends com.example.reflector.JavaDiffTest.B1> void d()" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A6.class, B6.class));
     }
 
@@ -212,18 +214,18 @@ class JavaDiffTest {
 
     @Test
     void testDiffAnnotations() {
-        var expectedDiff = "< java.lang.@org.checkerframework.checker.nullness.qual.NonNull() String c\n" +
-                           "> java.lang.@org.checkerframework.checker.nullness.qual.Nullable() String c\n" +
-                           "< void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)\n" +
-                           "> void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)\n" +
-                           "< void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)\n" +
-                           "> void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)\n" +
-                           "< void p(java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer arg0)\n" +
-                           "> void p(java.lang.Integer arg0)\n" +
-                           "< <@org.checkerframework.checker.nullness.qual.NonNull() T> void r()\n" +
-                           "> <T> void r()\n" +
-                           "< java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer t()\n" +
-                           "> java.lang.Integer t()\n";
+        var expectedDiff = "< java.lang.@org.checkerframework.checker.nullness.qual.NonNull() String c" + NEWLINE +
+                           "> java.lang.@org.checkerframework.checker.nullness.qual.Nullable() String c" + NEWLINE +
+                           "< void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)" + NEWLINE +
+                           "> void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)" + NEWLINE +
+                           "< void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)" + NEWLINE +
+                           "> void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)" + NEWLINE +
+                           "< void p(java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer arg0)" + NEWLINE +
+                           "> void p(java.lang.Integer arg0)" + NEWLINE +
+                           "< <@org.checkerframework.checker.nullness.qual.NonNull() T> void r()" + NEWLINE +
+                           "> <T> void r()" + NEWLINE +
+                           "< java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer t()" + NEWLINE +
+                           "> java.lang.Integer t()" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A8.class, B8.class));
     }
 
@@ -239,8 +241,8 @@ class JavaDiffTest {
 
     @Test
     void testDiffExceptions() {
-        var expectedDiff = "< void b() throws java.lang.Exception, java.lang.IllegalArgumentException, java.lang.NullPointerException\n" +
-                           "> void b() throws java.lang.Exception, java.lang.IllegalArgumentException\n";
+        var expectedDiff = "< void b() throws java.lang.Exception, java.lang.IllegalArgumentException, java.lang.NullPointerException" + NEWLINE +
+                           "> void b() throws java.lang.Exception, java.lang.IllegalArgumentException" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A9.class, B9.class));
     }
 
@@ -256,10 +258,10 @@ class JavaDiffTest {
 
     @Test
     void testDiffParameterTypes() {
-        var expectedDiff = "< <T> void a(java.lang.Class<T> arg0)\n" +
-                           "> <T> void a(java.lang.Class<?> arg0)\n" +
-                           "< <T> void a(java.lang.Class<?>[] arg0)\n" +
-                           "> <T> void a(T arg0)\n";
+        var expectedDiff = "< <T> void a(java.lang.Class<T> arg0)" + NEWLINE +
+                           "> <T> void a(java.lang.Class<?> arg0)" + NEWLINE +
+                           "< <T> void a(java.lang.Class<?>[] arg0)" + NEWLINE +
+                           "> <T> void a(T arg0)" + NEWLINE;
         assertEquals(expectedDiff, diffClassesToString(A10.class, B10.class));
     }
 
