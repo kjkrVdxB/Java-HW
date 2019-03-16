@@ -11,6 +11,8 @@ import java.util.Comparator;
 
 /** Class for comparing two Java classes. */
 public class JavaDiff {
+    private static final String IN_FIRST_PREFIX = "< ";
+    private static final String IN_SECOND_PREFIX = "> ";
     private final PrintWriter writer;
     private final JavaPrinter javaPrinter;
 
@@ -31,6 +33,7 @@ public class JavaDiff {
         diffMethods(classA, classB);
     }
 
+    /** Print differences between classes' fields. */
     private void diffFields(@NonNull Class<?> classA, @NonNull Class<?> classB) {
         // sort fields so that the output is stable
         var fieldsA = classA.getDeclaredFields();
@@ -40,17 +43,16 @@ public class JavaDiff {
             try {
                 fieldB = classB.getDeclaredField(fieldA.getName());
             } catch (NoSuchFieldException e) {
-                writer.print("< ");
+                writer.print(IN_FIRST_PREFIX);
                 javaPrinter.printField(fieldA);
                 writer.println();
-                //writer.println(">");
                 continue;
             }
             if (compareFields(fieldA, fieldB) != 0) {
-                writer.print("< ");
+                writer.print(IN_FIRST_PREFIX);
                 javaPrinter.printField(fieldA);
                 writer.println();
-                writer.print("> ");
+                writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printField(fieldB);
                 writer.println();
             }
@@ -62,8 +64,7 @@ public class JavaDiff {
             try {
                 classA.getDeclaredField(fieldB.getName());
             } catch (NoSuchFieldException e) {
-                //writer.println("<");
-                writer.print("> ");
+                writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printField(fieldB);
                 writer.println();
             }
@@ -72,7 +73,12 @@ public class JavaDiff {
         }
     }
 
+    /** Print differences between classes' fields. */
     private void diffMethods(@NonNull Class<?> classA, @NonNull Class<?> classB) {
+        // Despite the code is very similar to diffFields, the amount of differing elements used
+        // (getDeclaredMethod(s), NoSuchMethodException, compareMethods, printMethodsOneLine,
+        // compereMethodsSignatureOnly) makes it unreasonable to unify them.
+
         // sort methods so that the output is stable
         var methodsA = classA.getDeclaredMethods();
         Arrays.sort(methodsA, JavaDiff::compareMethodsSignatureOnly);
@@ -81,17 +87,16 @@ public class JavaDiff {
             try {
                 methodB = classB.getDeclaredMethod(methodA.getName(), methodA.getParameterTypes());
             } catch (NoSuchMethodException e) {
-                writer.print("< ");
+                writer.print(IN_FIRST_PREFIX);
                 javaPrinter.printMethodOneLine(methodA);
                 writer.println();
-                //writer.println(">");
                 continue;
             }
             if (compareMethods(methodA, methodB) != 0) {
-                writer.print("< ");
+                writer.print(IN_FIRST_PREFIX);
                 javaPrinter.printMethodOneLine(methodA);
                 writer.println();
-                writer.print("> ");
+                writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printMethodOneLine(methodB);
                 writer.println();
             }
@@ -103,8 +108,7 @@ public class JavaDiff {
             try {
                 classA.getDeclaredMethod(methodB.getName(), methodB.getParameterTypes());
             } catch (NoSuchMethodException e) {
-                //writer.println("<");
-                writer.print("> ");
+                writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printMethodOneLine(methodB);
                 writer.println();
             }
@@ -113,6 +117,7 @@ public class JavaDiff {
         }
     }
 
+    /** Compare based on erased types only, useful for sorting */
     static int compareMethodsSignatureOnly(@NonNull Method methodA, @NonNull Method methodB) {
         int namesDiff = methodA.getName().compareTo(methodB.getName());
         if (namesDiff != 0) {
@@ -121,6 +126,7 @@ public class JavaDiff {
         return Arrays.compare(methodA.getParameterTypes(), methodB.getParameterTypes(), JavaDiff::compareClasses);
     }
 
+    /** Compare based on erased types only, useful for sorting */
     static int compareConstructorsSignatureOnly(@NonNull Constructor constructorA, @NonNull Constructor constructorB) {
         return Arrays.compare(constructorA.getParameterTypes(),
                               constructorB.getParameterTypes(),
@@ -327,7 +333,7 @@ public class JavaDiff {
         return compareAnnotatedTypes(a.getAnnotatedType(), b.getAnnotatedType());
     }
 
-    // NB: modifies arrays
+    /** Sort arrays an then compare them. NB: modifies arrays. */
     private static <T> int compareSorted(@NonNull T[] a, @NonNull T[] b, @NonNull Comparator<? super T> comparator) {
         Arrays.sort(a, comparator);
         Arrays.sort(b, comparator);

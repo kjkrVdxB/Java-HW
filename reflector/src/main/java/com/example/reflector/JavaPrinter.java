@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.math.NumberUtils.min;
 public class JavaPrinter {
     private int indentationLevel;
     private final PrintWriter writer;
-    private boolean needIndentBetweenBraces;
+    private boolean needLastIndentation;
 
     /** Create new {@code JavaPrinter} instance with supplied {@code PrintWriter}. */
     public JavaPrinter(@NonNull PrintWriter writer) {
@@ -29,14 +29,18 @@ public class JavaPrinter {
         indent(false);
     }
 
-    private void indent(boolean betweenBraces) {
-        // all this is so an interface with no members is printed neatly
-        if (!betweenBraces || !needIndentBetweenBraces) {
+    /**
+     * Indent based on current indentation level. If {@code inTheEnd} is true, indent only if needed, that is
+     * if no indentation was made before (which means that the class has no elements. It is needed so the class
+     * without elements is printed as 'ClassWithoutElements {}', without and indentation inside brackets.
+     */
+    private void indent(boolean inTheEnd) {
+        if (!inTheEnd || needLastIndentation) {
             for (int i = 0; i < indentationLevel; ++i) {
                 writer.print("    ");
             }
         }
-        needIndentBetweenBraces = false;
+        needLastIndentation = true;
     }
 
     private void printModifiers(int modifiers) {
@@ -96,7 +100,7 @@ public class JavaPrinter {
 
         ++indentationLevel;
 
-        needIndentBetweenBraces = true;
+        needLastIndentation = false;
 
         if (someClass.isEnum()) {
             printEnumConstants(someClass);
@@ -203,12 +207,13 @@ public class JavaPrinter {
         }
     }
 
+    /** Prints method with annotations on multiple lines and with a body */
     private void printMethod(@NonNull Method method) {
         printAnnotationsMultiLine(method.getDeclaredAnnotations());
         indent();
         printMethodHeader(method);
         if ((Modifier.isAbstract(method.getModifiers()) && !method.isDefault()) ||
-             Modifier.isNative(method.getModifiers())){
+            Modifier.isNative(method.getModifiers())) {
             writer.println(";");
         } else {
             if (method.getReturnType() == void.class) {
@@ -219,6 +224,7 @@ public class JavaPrinter {
         }
     }
 
+    /** Prints the part of method declaration after annotations and before body */
     private void printMethodHeader(@NonNull Method method) {
         int modifiers = method.getModifiers();
         if (method.getDeclaringClass().isInterface()) {
@@ -242,6 +248,7 @@ public class JavaPrinter {
         printExceptions(method);
     }
 
+    /** Prints method signature on one line, without body. Useful for diffing. */
     void printMethodOneLine(@NonNull Method method) {
         printAnnotationsOneLine(method.getDeclaredAnnotations());
         printMethodHeader(method);
@@ -275,7 +282,7 @@ public class JavaPrinter {
             modifiers &= ~Modifier.ABSTRACT;
         }
         if (constructor.isVarArgs()) {
-            modifiers &= ~Modifier.TRANSIENT; // what were they even thinking?
+            modifiers &= ~Modifier.TRANSIENT;
         }
         printModifiers(modifiers);
         printTypeParameters(constructor.getTypeParameters());
@@ -285,6 +292,7 @@ public class JavaPrinter {
         writer.print(constructor.getDeclaringClass().getSimpleName());
         if (!Modifier.isStatic(constructor.getDeclaringClass().getModifiers()) &&
             constructor.getDeclaringClass().isMemberClass()) {
+            // first parameter of an inner class is an instance of parent class, ignore it
             int parameterCount = constructor.getParameters().length;
             printArgumentList(Arrays.copyOfRange(constructor.getParameters(),
                                                  min(parameterCount, 1),
@@ -345,11 +353,12 @@ public class JavaPrinter {
         }
     }
 
+    /** Print body for a method with given return class. */
     private void printBody(@NonNull Class<?> returnClass) {
         writer.println(" {");
 
         indent();
-        writer.println("    return " + defaultValueForType(returnClass) + ";");
+        writer.println("    return " + aValueForType(returnClass) + ";");
 
         indent();
         writer.println("}");
@@ -372,7 +381,7 @@ public class JavaPrinter {
             indent();
             printField(field);
             if (Modifier.isFinal(field.getModifiers())) {
-                writer.print(" = " + defaultValueForType(field.getType()));
+                writer.print(" = " + aValueForType(field.getType()));
             }
             writer.println(";");
             first = false;
@@ -511,7 +520,8 @@ public class JavaPrinter {
 
     // Misc
 
-    private String defaultValueForType(@NonNull Class<?> clazz) {
+    /** Return a string, representing a value of given class. */
+    private String aValueForType(@NonNull Class<?> clazz) {
         assert clazz != void.class;
 
         if (clazz == char.class) {
