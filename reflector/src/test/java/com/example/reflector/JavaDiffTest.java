@@ -152,22 +152,22 @@ class JavaDiffTest {
 
     class A6 {
         <T> void a() { }
-        <U> void b() { }
+        <U> void b(U k) { }
         <T extends A1> void c() { }
         <T extends A1> void d() { }
     }
 
     class B6 {
         <T> void a() { }
-        <K> void b() { }
+        <K> void b(K k) { }
         <T extends A1> void c() { }
         <T extends B1> void d() { }
     }
 
     @Test
     void testDiffGenericMethods() {
-        var expectedDiff = "< <U> void b()\n" +
-                           "> <K> void b()\n" +
+        var expectedDiff = "< <U> void b(U arg0)\n" +
+                           "> <K> void b(K arg0)\n" +
                            "< <T extends com.example.reflector.JavaDiffTest.A1> void d()\n" +
                            "> <T extends com.example.reflector.JavaDiffTest.B1> void d()\n";
         assertEquals(expectedDiff, diffClassesToString(A6.class, B6.class));
@@ -193,6 +193,9 @@ class JavaDiffTest {
 
         void k(Collection<? extends @Nullable OutputStream> p) { }
         void l(Collection<? super @Nullable OutputStream> p) { }
+        void p(@NonNull Integer a) { }
+        <@NonNull T> void r() { }
+        @NonNull Integer t() { return 1; }
     }
 
     class B8 {
@@ -202,6 +205,9 @@ class JavaDiffTest {
 
         void k(Collection<? extends @NonNull OutputStream> p) { }
         void l(Collection<? super @NonNull OutputStream> p) { }
+        void p(Integer a) { }
+        <T> void r() { }
+        Integer t() { return null; }
     }
 
     @Test
@@ -211,7 +217,13 @@ class JavaDiffTest {
                            "< void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)\n" +
                            "> void k(java.util.Collection<? extends java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)\n" +
                            "< void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.Nullable() OutputStream> arg0)\n" +
-                           "> void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)\n";
+                           "> void l(java.util.Collection<? super java.io.@org.checkerframework.checker.nullness.qual.NonNull() OutputStream> arg0)\n" +
+                           "< void p(java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer arg0)\n" +
+                           "> void p(java.lang.Integer arg0)\n" +
+                           "< <@org.checkerframework.checker.nullness.qual.NonNull() T> void r()\n" +
+                           "> <T> void r()\n" +
+                           "< java.lang.@org.checkerframework.checker.nullness.qual.NonNull() Integer t()\n" +
+                           "> java.lang.Integer t()\n";
         assertEquals(expectedDiff, diffClassesToString(A8.class, B8.class));
     }
 

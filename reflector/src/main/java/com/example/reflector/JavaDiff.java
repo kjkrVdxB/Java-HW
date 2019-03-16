@@ -225,6 +225,10 @@ public class JavaDiff {
         return compareClasses((Class<?>) typeA.getType(), (Class<?>) typeB.getType());
     }
 
+    /**
+     * If one of the objects is instance of given class, it is considered greater.
+     * If both are, the comparator is used.
+     */
     private static <T, U> int compareIsInstanceAndThen(T a, T b, Class<U> clazz, Comparator<? super U> comparator) {
         if (clazz.isInstance(a)) {
             if (!clazz.isInstance(b)) {
