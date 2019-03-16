@@ -333,6 +333,7 @@ public class PhoneBook implements AutoCloseable {
      * In case rollback() throws another exception, adds it as suppressed to {@code exception}.
      */
     private void tryToRollbackOrAddSuppressedTo(SQLException exception) {
+        assert exception != null;
         try {
             dbConnection.rollback();
         } catch (SQLException rollbackException) {
