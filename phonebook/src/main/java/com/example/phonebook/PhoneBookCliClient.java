@@ -56,14 +56,17 @@ public class PhoneBookCliClient {
                         return;
                     case 1: {
                         out.print("Name: ");
+                        out.flush();
                         var name = inputReader.readLine();
                         out.print("Number: ");
+                        out.flush();
                         var number = inputReader.readLine();
                         phoneBook.addEntry(name, number);
                         break;
                     }
                     case 2: {
                         out.print("Name: ");
+                        out.flush();
                         var name = inputReader.readLine();
                         for (var number: phoneBook.getNumbersByName(name)) {
                             out.println(number);
@@ -72,6 +75,7 @@ public class PhoneBookCliClient {
                     }
                     case 3: {
                         out.print("Number: ");
+                        out.flush();
                         var number = inputReader.readLine();
                         for (var name: phoneBook.getNamesByNumber(number)) {
                             out.println(name);
@@ -80,28 +84,36 @@ public class PhoneBookCliClient {
                     }
                     case 4: {
                         out.print("Name: ");
+                        out.flush();
                         var name = inputReader.readLine();
                         out.print("Number: ");
+                        out.flush();
                         var number = inputReader.readLine();
                         phoneBook.deleteEntry(name, number);
                         break;
                     }
                     case 5: {
                         out.print("Current name: ");
+                        out.flush();
                         var name = inputReader.readLine();
                         out.print("Current number: ");
+                        out.flush();
                         var number = inputReader.readLine();
                         out.print("New name: ");
+                        out.flush();
                         var newName = inputReader.readLine();
                         phoneBook.updateName(name, number, newName);
                         break;
                     }
                     case 6: {
                         out.print("Current name: ");
+                        out.flush();
                         var name = inputReader.readLine();
                         out.print("Current number: ");
+                        out.flush();
                         var number = inputReader.readLine();
                         out.print("New number: ");
+                        out.flush();
                         var newNumber = inputReader.readLine();
                         phoneBook.updateNumber(name, number, newNumber);
                         break;
