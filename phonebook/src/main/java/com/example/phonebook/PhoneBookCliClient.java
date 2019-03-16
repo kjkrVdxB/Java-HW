@@ -31,6 +31,8 @@ public class PhoneBookCliClient {
         var inputReader = new BufferedReader(new InputStreamReader(in));
         try (var phoneBook = new PhoneBook(dbPath)) {
             out.println("Phone book CLI client. Try 'help' for a list of supported commands.");
+
+            // ends when user inputs 0 as an option
             while (true) {
                 var line = inputReader.readLine();
                 if (line.equals("help")) {
@@ -48,54 +50,69 @@ public class PhoneBookCliClient {
                     writeWrongCommandMessage(out, line);
                     continue;
                 }
-                if (option == 0) {
-                    break;
-                } else if (option == 1) {
-                    out.print("Name: ");
-                    var name = inputReader.readLine();
-                    out.print("Number: ");
-                    var number = inputReader.readLine();
-                    phoneBook.addEntry(name, number);
-                } else if (option == 2) {
-                    out.print("Name: ");
-                    var name = inputReader.readLine();
-                    for (var number: phoneBook.getNumbersByName(name)) {
-                        out.println(number);
+                switch (option) {
+                    case 0:
+                        return;
+                    case 1: {
+                        out.print("Name: ");
+                        var name = inputReader.readLine();
+                        out.print("Number: ");
+                        var number = inputReader.readLine();
+                        phoneBook.addEntry(name, number);
+                        break;
                     }
-                } else if (option == 3) {
-                    out.print("Number: ");
-                    var number = inputReader.readLine();
-                    for (var name: phoneBook.getNamesByNumber(number)) {
-                        out.println(name);
+                    case 2: {
+                        out.print("Name: ");
+                        var name = inputReader.readLine();
+                        for (var number: phoneBook.getNumbersByName(name)) {
+                            out.println(number);
+                        }
+                        break;
                     }
-                } else if (option == 4) {
-                    out.print("Name: ");
-                    var name = inputReader.readLine();
-                    out.print("Number: ");
-                    var number = inputReader.readLine();
-                    phoneBook.deleteEntry(name, number);
-                } else if (option == 5) {
-                    out.print("Current name: ");
-                    var name = inputReader.readLine();
-                    out.print("Current number: ");
-                    var number = inputReader.readLine();
-                    out.print("New name: ");
-                    var newName = inputReader.readLine();
-                    phoneBook.updateName(name, number, newName);
-                } else if (option == 6) {
-                    out.print("Current name: ");
-                    var name = inputReader.readLine();
-                    out.print("Current number: ");
-                    var number = inputReader.readLine();
-                    out.print("New number: ");
-                    var newNumber = inputReader.readLine();
-                    phoneBook.updateNumber(name, number, newNumber);
-                } else if (option == 7 ) {
-                    for (var entry: phoneBook.getEntries()) {
-                        out.println(entry.getName() + ": " + entry.getNumber());
+                    case 3: {
+                        out.print("Number: ");
+                        var number = inputReader.readLine();
+                        for (var name: phoneBook.getNamesByNumber(number)) {
+                            out.println(name);
+                        }
+                        break;
                     }
-                } else { // option == 8
-                    phoneBook.deleteAllEntries();
+                    case 4: {
+                        out.print("Name: ");
+                        var name = inputReader.readLine();
+                        out.print("Number: ");
+                        var number = inputReader.readLine();
+                        phoneBook.deleteEntry(name, number);
+                        break;
+                    }
+                    case 5: {
+                        out.print("Current name: ");
+                        var name = inputReader.readLine();
+                        out.print("Current number: ");
+                        var number = inputReader.readLine();
+                        out.print("New name: ");
+                        var newName = inputReader.readLine();
+                        phoneBook.updateName(name, number, newName);
+                        break;
+                    }
+                    case 6: {
+                        out.print("Current name: ");
+                        var name = inputReader.readLine();
+                        out.print("Current number: ");
+                        var number = inputReader.readLine();
+                        out.print("New number: ");
+                        var newNumber = inputReader.readLine();
+                        phoneBook.updateNumber(name, number, newNumber);
+                        break;
+                    }
+                    case 7:
+                        for (var entry: phoneBook.getEntries()) {
+                            out.println(entry.getName() + ": " + entry.getNumber());
+                        }
+                        break;
+                    default:  // option == 8
+                        phoneBook.deleteAllEntries();
+                        break;
                 }
             }
         }
