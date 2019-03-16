@@ -7,17 +7,18 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 public class PhoneBookCliClient {
-    private static final String HELP_STRING = "Enter one of the following numbers:\n" +
-                                              "0 - exit\n" +
-                                              "1 - add record\n" +
-                                              "2 - list numbers by name\n" +
-                                              "3 - list names by number\n" +
-                                              "4 - delete an entry by name and number\n" +
-                                              "5 - update name in the entry specified by current name and number\n" +
-                                              "6 - update number in the entry specified by current name and number\n" +
-                                              "7 - list all entries\n" +
-                                              "8 - delete all entries\n" +
-                                              "and then fill in the requested fields\n";
+    private static final String NEWLINE = System.getProperty("line.separator");
+    private static final String HELP_STRING = "Enter one of the following numbers:" + NEWLINE +
+                                              "0 - exit" + NEWLINE +
+                                              "1 - add record" + NEWLINE +
+                                              "2 - list numbers by name" + NEWLINE +
+                                              "3 - list names by number" + NEWLINE +
+                                              "4 - delete an entry by name and number" + NEWLINE +
+                                              "5 - update name in the entry specified by current name and number" + NEWLINE +
+                                              "6 - update number in the entry specified by current name and number" + NEWLINE +
+                                              "7 - list all entries" + NEWLINE +
+                                              "8 - delete all entries" + NEWLINE +
+                                              "and then fill in the requested fields" + NEWLINE;
 
     public static void main(String[] args) throws IOException {
         String dbPath = args.length == 0 ? ":memory:" : args[0];
