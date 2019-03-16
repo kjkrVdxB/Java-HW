@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PhoneBookCliClientTest {
-    private static final String NEWLINE = System.getProperty("line.separator");
+    private static final String NEWLINE = System.lineSeparator();
 
     @Test
     void testMessages() {

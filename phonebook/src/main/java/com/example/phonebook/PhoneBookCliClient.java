@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 public class PhoneBookCliClient {
-    private static final String NEWLINE = System.getProperty("line.separator");
+    private static final String NEWLINE = System.lineSeparator();
     private static final String HELP_STRING = "Enter one of the following numbers:" + NEWLINE +
                                               "0 - exit" + NEWLINE +
                                               "1 - add record" + NEWLINE +
