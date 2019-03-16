@@ -1,5 +1,6 @@
 package com.example.phonebook;
 
+/** Exception representing phone book storage failure */
 public class PhoneBookStorageException extends RuntimeException {
     public PhoneBookStorageException() { }
 
