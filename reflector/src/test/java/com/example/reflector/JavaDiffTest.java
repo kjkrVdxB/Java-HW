@@ -124,21 +124,33 @@ class JavaDiffTest {
 
     class A5 {
         public void a() { }
+
         public void b() { }
+
         private void c() { }
+
         private void d() { }
+
         protected void e() { }
+
         void f() { }
+
         public void g() { }
     }
 
     class B5 {
         private void a() { }
+
         void b() { }
+
         protected void c() { }
+
         private void d() { }
+
         protected void e() { }
+
         void f() { }
+
         public void g() { }
     }
 
@@ -155,15 +167,21 @@ class JavaDiffTest {
 
     class A6 {
         <T> void a() { }
+
         <U> void b(U k) { }
+
         <T extends A1> void c() { }
+
         <T extends A1> void d() { }
     }
 
     class B6 {
         <T> void a() { }
+
         <K> void b(K k) { }
+
         <T extends A1> void c() { }
+
         <T extends B1> void d() { }
     }
 
@@ -195,9 +213,13 @@ class JavaDiffTest {
         @NonNull String c;
 
         void k(Collection<? extends @Nullable OutputStream> p) { }
+
         void l(Collection<? super @Nullable OutputStream> p) { }
+
         void p(@NonNull Integer a) { }
+
         <@NonNull T> void r() { }
+
         @NonNull Integer t() { return 1; }
     }
 
@@ -207,9 +229,13 @@ class JavaDiffTest {
         @Nullable String c;
 
         void k(Collection<? extends @NonNull OutputStream> p) { }
+
         void l(Collection<? super @NonNull OutputStream> p) { }
+
         void p(Integer a) { }
+
         <T> void r() { }
+
         Integer t() { return null; }
     }
 
@@ -232,11 +258,13 @@ class JavaDiffTest {
 
     class A9 {
         void a() throws Exception, IllegalArgumentException, NullPointerException { }
+
         void b() throws Exception, IllegalArgumentException, NullPointerException { }
     }
 
     class B9 {
         void a() throws NullPointerException, Exception, IllegalArgumentException { }
+
         void b() throws Exception, IllegalArgumentException { }
     }
 
@@ -249,11 +277,13 @@ class JavaDiffTest {
 
     class A10 {
         <T> void a(Class<T> b) { }
+
         <T> void a(Class<?>[] b) { }
     }
 
     class B10 {
         <T> void a(Class<?> b) { }
+
         <T> void a(T b) { }
     }
 

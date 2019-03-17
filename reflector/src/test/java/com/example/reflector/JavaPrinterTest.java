@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Tests here compile classes and check that the output is as expected */
 class JavaPrinterTest {
     private final static String NEWLINE = System.lineSeparator();
-    
+
     @Test
     void testClassWithFields() {
         var expectedOutput = "package com.example.reflector;" + NEWLINE +
@@ -20,7 +20,7 @@ class JavaPrinterTest {
                              "    long c;" + NEWLINE +
                              "" + NEWLINE +
                              "    ClassWithFields() { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithFields.class));
     }
 
@@ -34,7 +34,7 @@ class JavaPrinterTest {
                              "    ClassWithConstructors(int arg0) { }" + NEWLINE +
                              "" + NEWLINE +
                              "    ClassWithConstructors(java.lang.String arg0, int arg1) { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithConstructors.class));
     }
 
@@ -62,7 +62,7 @@ class JavaPrinterTest {
                              "    boolean i() {" + NEWLINE +
                              "        return false;" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithMethods.class));
     }
 
@@ -83,7 +83,7 @@ class JavaPrinterTest {
                              "    public native java.lang.String f();" + NEWLINE +
                              "" + NEWLINE +
                              "    public static void f(int arg0) { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithModifiers.class));
     }
 
@@ -99,7 +99,7 @@ class JavaPrinterTest {
                              "    }" + NEWLINE +
                              "" + NEWLINE +
                              "    <K> void b(K arg0, U arg1) { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithTypeParameters.class));
     }
 
@@ -114,7 +114,7 @@ class JavaPrinterTest {
                 "    void a() throws java.lang.Exception { }" + NEWLINE +
                 "" + NEWLINE +
                 "    void b() throws java.lang.IllegalArgumentException, java.lang.Exception, java.lang.NullPointerException { }" + NEWLINE +
-                "}" + NEWLINE ;
+                "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithExceptions.class));
     }
 
@@ -130,7 +130,7 @@ class JavaPrinterTest {
                              "    <T> T c(java.lang.Class<T> arg0, T arg1) {" + NEWLINE +
                              "        return null;" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithGenerics.class));
     }
 
@@ -142,7 +142,7 @@ class JavaPrinterTest {
                              "    ClassWithBadConstructor() { }" + NEWLINE +
                              "" + NEWLINE +
                              "    class Inner {}" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithBadConstructor.class));
     }
 
@@ -156,7 +156,7 @@ class JavaPrinterTest {
                              "    final java.lang.String c = null;" + NEWLINE +
                              "" + NEWLINE +
                              "    ClassWithFinalFields() { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithFinalFields.class));
     }
 
@@ -170,7 +170,7 @@ class JavaPrinterTest {
                              "    abstract void a();" + NEWLINE +
                              "" + NEWLINE +
                              "    abstract java.lang.String b(int arg0);" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithAbstractMethods.class));
     }
 
@@ -188,7 +188,7 @@ class JavaPrinterTest {
                              "" + NEWLINE +
                              "        java.lang.String b(int arg0);" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithInterface.class));
     }
 
@@ -203,7 +203,7 @@ class JavaPrinterTest {
                              "        T a;" + NEWLINE +
                              "        U b;" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithGenericSubclass.class));
     }
 
@@ -215,7 +215,7 @@ class JavaPrinterTest {
                              "    ClassWithExtendsImplements() { }" + NEWLINE +
                              "" + NEWLINE +
                              "    public void write(int arg0) throws java.io.IOException { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithExtendsImplements.class));
     }
 
@@ -225,7 +225,7 @@ class JavaPrinterTest {
                              "" + NEWLINE +
                              "public class ClassWithGenericTypeExtends {" + NEWLINE +
                              "    <P, O extends java.lang.Class<P>> ClassWithGenericTypeExtends(O arg0) { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithGenericTypeExtends.class));
     }
 
@@ -239,7 +239,7 @@ class JavaPrinterTest {
                              "    interface I1 {}" + NEWLINE +
                              "" + NEWLINE +
                              "    interface I2 {}" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithTypeMultipleExtends.class));
     }
 
@@ -251,7 +251,7 @@ class JavaPrinterTest {
                              "    ClassWithWildcards() { }" + NEWLINE +
                              "" + NEWLINE +
                              "    <T, R> void a(java.util.Collection<? extends T> arg0, java.util.Collection<? super R> arg1) { }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithWildcards.class));
     }
 
@@ -272,7 +272,7 @@ class JavaPrinterTest {
                              "    <T> java.lang.@org.checkerframework.checker.nullness.qual.Nullable() Object m(@org.checkerframework.checker.nullness.qual.NonNull() T arg0, java.util.Collection<@org.checkerframework.checker.nullness.qual.NonNull() ? extends java.lang.@org.checkerframework.checker.nullness.qual.Nullable() Class> arg1) {" + NEWLINE +
                              "        return null;" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithAnnotations.class));
     }
 
@@ -292,13 +292,22 @@ class JavaPrinterTest {
                              "" + NEWLINE +
                              "        E(int arg0, java.lang.String arg1) { }" + NEWLINE +
                              "    }" + NEWLINE +
-                             "}" + NEWLINE ;
+                             "}" + NEWLINE;
         assertEquals(expectedOutput, printStructureToString(ClassWithInnerEnum.class));
     }
 
     @Test
-    void testExceptions() {
+    void testNullClass() {
         assertThrows(NullPointerException.class, () -> new JavaPrinter(null));
+    }
+
+    class ClassNotOnTopLevel {
+
+    }
+
+    @Test
+    void testClassNotOnTopLevel() {
+        assertThrows(IllegalArgumentException.class, () -> printStructureToString(ClassNotOnTopLevel.class));
     }
 
     private String printStructureToString(@NonNull Class<?> clazz) {
