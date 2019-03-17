@@ -1,6 +1,7 @@
 language: java
 jdk: openjdk11
 env:
+    - PROJECT_DIR=hashtable
     - PROJECT_DIR=trie
     - PROJECT_DIR=treeset
 before_install:
