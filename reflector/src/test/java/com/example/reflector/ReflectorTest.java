@@ -14,8 +14,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 import static com.example.reflector.TestUtils.diffClassesToString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** Here are only combined print-compare tests. */
 class ReflectorTest {
@@ -134,7 +133,7 @@ class ReflectorTest {
                                                                      compilationUnit));
         var compiledClass = classLoader.loadClass(compilationUnit);
 
-        assert compiledClass != clazz;
+        assertNotEquals(clazz, compiledClass);
 
         assertEquals("", diffClassesToString(clazz, compiledClass));
 
