@@ -64,16 +64,16 @@ public class JavaDiff {
             try {
                 classA.getDeclaredField(fieldB.getName());
             } catch (NoSuchFieldException e) {
+                // the only fields in B we still did not inspect are the ones that do not have a one with the same name
+                // in A. So we just print all these.
                 writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printField(fieldB);
                 writer.println();
             }
-            // the only fields in B we still did not inspect are the ones that do not have a one with the same name in
-            // A. So we just print all these.
         }
     }
 
-    /** Print differences between classes' fields. */
+    /** Print differences between classes' methods. */
     private void diffMethods(@NonNull Class<?> classA, @NonNull Class<?> classB) {
         // Despite the code is very similar to diffFields, the amount of differing elements used
         // (getDeclaredMethod(s), NoSuchMethodException, compareMethods, printMethodsOneLine,
@@ -108,12 +108,12 @@ public class JavaDiff {
             try {
                 classA.getDeclaredMethod(methodB.getName(), methodB.getParameterTypes());
             } catch (NoSuchMethodException e) {
+                // the only methods in B we still did not inspect are the ones that do not have a one with the same name
+                // and signature in A. So we just print all these.
                 writer.print(IN_SECOND_PREFIX);
                 javaPrinter.printMethodOneLine(methodB);
                 writer.println();
             }
-            // the only methods in B we still did not inspect are the ones that do not have a one with the same name in
-            // A. So we just print all these.
         }
     }
 
