@@ -12,6 +12,7 @@ import java.util.Collection;
 import static com.example.reflector.TestUtils.diffClassesToString;
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Tests here compute the diff between classes and check that the output is as expected */
 class JavaDiffTest {
     private final static String NEWLINE = System.lineSeparator();
 
