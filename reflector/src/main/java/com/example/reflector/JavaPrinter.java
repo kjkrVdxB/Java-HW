@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.math.NumberUtils.min;
 
 /** Class for printing java structures to PrintWriter sequentially. */
 public class JavaPrinter {
+    private static String INDENT_STRING = "    ";
     private int indentationLevel;
     private final PrintWriter writer;
     private boolean needLastIndentation;
@@ -31,13 +32,13 @@ public class JavaPrinter {
 
     /**
      * Indent based on current indentation level. If {@code inTheEnd} is true, indent only if needed, that is
-     * if no indentation was made before (which means that the class has no elements. It is needed so the class
+     * if no indentation was made before (which means that the class has no elements). It is needed so the class
      * without elements is printed as 'ClassWithoutElements {}', without and indentation inside brackets.
      */
     private void indent(boolean inTheEnd) {
         if (!inTheEnd || needLastIndentation) {
             for (int i = 0; i < indentationLevel; ++i) {
-                writer.print("    ");
+                writer.print(INDENT_STRING);
             }
         }
         needLastIndentation = true;
@@ -358,7 +359,7 @@ public class JavaPrinter {
         writer.println(" {");
 
         indent();
-        writer.println("    return " + aValueForType(returnClass) + ";");
+        writer.println(INDENT_STRING + "return " + stringRepresentingValueOf(returnClass) + ";");
 
         indent();
         writer.println("}");
@@ -381,7 +382,7 @@ public class JavaPrinter {
             indent();
             printField(field);
             if (Modifier.isFinal(field.getModifiers())) {
-                writer.print(" = " + aValueForType(field.getType()));
+                writer.print(" = " + stringRepresentingValueOf(field.getType()));
             }
             writer.println(";");
             first = false;
@@ -520,8 +521,8 @@ public class JavaPrinter {
 
     // Misc
 
-    /** Return a string, representing a value of given class. */
-    private String aValueForType(@NonNull Class<?> clazz) {
+    /** Returns a string, representing a value of given class. */
+    private String stringRepresentingValueOf(@NonNull Class<?> clazz) {
         assert clazz != void.class;
 
         if (clazz == char.class) {
