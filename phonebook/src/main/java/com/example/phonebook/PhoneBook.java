@@ -2,6 +2,7 @@ package com.example.phonebook;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,11 +97,7 @@ public class PhoneBook implements AutoCloseable {
         try (var query = dbConnection.prepareStatement(queryString)) {
             query.setString(1, name);
             var queryResult = query.executeQuery();
-            var list = new ArrayList<String>();
-            while (queryResult.next()) {
-                list.add(queryResult.getString(1));
-            }
-            return list;
+            return resultSetToListOfStrings(queryResult);
         } catch (SQLException exception) {
             tryToRollbackOrAddSuppressedTo(exception);
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
@@ -119,11 +116,7 @@ public class PhoneBook implements AutoCloseable {
         try (var query = dbConnection.prepareStatement(queryString)) {
             query.setString(1, number);
             var queryResult = query.executeQuery();
-            var list = new ArrayList<String>();
-            while (queryResult.next()) {
-                list.add(queryResult.getString(1));
-            }
-            return list;
+            return resultSetToListOfStrings(queryResult);
         } catch (SQLException exception) {
             tryToRollbackOrAddSuppressedTo(exception);
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
@@ -275,6 +268,15 @@ public class PhoneBook implements AutoCloseable {
         } catch (SQLException exception) {
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
         }
+    }
+
+    private List<String> resultSetToListOfStrings(ResultSet queryResult) throws SQLException {
+        assert queryResult != null;
+        var list = new ArrayList<String>();
+        while (queryResult.next()) {
+            list.add(queryResult.getString(1));
+        }
+        return list;
     }
 
     /**
