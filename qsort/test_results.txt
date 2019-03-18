@@ -1,0 +1,47 @@
+Results on my machine:
+
+Testing single-threaded qsort
+10 elements: 2.25 ms
+20 elements: 6.25 ms
+40 elements: 14.25 ms
+80 elements: 7.375 ms
+160 elements: 16.5 ms
+320 elements: 47.375 ms
+640 elements: 64.0 ms
+1280 elements: 155.25 ms
+2560 elements: 389.625 ms
+
+Testing parallel qsort with 2 threads
+10 elements: 1.125 ms
+20 elements: 1.375 ms
+40 elements: 2.5 ms
+80 elements: 5.25 ms
+160 elements: 11.25 ms
+320 elements: 26.75 ms
+640 elements: 60.125 ms
+1280 elements: 157.25 ms
+2560 elements: 301.0 ms
+
+Testing parallel qsort with 3 threads
+10 elements: 0.875 ms
+20 elements: 2.125 ms
+40 elements: 4.875 ms
+80 elements: 11.375 ms
+160 elements: 24.875 ms
+320 elements: 51.5 ms
+640 elements: 62.75 ms
+1280 elements: 139.375 ms
+2560 elements: 282.75 ms
+
+Testing parallel qsort with 4 threads
+10 elements: 1.125 ms
+20 elements: 1.875 ms
+40 elements: 5.5 ms
+80 elements: 11.0 ms
+160 elements: 16.875 ms
+320 elements: 34.75 ms
+640 elements: 56.875 ms
+1280 elements: 129.375 ms
+2560 elements: 303.375 ms
+
+There were some abnormalities, but otherwise the parallel algorithm seems to always beat the single-thread one.

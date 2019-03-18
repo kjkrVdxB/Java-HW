@@ -5,6 +5,7 @@ env:
     - PROJECT_DIR=trie
     - PROJECT_DIR=treeset
     - PROJECT_DIR=reflector
+    - PROJECT_DIR=qsort
 before_install:
     - cd "$PROJECT_DIR"
 script:
