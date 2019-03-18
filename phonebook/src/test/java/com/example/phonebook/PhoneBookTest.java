@@ -77,6 +77,16 @@ class PhoneBookTest {
     }
 
     @Test
+    void testContainsEntry() {
+        assertTrue(phonebook.containsEntry("aaa", "111"));
+        assertFalse(phonebook.containsEntry("aaa", "222"));
+        assertFalse(phonebook.containsEntry("ccc", "000"));
+
+        assertThrows(IllegalArgumentException.class, () -> phonebook.deleteEntry(null, "999"));
+        assertThrows(IllegalArgumentException.class, () -> phonebook.deleteEntry("zzz", null));
+    }
+
+    @Test
     void testGetNumbersByName() {
         assertEquals(List.of("000", "111"), phonebook.getNumbersByName("aaa"));
         assertEquals(List.of("000"), phonebook.getNumbersByName("bbb"));
@@ -227,6 +237,7 @@ class PhoneBookTest {
         assertThrows(PhoneBookStorageException.class, () -> phonebook.updateNumber("aaa", "000", "222"));
         assertThrows(PhoneBookStorageException.class, () -> phonebook.updateName("aaa", "000", "ccc"));
         assertThrows(PhoneBookStorageException.class, () -> phonebook.getEntries());
+        assertThrows(PhoneBookStorageException.class, () -> phonebook.containsEntry("aaa", "000"));
         assertThrows(PhoneBookStorageException.class, () -> phonebook.deleteAllEntries());
     }
 

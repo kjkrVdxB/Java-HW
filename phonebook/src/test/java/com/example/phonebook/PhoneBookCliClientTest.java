@@ -19,7 +19,7 @@ class PhoneBookCliClientTest {
         testCli("Phone book CLI client. Try 'help' for a list of supported commands." + NEWLINE +
                 "Enter one of the following numbers:" + NEWLINE +
                 "0 - exit" + NEWLINE +
-                "1 - add record" + NEWLINE +
+                "1 - add an entry" + NEWLINE +
                 "2 - list numbers by name" + NEWLINE +
                 "3 - list names by number" + NEWLINE +
                 "4 - delete an entry by name and number" + NEWLINE +
@@ -62,6 +62,9 @@ class PhoneBookCliClientTest {
                     "Dave" + NEWLINE +
                     "0001" + NEWLINE +
                     "0002" + NEWLINE +
+                    "1" + NEWLINE +
+                    "Dave" + NEWLINE +
+                    "0002" + NEWLINE +
                     "7" + NEWLINE +
                     "8" + NEWLINE +
                     "7" + NEWLINE +
@@ -85,6 +88,9 @@ class PhoneBookCliClientTest {
                              "Current name: " +
                              "Current number: " +
                              "New number: " +
+                             "Name: " +
+                             "Number: " +
+                             "The phone book already contains an equivalent entry" + NEWLINE +
                              "Dave: 0002" + NEWLINE;
         testCli(expectedOutput, input);
     }

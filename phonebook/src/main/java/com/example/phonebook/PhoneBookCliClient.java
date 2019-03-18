@@ -10,7 +10,7 @@ public class PhoneBookCliClient {
     private static final String NEWLINE = System.lineSeparator();
     private static final String HELP_STRING = "Enter one of the following numbers:" + NEWLINE +
                                               "0 - exit" + NEWLINE +
-                                              "1 - add record" + NEWLINE +
+                                              "1 - add an entry" + NEWLINE +
                                               "2 - list numbers by name" + NEWLINE +
                                               "3 - list names by number" + NEWLINE +
                                               "4 - delete an entry by name and number" + NEWLINE +
@@ -61,7 +61,11 @@ public class PhoneBookCliClient {
                         out.print("Number: ");
                         out.flush();
                         var number = inputReader.readLine();
-                        phoneBook.addEntry(name, number);
+                        if (phoneBook.containsEntry(name, number)) {
+                            out.println("The phone book already contains an equivalent entry");
+                        } else {
+                            phoneBook.addEntry(name, number);
+                        }
                         break;
                     }
                     case 2: {

@@ -10,7 +10,7 @@ import java.util.Objects;
 
 /**
  * Phone book implementation backed by SQLite database.
- *
+ * <p>
  * Constructor and all methods throw {@code PhoneBookStorageException} in case of a database failure.
  * Constructor and all methods throw {@code IllegalArgumentException} in case any of {@code String} parameters
  * is {@code null}.
@@ -139,6 +139,28 @@ public class PhoneBook implements AutoCloseable {
                 list.add(new Entry(queryResult.getString(1), queryResult.getString(2)));
             }
             return list;
+        } catch (SQLException exception) {
+            tryToRollbackOrAddSuppressedTo(exception);
+            throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
+        }
+    }
+
+    /** Returns true if the entry is in the phone book. */
+    public boolean containsEntry(String name, String number) {
+        if (name == null) {
+            throw new IllegalArgumentException("Null name is prohibited");
+        }
+        if (number == null) {
+            throw new IllegalArgumentException("Null number is prohibited");
+        }
+        var queryString = "select * from Entry where " +
+                          "PersonId = (select Id from Person where Name = ?) and " +
+                          "PhoneId = (select Id from Phone where Number = ?)";
+        try (var query = dbConnection.prepareStatement(queryString)) {
+            query.setString(1, name);
+            query.setString(2, number);
+            var queryResult = query.executeQuery();
+            return queryResult.next(); // true only if the ResultSet contains at least one element
         } catch (SQLException exception) {
             tryToRollbackOrAddSuppressedTo(exception);
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
