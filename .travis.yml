@@ -1,9 +1,11 @@
 language: java
 jdk: openjdk11
 env:
+    - PROJECT_DIR=hashtable
     - PROJECT_DIR=trie
     - PROJECT_DIR=treeset
     - PROJECT_DIR=phonebook
+    - PROJECT_DIR=reflector
 before_install:
     - cd "$PROJECT_DIR"
 script:
