@@ -10,7 +10,7 @@ public class Main {
     private static final int ELEMENTS_STRINGS_PREFIX_LENGTH = 100000;
     private static final int ELEMENTS_COUNT_START = 10;
     private static final int ELEMENTS_COUNT_END = 2560;
-    private static final int ELEMENTS_COUNT_STEP = 2;
+    private static final int ELEMENTS_COUNT_STEP_MULTIPLIER = 2;
     private static final int SEED = 209;
 
     public static void main(String[] args) {
@@ -19,7 +19,7 @@ public class Main {
                                                  : "Testing parallel qsort with " + threadsCount + " threads");
             for (int elementsCount = ELEMENTS_COUNT_START;
                  elementsCount <= ELEMENTS_COUNT_END;
-                 elementsCount *= ELEMENTS_COUNT_STEP) {
+                 elementsCount *= ELEMENTS_COUNT_STEP_MULTIPLIER) {
                 var random = new Random(SEED);
                 var elementsCountFinal = elementsCount;
                 var threadsCountFinal = threadsCount;
