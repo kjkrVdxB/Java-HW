@@ -13,7 +13,7 @@ import static com.example.qsort.QuickSortUtils.partition;
 /** Class implementing parallel quick sort using thread pool. */
 public class ParallelQuickSort<E extends Comparable<? super E>> {
     private static final int INSERTION_SORT_BOUND = 5;
-    private ExecutorService executorService;
+    private final ExecutorService executorService;
     private CountDownLatch latch;
 
     /**

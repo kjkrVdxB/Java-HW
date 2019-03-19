@@ -57,6 +57,9 @@ public class Main {
 
     /** Generates an array of random integers using given Random instance */
     private static String[] generateStrings(int count, @NonNull Random random) {
-        return Stream.generate(random::nextInt).map(i -> "a".repeat(ELEMENTS_STRINGS_PREFIX_LENGTH) + i).limit(count).toArray(String[]::new);
+        return Stream.generate(random::nextInt)
+                .map(i -> "a".repeat(ELEMENTS_STRINGS_PREFIX_LENGTH) + i)
+                .limit(count)
+                .toArray(String[]::new);
     }
 }
