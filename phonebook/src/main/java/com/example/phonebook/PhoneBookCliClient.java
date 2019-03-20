@@ -1,10 +1,6 @@
 package com.example.phonebook;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 
 public class PhoneBookCliClient {
     private static final String NEWLINE = System.lineSeparator();
@@ -55,12 +51,8 @@ public class PhoneBookCliClient {
                     case 0:
                         return;
                     case 1: {
-                        out.print("Name: ");
-                        out.flush();
-                        var name = inputReader.readLine();
-                        out.print("Number: ");
-                        out.flush();
-                        var number = inputReader.readLine();
+                        var name = prompt(inputReader, out, "Name");
+                        var number = prompt(inputReader, out, "Number");
                         if (phoneBook.containsEntry(name, number)) {
                             out.println("The phone book already contains an equivalent entry");
                         } else {
@@ -69,56 +61,36 @@ public class PhoneBookCliClient {
                         break;
                     }
                     case 2: {
-                        out.print("Name: ");
-                        out.flush();
-                        var name = inputReader.readLine();
+                        var name = prompt(inputReader, out, "Name");
                         for (var number: phoneBook.getNumbersByName(name)) {
                             out.println(number);
                         }
                         break;
                     }
                     case 3: {
-                        out.print("Number: ");
-                        out.flush();
-                        var number = inputReader.readLine();
+                        var number = prompt(inputReader, out, "Number");
                         for (var name: phoneBook.getNamesByNumber(number)) {
                             out.println(name);
                         }
                         break;
                     }
                     case 4: {
-                        out.print("Name: ");
-                        out.flush();
-                        var name = inputReader.readLine();
-                        out.print("Number: ");
-                        out.flush();
-                        var number = inputReader.readLine();
+                        var name = prompt(inputReader, out, "Name");
+                        var number = prompt(inputReader, out, "Number");
                         phoneBook.deleteEntry(name, number);
                         break;
                     }
                     case 5: {
-                        out.print("Current name: ");
-                        out.flush();
-                        var name = inputReader.readLine();
-                        out.print("Current number: ");
-                        out.flush();
-                        var number = inputReader.readLine();
-                        out.print("New name: ");
-                        out.flush();
-                        var newName = inputReader.readLine();
+                        var name = prompt(inputReader, out, "Current name");
+                        var number = prompt(inputReader, out, "Current number");
+                        var newName = prompt(inputReader, out, "New name");
                         phoneBook.updateName(name, number, newName);
                         break;
                     }
                     case 6: {
-                        out.print("Current name: ");
-                        out.flush();
-                        var name = inputReader.readLine();
-                        out.print("Current number: ");
-                        out.flush();
-                        var number = inputReader.readLine();
-                        out.print("New number: ");
-                        out.flush();
-                        var newNumber = inputReader.readLine();
+                        var name = prompt(inputReader, out, "Current name");
+                        var number = prompt(inputReader, out, "Current number");
+                        var newNumber = prompt(inputReader, out, "New number");
                         phoneBook.updateNumber(name, number, newNumber);
                         break;
                     }
@@ -137,5 +109,11 @@ public class PhoneBookCliClient {
 
     private static void writeWrongCommandMessage(PrintStream out, String command) {
         out.println("Number from range [0;8] or 'help' expected, got '" + command + "'. Try again.");
+    }
+
+    private static String prompt(BufferedReader in, PrintStream out, String message) throws IOException {
+        out.print(message + ": ");
+        out.flush();
+        return in.readLine();
     }
 }
