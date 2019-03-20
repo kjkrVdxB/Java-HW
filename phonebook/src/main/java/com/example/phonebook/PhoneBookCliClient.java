@@ -25,6 +25,7 @@ public class PhoneBookCliClient {
         assert in != null;
         assert out != null;
         assert dbPath != null;
+
         var inputReader = new BufferedReader(new InputStreamReader(in));
         try (var phoneBook = new PhoneBook(dbPath)) {
             out.println("Phone book CLI client. Try 'help' for a list of supported commands.");
@@ -108,10 +109,17 @@ public class PhoneBookCliClient {
     }
 
     private static void writeWrongCommandMessage(PrintStream out, String command) {
+        assert out != null;
+        assert command != null;
+
         out.println("Number from range [0;8] or 'help' expected, got '" + command + "'. Try again.");
     }
 
     private static String prompt(BufferedReader in, PrintStream out, String message) throws IOException {
+        assert in != null;
+        assert out != null;
+        assert message != null;
+
         out.print(message + ": ");
         out.flush();
         return in.readLine();

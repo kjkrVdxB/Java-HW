@@ -94,14 +94,7 @@ public class PhoneBook implements AutoCloseable {
         var queryString = "select Number from Entry inner join Phone on " +
                           "PersonId = (select Id from Person where Name = ?) and PhoneId = Id " +
                           "order by Number";
-        try (var query = dbConnection.prepareStatement(queryString)) {
-            query.setString(1, name);
-            var queryResult = query.executeQuery();
-            return resultSetToListOfStrings(queryResult);
-        } catch (SQLException exception) {
-            tryToRollbackOrAddSuppressedTo(exception);
-            throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
-        }
+        return executeQueryWithOneStringParameterAndReturningStrings(queryString, name);
     }
 
     /** Returns a list with names corresponding to the given number. Names are sorted lexicographically. */
@@ -113,10 +106,21 @@ public class PhoneBook implements AutoCloseable {
                           "inner join Person on " +
                           "PhoneId = (select Id from Phone where Number = ?) and PersonId = Id " +
                           "order by Name";
+        return executeQueryWithOneStringParameterAndReturningStrings(queryString, number);
+    }
+
+    private List<String> executeQueryWithOneStringParameterAndReturningStrings(String queryString, String parameter) {
+        assert queryString != null;
+        assert parameter != null;
+
         try (var query = dbConnection.prepareStatement(queryString)) {
-            query.setString(1, number);
+            query.setString(1, parameter);
             var queryResult = query.executeQuery();
-            return resultSetToListOfStrings(queryResult);
+            var list = new ArrayList<String>();
+            while (queryResult.next()) {
+                list.add(queryResult.getString(1));
+            }
+            return list;
         } catch (SQLException exception) {
             tryToRollbackOrAddSuppressedTo(exception);
             throw new PhoneBookStorageException(STORAGE_EXCEPTION_MESSAGE, exception);
@@ -292,20 +296,12 @@ public class PhoneBook implements AutoCloseable {
         }
     }
 
-    private List<String> resultSetToListOfStrings(ResultSet queryResult) throws SQLException {
-        assert queryResult != null;
-        var list = new ArrayList<String>();
-        while (queryResult.next()) {
-            list.add(queryResult.getString(1));
-        }
-        return list;
-    }
-
     /**
      * Insert new name into Person table, if it is not already present there.
      */
     private void insertPersonIfNotExists(String name) {
         assert name != null;
+
         // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Person (Name) values (?)")) {
             update.setString(1, name);
@@ -321,6 +317,7 @@ public class PhoneBook implements AutoCloseable {
      */
     private void insertPhoneIfNotExists(String number) {
         assert number != null;
+
         // Note that here we use SQLite-specific clause "or ignore"
         try (var update = dbConnection.prepareStatement("insert or ignore into Phone (Number) values (?)")) {
             update.setString(1, number);
@@ -358,6 +355,7 @@ public class PhoneBook implements AutoCloseable {
      */
     private void tryToRollbackOrAddSuppressedTo(SQLException exception) {
         assert exception != null;
+
         try {
             dbConnection.rollback();
         } catch (SQLException rollbackException) {
@@ -372,6 +370,7 @@ public class PhoneBook implements AutoCloseable {
         public Entry(String name, String number) {
             assert name != null;
             assert number != null;
+
             this.name = name;
             this.number = number;
         }
