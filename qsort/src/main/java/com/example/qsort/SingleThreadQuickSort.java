@@ -1,5 +1,6 @@
 package com.example.qsort;
 
+import org.apache.commons.lang3.Validate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,8 +16,8 @@ public class SingleThreadQuickSort {
 
     /** Sorts the {@code array} using single-thread quick sort. */
     public static <T extends Comparable<? super T>> void quickSort(@NonNull T[] array) {
-        org.apache.commons.lang3.Validate.notNull(array, "Array can not be null");
-        org.apache.commons.lang3.Validate.noNullElements(array, "Array can not contain null elements");
+        Validate.notNull(array, "Array can not be null");
+        Validate.noNullElements(array, "Array can not contain null elements");
 
         sort(array, 0, array.length);
     }

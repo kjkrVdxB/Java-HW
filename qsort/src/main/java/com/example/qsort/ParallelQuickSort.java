@@ -1,5 +1,6 @@
 package com.example.qsort;
 
+import org.apache.commons.lang3.Validate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.concurrent.CountDownLatch;
@@ -21,8 +22,9 @@ public class ParallelQuickSort<E extends Comparable<? super E>> {
      * and getting randomness from {@code ThreadLocalRandom}.
      */
     public static <T extends Comparable<? super T>> void quickSort(@NonNull T[] array, int nThreads) {
-        org.apache.commons.lang3.Validate.notNull(array, "Array can not be null");
-        org.apache.commons.lang3.Validate.noNullElements(array, "Array can not contain null elements");
+        Validate.notNull(array, "Array can not be null");
+        Validate.noNullElements(array, "Array can not contain null elements");
+        Validate.isTrue(nThreads > 0, "Threads count should be positive");
 
         new ParallelQuickSort<T>(nThreads).sort(array);
     }
