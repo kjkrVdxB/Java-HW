@@ -15,5 +15,6 @@ class ParallelQuickSortTest extends SortTestBase {
         assertThrows(NullPointerException.class, () -> ParallelQuickSort.quickSort(null, 2));
         assertThrows(IllegalArgumentException.class, () -> ParallelQuickSort.quickSort(new Integer[]{null, null}, 2));
         assertThrows(IllegalArgumentException.class, () -> ParallelQuickSort.quickSort(new Integer[]{1, 2}, -7));
+        assertThrows(IllegalArgumentException.class, () -> ParallelQuickSort.quickSort(new Integer[]{1, 2}, 0));
     }
 }
