@@ -4,6 +4,7 @@ env:
     - PROJECT_DIR=hashtable
     - PROJECT_DIR=trie
     - PROJECT_DIR=treeset
+    - PROJECT_DIR=phonebook
     - PROJECT_DIR=reflector
     - PROJECT_DIR=qsort
 before_install:
