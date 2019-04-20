@@ -1,0 +1,8 @@
+package com.example.threadpool;
+
+/** Exception wrapping and exception that happened while computing inside thread pool */
+public class LightExecutionException extends RuntimeException {
+    public LightExecutionException(Throwable cause) {
+        super(cause);
+    }
+}
