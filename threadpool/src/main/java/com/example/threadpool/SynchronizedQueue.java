@@ -52,7 +52,8 @@ public class SynchronizedQueue<E> {
                     }
                 }
             } else {
-                // no read different start.next here since Element::next is volatile
+                // can not read different start.next here since Element.next is volatile
+                // and if we saw a non-null value it will never change
                 start = start.next;
             }
             return result;
