@@ -2,7 +2,7 @@ package com.example.threadpool;
 
 import java.util.function.Supplier;
 
-/** interface of a simple thread pool */
+/** Interface of a simple thread pool */
 public interface ThreadPool {
     /**
      * Submit a task for execution.
