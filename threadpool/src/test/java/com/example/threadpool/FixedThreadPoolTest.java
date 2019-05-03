@@ -122,14 +122,15 @@ class FixedThreadPoolTest {
     void testShutdownComputationIsInterrupted() throws InterruptedException {
         var latch = new CountDownLatch(1);
         var future = poolWithFourThreads.submit(() -> {
-            latch.countDown();
             try {
                 var lock = new Object();
                 //noinspection SynchronizationOnLocalVariableOrMethodParameter
                 synchronized (lock) {
+                    latch.countDown();
                     lock.wait();
                 }
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // notify pool about it
                 return 1;
             }
             return 2;
@@ -137,6 +138,34 @@ class FixedThreadPoolTest {
         latch.await();
         poolWithFourThreads.shutdown();
         assertEquals(1, (int) future.get());
+    }
+
+    // like testShutdownComputationIsInterrupted, but we also wait a little before returning
+    // so if shutdown() waits, the task should be ready after shutdown() completes
+    @RepeatedTest(REPEAT_CONCURRENCY_TESTS_COUNT)
+    void testShutdownWaitsForCompletion() throws InterruptedException {
+        var latch = new CountDownLatch(1);
+        var future = poolWithFourThreads.submit(() -> {
+            try {
+                var lock = new Object();
+                //noinspection SynchronizationOnLocalVariableOrMethodParameter
+                synchronized (lock) {
+                    latch.countDown();
+                    lock.wait();
+                }
+            } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ignored) {
+                }
+                Thread.currentThread().interrupt(); // notify pool about it
+                return 1;
+            }
+            return 2;
+        });
+        latch.await();
+        poolWithFourThreads.shutdown();
+        assertTrue(future.isReady());
     }
 
     @RepeatedTest(REPEAT_CONCURRENCY_TESTS_COUNT)

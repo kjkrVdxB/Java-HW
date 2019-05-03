@@ -64,8 +64,20 @@ public class FixedThreadPool implements ThreadPool {
             synchronized (workerThreads) {
                 if (!shutDown) {
                     shutDown = true;
+                    // first interrupt them all before waiting for them
                     for (var workerThread: workerThreads) {
                         workerThread.interrupt();
+                    }
+                    for (var workerThread: workerThreads) {
+                        // even when we are interrupted we still wait for the workers to finish
+                        while (true) {
+                            try {
+                                workerThread.join();
+                            } catch (InterruptedException ignored) {
+                                continue;
+                            }
+                            break;
+                        }
                     }
                     // NB: we do not clean up the queue (and associated tasks in thenApplyLists) for the following
                     // reasons:

@@ -12,6 +12,6 @@ public interface ThreadPool {
      */
     <T> LightFuture<T> submit(Supplier<? extends T> supplier);
 
-    /** Shut down the pool. Try to stop the tasks by interrupting them. */
+    /** Shut down the pool. Try to stop current tasks by interrupting them and wait for their completion. */
     void shutdown();
 }
