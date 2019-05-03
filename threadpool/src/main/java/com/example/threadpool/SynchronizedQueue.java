@@ -17,6 +17,7 @@ public class SynchronizedQueue<E> {
      * @throws NullPointerException if the passed element is null
      */
     public void push(@NonNull E a) {
+        //noinspection ResultOfMethodCallIgnored
         Validate.notNull(a);
         synchronized (pushLock) {
             if (end == null) {

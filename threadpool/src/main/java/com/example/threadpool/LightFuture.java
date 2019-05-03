@@ -4,13 +4,17 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.function.Function;
 
-/** Interface of a future created by {@link ThreadPool} */
+/**
+ * Interface of a future created by {@link ThreadPool}
+ *
+ * @param <T> type of the result of the computation represented by the future.
+ */
 public interface LightFuture<T> {
     /** Check that the computing finished */
     boolean isReady();
 
     /**
-     * Get the result, lock until it is computed
+     * Get the result, blocking until it is computed.
      *
      * @throws InterruptedException if the thread was interrupted while waiting for computation
      */

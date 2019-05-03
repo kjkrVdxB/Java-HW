@@ -45,6 +45,7 @@ public class FixedThreadPool implements ThreadPool {
     /** {@inheritDoc} */
     @Override
     public <T> LightFuture<T> submit(@NonNull Supplier<? extends T> supplier) {
+        //noinspection ResultOfMethodCallIgnored
         Validate.notNull(supplier);
         if (shutDown) {
             return null;
@@ -76,7 +77,7 @@ public class FixedThreadPool implements ThreadPool {
                     //     the tasks in thenApplyList from being discarded), or maintaining all the tasks in a separate
                     //     list, which would be under another lock, or the workers saving the tasks they compute
                     //     somewhere else, but that would need a lock too since the workers need to pop+save atomically
-                    // * it would introduce  locks common for workers/submit/shutdown thus prevent them from
+                    // * it would introduce locks common for workers/submit/shutdown thus prevent them from
                     //   working concurrently
                     // * this would make the discarded tasks `ready` with an exception propagated to all get()s waiting
                     //   for it, but the name LightExecutionException does not imply this use case, and the assignment
@@ -135,6 +136,7 @@ public class FixedThreadPool implements ThreadPool {
         /** {@inheritDoc} */
         @Override
         public <U> LightFuture<U> thenApply(@NonNull Function<? super T, ? extends U> function) {
+            //noinspection ResultOfMethodCallIgnored
             Validate.notNull(function);
             if (shutDown) {
                 return null;

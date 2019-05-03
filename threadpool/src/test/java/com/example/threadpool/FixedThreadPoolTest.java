@@ -125,6 +125,7 @@ class FixedThreadPoolTest {
             latch.countDown();
             try {
                 var lock = new Object();
+                //noinspection SynchronizationOnLocalVariableOrMethodParameter
                 synchronized (lock) {
                     lock.wait();
                 }
@@ -205,12 +206,14 @@ class FixedThreadPoolTest {
         var results = new int[computationsCount];
         var futures = new LightFuture[computationsCount];
 
-        startSimultaneouslyAndWait(Stream.iterate(0, n -> n + 1).limit(computationsCount).map(i -> (Runnable) () -> {
-            futures[i] = poolWithFourThreads.submit(() -> {
-                results[i] = i * i;
-                return null;
-            });
-        }).collect(Collectors.toList()));
+        startSimultaneouslyAndWait(Stream.iterate(0, n -> n + 1)
+                                           .limit(computationsCount)
+                                           .map(i -> (Runnable) () ->
+                                                   futures[i] = poolWithFourThreads.submit(() -> {
+                                                       results[i] = i * i;
+                                                       return null;
+                                                   })
+        ).collect(Collectors.toList()));
 
         for (var future: futures) {
             future.get();
@@ -299,6 +302,7 @@ class FixedThreadPoolTest {
     @Test
     void testNullThenApplyFunctionException() {
         var future = poolWithFourThreads.submit(() -> 1);
+        //noinspection ConstantConditions
         assertThrows(NullPointerException.class, () -> future.thenApply(null));
     }
 

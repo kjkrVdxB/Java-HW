@@ -79,6 +79,7 @@ class SynchronizedQueueTest {
 
     @Test
     void testPushNullElementException() {
+        //noinspection ConstantConditions
         assertThrows(NullPointerException.class, () -> queue.push(null));
     }
 }
