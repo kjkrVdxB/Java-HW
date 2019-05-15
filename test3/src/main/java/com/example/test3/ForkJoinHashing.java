@@ -4,6 +4,7 @@ import org.apache.commons.lang3.Validate;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -42,6 +43,7 @@ public class ForkJoinHashing {
                 } catch (NoSuchAlgorithmException e) {
                     throw new DirectoryHashComputingException("MD5 algorithm not available", e);
                 }
+                treeDigest.update(root.getFileName().toString().getBytes(Charset.forName("UTF-8")));
                 try {
                     var tasks = new ArrayList<HashingTask>();
                     for (var containingFile: Files.list(root).filter(path -> Files.isRegularFile(path)).sorted(Comparator.comparing(Path::getFileName)).collect(Collectors
