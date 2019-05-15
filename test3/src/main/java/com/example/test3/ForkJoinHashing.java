@@ -37,7 +37,7 @@ public class ForkJoinHashing {
         @Override
         protected byte[] compute() {
             if (Files.isDirectory(root)) {
-                MessageDigest treeDigest = null;
+                MessageDigest treeDigest;
                 try {
                     treeDigest = MessageDigest.getInstance("MD5");
                 } catch (NoSuchAlgorithmException e) {

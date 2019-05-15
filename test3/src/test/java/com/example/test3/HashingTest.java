@@ -42,19 +42,19 @@ class HashingTest {
     }
 
     void testNested(Function<@NonNull Path, byte[]> hash, @NonNull Path tempDir) {
-        var testFile = tempDir.resolve("aaa");
-        createFile(testFile, "aaaa");
         var directory = tempDir.resolve("bbb");
         directory.toFile().mkdirs();
         var testFile2 = directory.resolve("ccc");
         var testFile3 = directory.resolve("ddd");
-
         createFile(testFile2, "ooo");
         createFile(testFile3, "lll");
-
-        var result = hash.apply(testFile);
+        var nestedDir = directory.resolve("uuu");
+        nestedDir.toFile().mkdirs();
+        var testFile4 = nestedDir.resolve("qqqq");
+        createFile(testFile4, "zzz");
+        var result = hash.apply(directory);
         System.out.println(Arrays.toString(result));
-        assertArrayEquals(new byte[]{116, -72, 115, 55, 69, 66, 0, -44, -45, 63, -128, -60, 102, 61, -59, -27}, result);
+        assertArrayEquals(new byte[]{94, 59, 117, -19, -108, 63, -63, 24, -116, -84, 53, -8, -114, -14, -26, 116}, result);
     }
 
     private void createFile(@NonNull Path path, @NonNull String content) {
