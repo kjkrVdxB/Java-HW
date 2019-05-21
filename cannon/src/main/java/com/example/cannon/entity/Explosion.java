@@ -7,7 +7,7 @@ import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import static com.example.cannon.Utils.*;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
 
 /** An entity for an ongoing explosion. */
 public class Explosion extends GameEntity implements Drawable {
@@ -34,9 +34,13 @@ public class Explosion extends GameEntity implements Drawable {
         return getTimeElapsedSeconds(startingTime, time) / duration;
     }
 
-    private double getStrengthAt(long time) {
+    private double getRelativeStrengthAt(long time) {
         double progress = getProgress(time);
         return 1 - sqrt(progress);
+    }
+
+    private double getStrengthAt(long time) {
+        return damageBaseStrength * getRelativeStrengthAt(time);
     }
 
     private double getRadiusAt(long time) {
@@ -46,7 +50,7 @@ public class Explosion extends GameEntity implements Drawable {
     @Override
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.rgb(255, 0, 0, getStrengthAt(getWorld().getCurrentTime())));
+        graphicsContext.setFill(Color.rgb(255, 0, 0, getRelativeStrengthAt(getWorld().getCurrentTime())));
         drawCircle(graphicsContext, position, getRadiusAt(getWorld().getCurrentTime()));
         graphicsContext.restore();
     }
@@ -82,14 +86,30 @@ public class Explosion extends GameEntity implements Drawable {
 
     private void damageOnce(long time) {
         damageTarget(time);
+        damageTerrain(time);
         startedDamaging = true;
         lastDamaged = time;
+    }
+
+    private void damageTerrain(long time) {
+        var vertices = getWorld().getTerrain().getVertices();
+        var radius = getRadiusAt(time);
+        for (int i = 0; i < vertices.size(); ++i) {
+            var vertex = vertices.get(i);
+            var xDiff = abs(vertex.getX() - position.getX());
+            if (xDiff >= radius) {
+                continue;
+            }
+            var fullIntersectionHalfLength = sqrt(radius * radius - xDiff * xDiff);
+            var intersectionLength = max(0, min(2 * fullIntersectionHalfLength, position.getY() + fullIntersectionHalfLength - vertex.getY()));
+            vertices.set(i, vertex.add(new Point2D(0, intersectionLength * getStrengthAt(time) * 0.03)));
+        }
     }
 
     private void damageTarget(long time) {
         var target = getWorld().getTarget();
         if (target.getPosition().distance(position) < target.getRadius() + getRadiusAt(time)) {
-            target.dealDamage(damageBaseStrength * getStrengthAt(time));
+            target.dealDamage(getStrengthAt(time));
         }
     }
 }

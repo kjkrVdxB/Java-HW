@@ -44,7 +44,6 @@ public class Game extends AnimationTimer {
     private final Text currentWeaponText = new Text(10, 30, null);
     @NonNull
     private final Group root;
-    private final World.@NonNull WorldProvider worldProvider;
     private boolean finished = false;
     @NonNull
     private final Consumer<FinishReason> onFinishCallback;
@@ -52,7 +51,6 @@ public class Game extends AnimationTimer {
     public Game(@NonNull Group root, World.@NonNull WorldProvider worldProvider, @NonNull Consumer<FinishReason> onFinishCallback) {
         world = new World(this, worldProvider);
         this.root = root;
-        this.worldProvider = worldProvider;
         this.onFinishCallback = onFinishCallback;
         root.getScene().setOnKeyPressed(this::onKeyPressed);
         root.getScene().setOnKeyReleased(this::onKeyReleased);
