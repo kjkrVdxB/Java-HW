@@ -17,6 +17,7 @@ import javafx.scene.text.Text;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static com.example.cannon.CannonApplication.HEIGHT;
 import static com.example.cannon.CannonApplication.WIDTH;
@@ -45,11 +46,14 @@ public class Game extends AnimationTimer {
     private final Group root;
     private final World.@NonNull WorldProvider worldProvider;
     private boolean finished = false;
+    @NonNull
+    private final Consumer<FinishReason> onFinishCallback;
 
-    public Game(@NonNull Group root, World.@NonNull WorldProvider worldProvider) {
+    public Game(@NonNull Group root, World.@NonNull WorldProvider worldProvider, @NonNull Consumer<FinishReason> onFinishCallback) {
         world = new World(this, worldProvider);
         this.root = root;
         this.worldProvider = worldProvider;
+        this.onFinishCallback = onFinishCallback;
         root.getScene().setOnKeyPressed(this::onKeyPressed);
         root.getScene().setOnKeyReleased(this::onKeyReleased);
 
@@ -133,26 +137,7 @@ public class Game extends AnimationTimer {
         }
         finished = true;
         stop();
-
-        if (reason == FinishReason.USER_EXIT) {
-            Platform.exit();
-        } else if (reason == FinishReason.USER_RESTART) {
-            Platform.runLater(() -> new Game(root, worldProvider).start());
-        } else if (reason == FinishReason.TARGET_DESTROYED) {
-            Platform.runLater(() -> {
-                ButtonType restart = new ButtonType("Restart", ButtonBar.ButtonData.CANCEL_CLOSE);
-                ButtonType exit = new ButtonType("Exit", ButtonBar.ButtonData.OK_DONE);
-                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Target destroyed", restart, exit);
-                alert.setTitle("Game finished");
-                alert.setHeaderText(null);
-                var buttonResult = alert.showAndWait();
-                if (buttonResult.isEmpty() || buttonResult.get() == exit) {
-                    Platform.exit();
-                } else {
-                    new Game(root, worldProvider).start();
-                }
-            });
-        }
+        Platform.runLater(() -> onFinishCallback.accept(reason));
     }
 
     @Override

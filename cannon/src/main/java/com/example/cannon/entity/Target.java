@@ -63,13 +63,14 @@ public class Target extends GameEntity implements Drawable, Damageable {
 
     @Override
     public void update() {
-        // nothing to do here??
+        // nothing to do here yet
     }
 
     @Override
     public void dealDamage(double damage) {
         currentHealth -= damage;
         if (currentHealth < 0) {
+            currentHealth = 0;
             getWorld().finishGame(Game.FinishReason.TARGET_DESTROYED);
         }
     }

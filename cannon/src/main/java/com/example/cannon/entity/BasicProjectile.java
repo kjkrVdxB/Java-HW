@@ -9,10 +9,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import static com.example.cannon.CannonApplication.WIDTH;
 import static com.example.cannon.Utils.*;
 import static com.example.cannon.game.World.GRAVITY;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /** An entity for projectile in flight. */
 public class BasicProjectile extends GameEntity implements Drawable {
-    private static final int CHECK_COLLISIONS_PER_SECOND = 10;
+    private static final int CHECK_COLLISIONS_PER_SECOND = 100;
     @NonNull
     private final Point2D startingPosition;
     @NonNull
@@ -48,9 +50,10 @@ public class BasicProjectile extends GameEntity implements Drawable {
     }
 
     public void update() {
-        long start = getWorld().getPreviousTime();
+        long start = max(getWorld().getPreviousTime(), launchingTime);
         long end = getWorld().getCurrentTime();
-        long step = (long) ((end - start) / (secondsFromNano(end - start) * CHECK_COLLISIONS_PER_SECOND));
+        long checkCollisions = max(1, (long) (secondsFromNano(end - start) * CHECK_COLLISIONS_PER_SECOND));
+        long step = max(1, (end - start) / checkCollisions);
         for (long time = start; time < end; time += step) {
             checkCollisions(getPositionAtWorldTime(time));
         }
@@ -69,13 +72,13 @@ public class BasicProjectile extends GameEntity implements Drawable {
     }
 
     /** Explode in the position. */
-    protected void explode(@NonNull Point2D positon) {
+    protected void explode(@NonNull Point2D position) {
         disappear();
     }
 
     /** Checks that the projectile is to the left of to the right of the screen. */
     private boolean outOfBounds(@NonNull Point2D position) {
-        return position.getX() + radius <= 0 || position.getX() - radius >= WIDTH;
+        return position.getX() + radius <= -WIDTH / 2 || position.getX() - radius >= WIDTH * 1.5;
     }
 
     /** Returns true when we collide with the terrain when in the given position. */

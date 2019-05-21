@@ -3,11 +3,17 @@ package com.example.cannon;
 import com.example.cannon.game.Game;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.FileNotFoundException;
+import java.util.function.Consumer;
 
 public class CannonApplication extends Application {
     public static final double HEIGHT = 600;
@@ -21,7 +27,40 @@ public class CannonApplication extends Application {
         stage.setTitle("Cannon");
         stage.setResizable(false);
 
-        new Game(root, new SimpleWorldLoader("test.layout")).start();
+        new Game(root, new SimpleWorldLoader("test.layout"), new Consumer<Game.FinishReason>() {
+            @Override
+            public void accept(Game.FinishReason finishReason)  {
+                if (finishReason == Game.FinishReason.USER_EXIT) {
+                    Platform.exit();
+                } else if (finishReason == Game.FinishReason.USER_RESTART) {
+                    Platform.runLater(() -> {
+                        try {
+                            new Game(root, new SimpleWorldLoader("test.layout"), this).start();
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                } else if (finishReason == Game.FinishReason.TARGET_DESTROYED) {
+                    Platform.runLater(() -> {
+                        ButtonType restart = new ButtonType("Restart", ButtonBar.ButtonData.CANCEL_CLOSE);
+                        ButtonType exit = new ButtonType("Exit", ButtonBar.ButtonData.OK_DONE);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Target destroyed", restart, exit);
+                        alert.setTitle("Game finished");
+                        alert.setHeaderText(null);
+                        var buttonResult = alert.showAndWait();
+                        if (buttonResult.isEmpty() || buttonResult.get() == exit) {
+                            Platform.exit();
+                        } else {
+                            try {
+                                new Game(root, new SimpleWorldLoader("test.layout"), this).start();
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
+        }).start();
 
         stage.show();
     }

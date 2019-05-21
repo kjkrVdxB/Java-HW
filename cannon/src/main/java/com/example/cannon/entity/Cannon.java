@@ -70,6 +70,16 @@ public class Cannon extends GameEntity implements Drawable {
         graphicsContext.closePath();
         graphicsContext.fill();
         graphicsContext.restore();
+        graphicsContext.save();
+        graphicsContext.translate(basePosition.getX(), basePosition.getY());
+        graphicsContext.setFill(Color.BROWN);
+        graphicsContext.beginPath();
+        graphicsContext.moveTo(SIZE / 2, 0);
+        graphicsContext.lineTo(0, -SIZE / 2);
+        graphicsContext.lineTo(-SIZE / 2, 0);
+        graphicsContext.closePath();
+        graphicsContext.fill();
+        graphicsContext.restore();
     }
 
     @Override
@@ -102,8 +112,9 @@ public class Cannon extends GameEntity implements Drawable {
 
     private void launchOne(long timeNano) {
         assert weapon != null;
-        var projectile = weapon.getProjectile(basePosition.add(0, -LAUNCHING_POSITION_HEIGHT
-        ), vectorByAngle(angle), timeNano);
+        var projectile = weapon.getProjectile(basePosition.add(0, -LAUNCHING_POSITION_HEIGHT),
+                                              vectorByAngle(angle),
+                                              timeNano);
         spawn(projectile);
         lastLaunch = timeNano;
         launched = true;

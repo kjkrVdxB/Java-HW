@@ -121,6 +121,6 @@ public class Terrain extends GameEntity implements Drawable {
 
     @Override
     public void update() {
-        // nothing to do here??
+        // nothing to do here yet
     }
 }
