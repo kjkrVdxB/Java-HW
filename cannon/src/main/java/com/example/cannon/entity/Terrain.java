@@ -4,6 +4,7 @@ import com.example.cannon.game.GameEntity;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ import static java.lang.Math.sqrt;
 public class Terrain extends GameEntity implements Drawable {
     private static final double SUBDIVIDE_EPSILON = 1;
     private static final int TERRAIN_DRAWING_LAYER = -1;
+    private static final Paint TERRAIN_COLOR = Color.rgb(60, 40, 10);
+    
     /** Vertices of the ground path. 'x' coordinates should increase. */
     @NonNull
     private final List<Point2D> vertices;
@@ -125,7 +128,7 @@ public class Terrain extends GameEntity implements Drawable {
     @Override
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.rgb(60, 40, 10));
+        graphicsContext.setFill(TERRAIN_COLOR);
         graphicsContext.beginPath();
         graphicsContext.moveTo(vertices.get(0).getX(), vertices.get(0).getY());
         for (int i = 1; i < vertices.size(); ++i) {

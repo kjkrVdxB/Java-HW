@@ -28,9 +28,6 @@ public abstract class GameEntity {
         world.unregister(this);
     }
 
-    /** TODO: use this to order updates. */
-    protected int updatePriority() { return 0; }
-
     /** Spawn another entity in the world */
     final protected void spawn(GameEntity entity) {
         world.register(entity);
