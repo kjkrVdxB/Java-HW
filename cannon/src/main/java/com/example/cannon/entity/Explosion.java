@@ -1,7 +1,6 @@
 package com.example.cannon.entity;
 
 import com.example.cannon.game.GameEntity;
-import com.example.cannon.game.World;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -19,8 +18,7 @@ public class Explosion extends GameEntity implements Drawable {
     private final Type type;
     private final long startTime;
 
-    public Explosion(@NonNull World world, @NonNull Type type, @NonNull Point2D position, long startTime) {
-        super(world);
+    public Explosion(@NonNull Type type, @NonNull Point2D position, long startTime) {
         this.type = type;
         this.position = position;
         this.startTime = startTime;

@@ -1,7 +1,6 @@
 package com.example.cannon.entity;
 
 import com.example.cannon.game.GameEntity;
-import com.example.cannon.game.World;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -11,7 +10,8 @@ import java.util.List;
 
 import static com.example.cannon.CannonApplication.HEIGHT;
 import static com.example.cannon.CannonApplication.WIDTH;
-import static java.lang.Math.*;
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 
 /** A class representing groud in the world. */
 public class Terrain extends GameEntity implements Drawable {
@@ -19,8 +19,7 @@ public class Terrain extends GameEntity implements Drawable {
     @NonNull
     private final List<Point2D> vertices;
 
-    public Terrain(@NonNull World world, @NonNull List<Point2D> vertices) {
-        super(world);
+    public Terrain(@NonNull List<Point2D> vertices) {
         this.vertices = vertices;
     }
 
@@ -103,7 +102,7 @@ public class Terrain extends GameEntity implements Drawable {
     @Override
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.BROWN);
+        graphicsContext.setFill(Color.rgb(60, 40, 10));
         graphicsContext.beginPath();
         graphicsContext.moveTo(vertices.get(0).getX(), vertices.get(0).getY());
         for (int i = 1; i < vertices.size(); ++i) {

@@ -7,11 +7,13 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.FileNotFoundException;
+
 public class CannonApplication extends Application {
     public static final double HEIGHT = 600;
     public static final double WIDTH = 800;
 
-    @Override public void start(Stage stage) {
+    @Override public void start(Stage stage) throws FileNotFoundException {
         Group root = new Group();
         Scene scene = new Scene(root);
 
@@ -19,7 +21,7 @@ public class CannonApplication extends Application {
         stage.setTitle("Cannon");
         stage.setResizable(false);
 
-        var gameState = new Game(root);
+        Game gameState = new Game(root, new BasicWorldLoader("test.layout"));
 
         new AnimationTimer() {
             @Override

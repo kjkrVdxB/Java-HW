@@ -1,7 +1,6 @@
 package com.example.cannon.entity;
 
 import com.example.cannon.game.GameEntity;
-import com.example.cannon.game.World;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -11,12 +10,11 @@ import static com.example.cannon.Utils.drawCircle;
 
 /** An entity representing a target. */
 public class Target extends GameEntity implements Drawable {
-    private final static double RADIUS = 20;
+    private final static double RADIUS = 15;
     @NonNull
     private final Point2D position;
 
-    public Target(@NonNull World world, @NonNull Point2D position) {
-        super(world);
+    public Target(@NonNull Point2D position) {
         this.position = new Point2D(position.getX(), position.getY() - RADIUS);
     }
 

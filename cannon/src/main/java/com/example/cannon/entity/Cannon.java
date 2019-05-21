@@ -2,18 +2,16 @@ package com.example.cannon.entity;
 
 import com.example.cannon.Utils;
 import com.example.cannon.game.GameEntity;
-import com.example.cannon.game.World;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static com.example.cannon.Utils.*;
 
 public class Cannon extends GameEntity implements Drawable {
     private final static double RADIUS = 10;
-    private final static double LENGTH = 30;
+    private final static double LENGTH = 20;
     private final static double THICKNESS = 7;
     private final static double ENGINE_POWER = 100;
     private final static double ANGLE_MOVING_SPEED = 2;
@@ -24,12 +22,11 @@ public class Cannon extends GameEntity implements Drawable {
     private boolean launching;
     private int movingDirection;
     private int angleMovingDirection;
-    private Projectile.@Nullable WeaponType projectileWeaponType = null;
+    private Weapon weapon = null;
     private long lastLaunch;
     private boolean launched = false;
 
-    public Cannon(@NonNull World world, double angle, @NonNull Point2D position) {
-        super(world);
+    public Cannon(double angle, @NonNull Point2D position) {
         this.angle = angle;
         this.position = position;
     }
@@ -37,7 +34,7 @@ public class Cannon extends GameEntity implements Drawable {
     public void update() {
         double deltaTime = getWorld().getLastUpdateTimeElapsedSeconds();
         position = getWorld().getTerrain().nextToRight(position, ENGINE_POWER * deltaTime * movingDirection);
-        angle += ANGLE_MOVING_SPEED * deltaTime * angleMovingDirection;
+        angle -= ANGLE_MOVING_SPEED * deltaTime * angleMovingDirection;
         launch();
     }
 
@@ -73,22 +70,22 @@ public class Cannon extends GameEntity implements Drawable {
         return 4;
     }
 
-    public void selectWeapon(Projectile.WeaponType weaponType) {
-        projectileWeaponType = weaponType;
+    public void selectWeapon(Weapon weapon) {
+        this.weapon = weapon;
     }
 
     /** Launching all the projectiles missed in the current frame with getRateLimit intervals */
     private void launch() {
-        if (projectileWeaponType == null || !launching) {
+        if (weapon == null || !launching) {
             return;
         }
-        if (projectileWeaponType.getRateLimit() == Double.POSITIVE_INFINITY) {
+        if (weapon.getRateLimit() == Double.POSITIVE_INFINITY) {
             if (!launched) {
                 launchOne(getWorld().getPreviousTime());
             }
             return;
         }
-        long nanoRateLimit = nanoFromSeconds(projectileWeaponType.getRateLimit());
+        long nanoRateLimit = nanoFromSeconds(weapon.getRateLimit());
         long startingTime = launched ? lastLaunch + nanoRateLimit : getWorld().getPreviousTime();
         for (long time = startingTime; time < getWorld().getCurrentTime(); time += nanoRateLimit) {
             launchOne(time);
@@ -96,8 +93,8 @@ public class Cannon extends GameEntity implements Drawable {
     }
 
     private void launchOne(long time) {
-        assert projectileWeaponType != null;
-        var projectile = new Projectile(getWorld(), position, vectorByAngle(angle), time, projectileWeaponType);
+        assert weapon != null;
+        var projectile = weapon.getProjectile(position, vectorByAngle(angle), time);
         spawn(projectile);
         lastLaunch = time;
         launched = true;

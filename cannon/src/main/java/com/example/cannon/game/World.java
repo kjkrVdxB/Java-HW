@@ -24,13 +24,13 @@ public class World {
     public static final Point2D GRAVITY = new Point2D(0, 500);
 
     @NonNull
-    private final Terrain terrain = new Terrain(this, List.of(new Point2D(0, 400), new Point2D(300, 300), new Point2D(500, 500), new Point2D(WIDTH, 400)));
+    private Terrain terrain;
     @NonNull
-    private final Cannon cannon = new Cannon(this, Math.PI / 4, terrain.getVertices().get(0));
+    private Cannon cannon;
     private long currentTime;
     private long previousTime;
     @NonNull
-    private final Target target = new Target(this, terrain.getVertices().get(2));
+    private Target target;
     @NonNull
     private final List<@NonNull GameEntity> entities = new ArrayList<>();
     @NonNull
@@ -41,15 +41,17 @@ public class World {
     private final Game game;
 
     /** Create a world for the given game. */
-    public World(@NonNull Game game) {
+    public World(@NonNull Game game, @NonNull WorldProvider provider) {
         this.game = game;
+        this.target = provider.getTarget();
+        this.cannon = provider.getCannon();
+        this.terrain = provider.getTerrain();
         register(target);
         register(cannon);
         register(terrain);
         currentTime = System.nanoTime();
         update(currentTime);
     }
-
     /**
      * Update the world.
      *
@@ -80,7 +82,7 @@ public class World {
     /** Draw this world on the canvas. */
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.LAVENDER);
+        graphicsContext.setFill(Color.rgb(100, 150, 250));
         graphicsContext.fillRect(0, 0, WIDTH, HEIGHT);
         graphicsContext.restore();
 
@@ -124,6 +126,7 @@ public class World {
 
     /** Register the entity for receiving updates. */
     void register(GameEntity entity) {
+        entity.setWorld(this);
         newEntities.add(entity);
     }
 
@@ -138,5 +141,11 @@ public class World {
      */
     public void finishGame() {
         game.finish();
+    }
+
+    public interface WorldProvider {
+        Terrain getTerrain();
+        Cannon getCannon();
+        Target getTarget();
     }
 }
