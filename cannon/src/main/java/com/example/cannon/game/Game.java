@@ -6,9 +6,6 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
@@ -67,13 +64,20 @@ public class Game extends AnimationTimer {
         currentWeaponText.setFont(Font.font(null, FontWeight.BOLD, 20));
         root.getChildren().add(currentWeaponText);
 
-        var helper = new StringBuilder("Available weapons:\n");
+        var helpBuilder = new StringBuilder();
+        helpBuilder.append("Controls:\n" +
+                           "Q: exit\n" +
+                           "R: restart\n" +
+                           "Arrow Left/Right: move the cannon\n" +
+                           "Arrow Up/Down: change cannon angle (up - CCW, down - CW)\n" +
+                           "Space/Enter: fire\n\n");
+        helpBuilder.append("Available weapons:\n");
         for (var entry: digitToWeapon.entrySet()) {
-            helper.append(entry.getKey()).append(": ").append(entry.getValue().getName()).append('\n');
+            helpBuilder.append(entry.getKey()).append(": ").append(entry.getValue().getName()).append('\n');
         }
-        helper.append("Any other: Disable");
-        var text = new Text(10, 50, helper.toString());
-        root.getChildren().add(text);
+        helpBuilder.append("Any other: Disable\n");
+        var helpText = new Text(10, 50, helpBuilder.toString());
+        root.getChildren().add(helpText);
     }
 
     private <T extends KeyEvent> void onKeyPressed(T event) {
@@ -122,7 +126,7 @@ public class Game extends AnimationTimer {
     private void selectWeapon(int number) {
         var weapon = digitToWeapon.get(number);
         world.getCannon().selectWeapon(weapon);
-        setCurrentWeaponText(weapon == null ? "None": weapon.getName());
+        setCurrentWeaponText(weapon == null ? "None" : weapon.getName());
     }
 
     private void setCurrentWeaponText(@NonNull String text) {

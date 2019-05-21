@@ -15,6 +15,8 @@ public class Target extends GameEntity implements Drawable, Damageable {
     private final static double MAX_HEALTH = 100;
     private final static double HEALTH_BAR_WIDTH = 40;
     private final static double HEALTH_BAR_HEIGHT = 7;
+    private final static double HEALTH_BAR_OFFSET = 10;
+    private static final int TARGET_DRAWING_LEVEL = 0;
     @NonNull
     private Point2D position;
     private double currentHealth = MAX_HEALTH;
@@ -38,12 +40,14 @@ public class Target extends GameEntity implements Drawable, Damageable {
 
     private void drawHealthBar(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        var center = position.add(new Point2D(0, -RADIUS - 10));
+        var center = position.add(new Point2D(0, -RADIUS - HEALTH_BAR_OFFSET));
         var upperLeft = center.add(new Point2D(-HEALTH_BAR_WIDTH / 2, -HEALTH_BAR_HEIGHT / 2));
         graphicsContext.setFill(Color.BLACK);
-        graphicsContext.fillRect(upperLeft.getX(), upperLeft.getY(), HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+        graphicsContext.fillRect(upperLeft.getX(), upperLeft.getY(),
+                                 HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
         graphicsContext.setFill(Color.RED);
-        graphicsContext.fillRect(upperLeft.getX(), upperLeft.getY(), HEALTH_BAR_WIDTH * currentHealth / MAX_HEALTH, HEALTH_BAR_HEIGHT);
+        graphicsContext.fillRect(upperLeft.getX(), upperLeft.getY(),
+                                 HEALTH_BAR_WIDTH * currentHealth / MAX_HEALTH, HEALTH_BAR_HEIGHT);
         graphicsContext.restore();
     }
 
@@ -57,8 +61,8 @@ public class Target extends GameEntity implements Drawable, Damageable {
     }
 
     @Override
-    public int drawingLayer() {
-        return 0;
+    public int getDrawingLayer() {
+        return TARGET_DRAWING_LEVEL;
     }
 
     @Override

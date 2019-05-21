@@ -6,17 +6,20 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import static com.example.cannon.CannonApplication.HEIGHT;
 import static com.example.cannon.Utils.*;
 import static java.lang.Math.*;
 
 /** An entity for an ongoing explosion. */
 public class Explosion extends GameEntity implements Drawable {
-    private double radius;
-    private double duration;
-    private Point2D position;
-    private long startingTime;
-    private double damageBaseStrength;
-    private double damageInterval;
+    private static final double TERRAIN_DAMAGE_COEFFICIENT = 0.1;
+    private static final int EXPLOSION_DRAWING_LAYER = 2;
+    private final double radius;
+    private final double duration;
+    private final Point2D position;
+    private final long startingTime;
+    private final double damageBaseStrength;
+    private final double damageInterval;
     private boolean startedDamaging;
     private long lastDamaged;
 
@@ -56,8 +59,8 @@ public class Explosion extends GameEntity implements Drawable {
     }
 
     @Override
-    public int drawingLayer() {
-        return 0;
+    public int getDrawingLayer() {
+        return EXPLOSION_DRAWING_LAYER;
     }
 
     @Override
@@ -102,7 +105,8 @@ public class Explosion extends GameEntity implements Drawable {
             }
             var fullIntersectionHalfLength = sqrt(radius * radius - xDiff * xDiff);
             var intersectionLength = max(0, min(2 * fullIntersectionHalfLength, position.getY() + fullIntersectionHalfLength - vertex.getY()));
-            vertices.set(i, vertex.add(new Point2D(0, intersectionLength * getStrengthAt(time) * 0.03)));
+            var lengthToDelete = intersectionLength * atan(getStrengthAt(time) * TERRAIN_DAMAGE_COEFFICIENT) / (Math.PI / 2);
+            vertices.set(i, new Point2D(vertex.getX(), min(HEIGHT, vertex.getY() + lengthToDelete)));
         }
     }
 

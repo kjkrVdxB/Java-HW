@@ -7,6 +7,7 @@ import com.example.cannon.entity.Terrain;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
@@ -18,19 +19,22 @@ import static com.example.cannon.CannonApplication.WIDTH;
 import static com.example.cannon.Utils.getTimeElapsedSeconds;
 
 public class World {
-    /** Gravity on the X axis is of course zero, but just in case. */
-    /** Y 'axis' increases towards the bottom of the screen, so the Y component is positive is positive. */
+    /**
+     * Gravity on the X axis is of course zero, but just in case.
+     * Y axis increases towards the bottom of the screen, so the Y component is positive.
+     */
     @NonNull
     public static final Point2D GRAVITY = new Point2D(0, 500);
+    private static final Paint BACKGROUND_COLOR = Color.rgb(157, 227, 250);
 
     @NonNull
-    private Terrain terrain;
+    private final Terrain terrain;
     @NonNull
-    private Cannon cannon;
+    private final Cannon cannon;
     private long currentTime;
     private long previousTime;
     @NonNull
-    private Target target;
+    private final Target target;
     @NonNull
     private final List<@NonNull GameEntity> entities = new ArrayList<>();
     @NonNull
@@ -52,6 +56,7 @@ public class World {
         currentTime = System.nanoTime();
         update(currentTime);
     }
+
     /**
      * Update the world.
      *
@@ -65,7 +70,7 @@ public class World {
 
     /** Update entities, deleting the ones that unregistered and updating the newly registered ones too. */
     private void entityUpdateLoop() {
-        List<@NonNull GameEntity> entitiesToProcess = new ArrayList<>(entities);
+        List<GameEntity> entitiesToProcess = new ArrayList<>(entities);
         do {
             entitiesToProcess.addAll(newEntities);
             entities.addAll(newEntities);
@@ -82,15 +87,15 @@ public class World {
     /** Draw this world on the canvas. */
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.rgb(157, 227, 250));
+        graphicsContext.setFill(BACKGROUND_COLOR);
         graphicsContext.fillRect(0, 0, WIDTH, HEIGHT);
         graphicsContext.restore();
 
         // Draw the entities that are 'Drawable'
         entities.stream()
                 .filter(e -> e instanceof Drawable)
-                .map(e -> (Drawable)e)
-                .sorted(Comparator.comparing(Drawable::drawingLayer))
+                .map(e -> (Drawable) e)
+                .sorted(Comparator.comparing(Drawable::getDrawingLayer))
                 .forEach(d -> d.draw(graphicsContext));
     }
 
@@ -125,13 +130,13 @@ public class World {
     }
 
     /** Register the entity for receiving updates. */
-    void register(GameEntity entity) {
+    void register(@NonNull GameEntity entity) {
         entity.setWorld(this);
         newEntities.add(entity);
     }
 
     /** Unregister the entity from receiving updates. */
-    void unregister(GameEntity entity) {
+    void unregister(@NonNull GameEntity entity) {
         entitiesToDelete.add(entity);
     }
 
@@ -145,7 +150,9 @@ public class World {
 
     public interface WorldProvider {
         Terrain getTerrain();
+
         Cannon getCannon();
+
         Target getTarget();
     }
 }

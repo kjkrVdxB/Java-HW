@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.example.cannon.Utils.*;
 
+/** An interface representing weapons, that is objects that can generate projectiles. */
 public interface Weapon {
     @NonNull
     GameEntity getProjectile(@NonNull Point2D start, @NonNull Point2D startingDirection, long launchingTime);
@@ -86,11 +87,11 @@ public interface Weapon {
                     startingSpeed = updateStartingSpeed(startingSpeed);
                     return new BasicProjectile(startingPosition, startingSpeed, launchingTime, bombRadius, bombBoost, bombCollisionDamage) {
                         @Override
-                        protected void explode(@NonNull Point2D position) {
+                        protected void explode(@NonNull Point2D position, long timeNano) {
                             if (explosionBuilder != null) {
                                 spawn(explosionBuilder
                                               .setPosition(position)
-                                              .setStartingTime(getWorld().getCurrentTime())
+                                              .setStartingTime(timeNano)
                                               .createExplosion());
                             }
                             disappear();
@@ -125,25 +126,25 @@ public interface Weapon {
                         @Override
                         public void update() {
                             if (getTimeElapsedSeconds(this.launchingTime, getWorld().getCurrentTime()) > boomTime) {
-                                explode(getPositionAtWorldTime(getWorld().getCurrentTime()));
+                                explode(getPositionAtWorldTime(getWorld().getCurrentTime()), getWorld().getCurrentTime());
                             }
                             super.update();
                         }
 
                         @Override
-                        protected void explode(@NonNull Point2D position) {
+                        protected void explode(@NonNull Point2D position, long timeNano) {
                             var piecesCount = ThreadLocalRandom.current().nextInt(3, 6);
                             spawn(new ExplosionBuilder()
                                           .setPosition(position)
-                                          .setStartingTime(getWorld().getCurrentTime())
-                                          .setRadius(60)
+                                          .setStartingTime(timeNano)
+                                          .setRadius(30)
                                           .setDuration(0.5)
-                                          .setDamageBase(10)
-                                          .setDamageInterval(0.5)
+                                          .setDamageBase(1)
+                                          .setDamageInterval(0.02)
                                           .createExplosion());
                             for (int i = 0; i < piecesCount; ++i) {
                                 Point2D direction = vectorByAngle(Math.random() * 2 * Math.PI);
-                                spawn(GRENADE_LAUNCHER.getProjectile(position.add(direction.multiply(15)), direction, getWorld().getCurrentTime()));
+                                spawn(GRENADE_LAUNCHER.getProjectile(position.add(direction.multiply(15)), direction, timeNano));
                             }
                             disappear();
                         }
@@ -181,8 +182,8 @@ public interface Weapon {
             .withExplosionType(new ExplosionBuilder()
                                        .setRadius(200)
                                        .setDuration(10)
-                                       .setDamageBase(10)
-                                       .setDamageInterval(0.1))
+                                       .setDamageBase(2)
+                                       .setDamageInterval(0.02))
             .withBombCollisionDamage(1)
             .createWeapon();
     Weapon PISTOL = new BasicWeaponBuilder()
@@ -201,15 +202,16 @@ public interface Weapon {
             .withRateLimit(0.5)
             .withExplosionType(new ExplosionBuilder()
                                        .setRadius(30)
-                                       .setDuration(0.5)
-                                       .setDamageBase(10)
-                                       .setDamageInterval(0.1))
+                                       .setDuration(0.1)
+                                       .setDamageBase(20)
+                                       .setDamageInterval(0.02))
             .createWeapon();
     Weapon RIFLE = new BasicWeaponBuilder()
             .withName("Rifle")
             .withBombRadius(3)
             .angleStandardDeviation(0.0001)
             .withStartingSpeed(3000)
+            .withBombBoost(0.5)
             .withBombCollisionDamage(30)
             .createWeapon();
     Weapon FUNKY_BOMB = new FunkyBombBuilder()

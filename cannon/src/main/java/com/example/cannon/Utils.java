@@ -8,7 +8,7 @@ import static java.lang.Math.*;
 
 public class Utils {
     public static void drawCircle(@NonNull GraphicsContext graphicsContext, @NonNull Point2D position, double radius) {
-         graphicsContext.fillOval(position.getX() - radius, position.getY() - radius, radius * 2, radius * 2);
+        graphicsContext.fillOval(position.getX() - radius, position.getY() - radius, radius * 2, radius * 2);
     }
 
     @NonNull
@@ -34,6 +34,6 @@ public class Utils {
     }
 
     public static long nanoFromSeconds(double seconds) {
-        return (long)(seconds * 1000000000);
+        return (long) (seconds * 1000000000);
     }
 }

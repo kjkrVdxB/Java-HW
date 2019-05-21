@@ -11,12 +11,12 @@ public abstract class GameEntity {
 
     /** Get the world for this entity. For use in ancestors. */
     @NonNull
-    protected World getWorld() {
+    final protected World getWorld() {
         return world;
     }
 
     /** Set the world for this entity. For use in World. */
-    void setWorld(@NonNull World world) {
+    final void setWorld(@NonNull World world) {
         this.world = world;
     }
 
@@ -24,12 +24,15 @@ public abstract class GameEntity {
     public abstract void update();
 
     /** Remove self from the world. */
-    protected void disappear() {
+    final protected void disappear() {
         world.unregister(this);
     }
 
+    /** TODO: use this to order updates. */
+    protected int updatePriority() { return 0; }
+
     /** Spawn another entity in the world */
-    protected void spawn(GameEntity entity) {
+    final protected void spawn(GameEntity entity) {
         world.register(entity);
     }
 }

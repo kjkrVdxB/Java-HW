@@ -14,9 +14,10 @@ import static com.example.cannon.CannonApplication.WIDTH;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 
-/** A class representing groud in the world. */
+/** A class representing ground in the world. */
 public class Terrain extends GameEntity implements Drawable {
     private static final double SUBDIVIDE_EPSILON = 1;
+    private static final int TERRAIN_DRAWING_LAYER = -1;
     /** Vertices of the ground path. 'x' coordinates should increase. */
     @NonNull
     private final List<Point2D> vertices;
@@ -33,6 +34,7 @@ public class Terrain extends GameEntity implements Drawable {
         return vertices;
     }
 
+    /** Try to create intermediary point, but only if there is no vertexes nearby. */
     private void trySubdivide(double x) {
         int l = vertexRightBefore(x);
         if (x - vertices.get(l).getX() < SUBDIVIDE_EPSILON || vertices.get(l + 1).getX() - x < SUBDIVIDE_EPSILON) {
@@ -41,6 +43,7 @@ public class Terrain extends GameEntity implements Drawable {
         vertices.add(l + 1, new Point2D(x, getHeight(vertices.get(l), vertices.get(l + 1), x)));
     }
 
+    /** Returns the index of the closest (according to X coordinate) vertex in terrain to the left of 'x'. */
     private int vertexRightBefore(double x) {
         int l = 0, r = vertices.size();
         while (r - l > 1) {
@@ -54,19 +57,24 @@ public class Terrain extends GameEntity implements Drawable {
         return l;
     }
 
+    /** Returns the index of the closest (according to X coordinate) vertex in terrain to the right of 'x'. */
     private int vertexRightAfter(double x) {
         return vertexRightBefore(x) + 1;
     }
 
+    /** Returns the height at the given 'x' coordinate. */
     public double getHeight(double x) {
         int l = vertexRightBefore(x);
         return getHeight(vertices.get(l), vertices.get(l + 1), x);
     }
 
+    /** Get height on the segment between 'a' and 'b'. */
     private double getHeight(Point2D a, Point2D b, double x) {
         assert a.getX() <= x && b.getX() >= x;
         return (x - a.getX()) / (b.getX() - a.getX()) * (b.getY() - a.getY()) + a.getY();
     }
+
+    // Math utils specific for terrain. */
 
     private double slope(Point2D a, Point2D b) {
         return (b.getY() - a.getY()) / (b.getX() - a.getX());
@@ -80,20 +88,23 @@ public class Terrain extends GameEntity implements Drawable {
         return 1 / sqrt(1 + slope * slope);
     }
 
+    /** Move from start to the right (if 'distance' is positive) for 'distance'. */
     private Point2D moveOnLine(Point2D a, Point2D b, Point2D start, double distance) {
         double slope = slope(a, b);
         return new Point2D(start.getX() + distance * cosBySlope(slope), start.getY() + distance * sinBySlope(slope));
     }
 
+    /** Checks that the 'point' is under the terrain. */
     public boolean isPointUnder(@NonNull Point2D point) {
         if (point.getX() < vertices.get(0).getX() || point.getX() >= vertices.get(vertices.size() - 1).getX()) {
             return false;
         }
         var height = getHeight(point.getX());
-        return height < point.getY() - 1;
+        return height < point.getY();
     }
 
-    public Point2D nextToRight(Point2D start, double distance) {
+    /** Move the point along the terrain for distance (to the right if 'distance' is positive) */
+    public Point2D move(Point2D start, double distance) {
         int l = vertexRightAfter(start.getX());
         distance -= vertices.get(l).distance(start);
         boolean right = distance > 0;
@@ -128,8 +139,8 @@ public class Terrain extends GameEntity implements Drawable {
     }
 
     @Override
-    public int drawingLayer() {
-        return -1;
+    public int getDrawingLayer() {
+        return TERRAIN_DRAWING_LAYER;
     }
 
     @Override

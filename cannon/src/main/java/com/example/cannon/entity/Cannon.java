@@ -10,17 +10,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import static com.example.cannon.Utils.*;
 import static java.lang.Math.toDegrees;
 
+/** A cannon on the field. */
 public class Cannon extends GameEntity implements Drawable {
+    /** Just some measure that scales the cannon */
     private final static double SIZE = 20;
+    /** AKA speed (but will probably mean something different later). Right now in 'pixels' per second. */
     private final static double ENGINE_POWER = 300;
+    /** In radians per second. */
     private final static double ANGLE_MOVING_SPEED = 2;
+    /** Distance from base to the cannon rotating point. */
     private final static double LAUNCHING_POSITION_HEIGHT = 10;
+    private static final int CANNON_DRAWING_LAYER = 1;
 
     private double angle;
     @NonNull
     private Point2D basePosition;
     private boolean launching;
     private int movingDirection;
+    /** As a coefficient. 1 means CCW, -1 means CW, 0 means no movement. */
     private int angleMovingDirection;
     private Weapon weapon = null;
     private long lastLaunch;
@@ -34,7 +41,7 @@ public class Cannon extends GameEntity implements Drawable {
     public void update() {
         basePosition = new Point2D(basePosition.getX(), getWorld().getTerrain().getHeight(basePosition.getX()));
         double deltaTime = getWorld().getLastUpdateTimeElapsedSeconds();
-        basePosition = getWorld().getTerrain().nextToRight(basePosition, ENGINE_POWER * deltaTime * movingDirection);
+        basePosition = getWorld().getTerrain().move(basePosition, ENGINE_POWER * deltaTime * movingDirection);
         angle -= ANGLE_MOVING_SPEED * deltaTime * angleMovingDirection;
         launch();
     }
@@ -88,8 +95,8 @@ public class Cannon extends GameEntity implements Drawable {
     }
 
     @Override
-    public int drawingLayer() {
-        return 4;
+    public int getDrawingLayer() {
+        return CANNON_DRAWING_LAYER;
     }
 
     public void selectWeapon(@Nullable Weapon weapon) {
@@ -115,6 +122,7 @@ public class Cannon extends GameEntity implements Drawable {
         }
     }
 
+    /** Launch a missile at the given time. */
     private void launchOne(long timeNano) {
         assert weapon != null;
         var projectile = weapon.getProjectile(basePosition.add(0, -LAUNCHING_POSITION_HEIGHT),

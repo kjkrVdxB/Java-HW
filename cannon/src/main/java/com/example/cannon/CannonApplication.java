@@ -17,7 +17,8 @@ public class CannonApplication extends Application {
     public static final double HEIGHT = 600;
     public static final double WIDTH = 800;
 
-    @Override public void start(Stage stage) throws FileNotFoundException {
+    @Override
+    public void start(Stage stage) throws FileNotFoundException {
         Group root = new Group();
         Scene scene = new Scene(root);
 
@@ -26,9 +27,9 @@ public class CannonApplication extends Application {
         stage.sizeToScene();
         stage.setResizable(false);
 
-        new Game(root, new SimpleWorldLoader("test.layout"), new Consumer<Game.FinishReason>() {
+        new Game(root, new SimpleWorldLoader("test.layout"), new Consumer<>() {
             @Override
-            public void accept(Game.FinishReason finishReason)  {
+            public void accept(Game.FinishReason finishReason) {
                 if (finishReason == Game.FinishReason.USER_EXIT) {
                     Platform.exit();
                 } else if (finishReason == Game.FinishReason.USER_RESTART) {
