@@ -137,6 +137,7 @@ public class World {
 
     /** Unregister the entity from receiving updates. */
     void unregister(@NonNull GameEntity entity) {
+        entity.setWorld(null);
         entitiesToDelete.add(entity);
     }
 
