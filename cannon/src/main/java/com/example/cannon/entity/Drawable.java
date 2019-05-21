@@ -9,5 +9,5 @@ public interface Drawable {
     void draw(@NonNull GraphicsContext graphicsContext);
 
     /** Relative distance from the screen when drawing. Lower means below others/farther. */
-    int layer();
+    int drawingLayer();
 }

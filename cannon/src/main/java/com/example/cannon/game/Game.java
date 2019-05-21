@@ -6,6 +6,9 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Font;
@@ -37,13 +40,16 @@ public class Game extends AnimationTimer {
     @NonNull
     private final GraphicsContext graphicsContext;
     @NonNull
-    private final Text currentWeaponText = new Text(10, 30, "");
+    private final Text currentWeaponText = new Text(10, 30, null);
     @NonNull
     private final Group root;
+    private final World.@NonNull WorldProvider worldProvider;
+    private boolean finished = false;
 
     public Game(@NonNull Group root, World.@NonNull WorldProvider worldProvider) {
         world = new World(this, worldProvider);
         this.root = root;
+        this.worldProvider = worldProvider;
         root.getScene().setOnKeyPressed(this::onKeyPressed);
         root.getScene().setOnKeyReleased(this::onKeyReleased);
 
@@ -96,7 +102,7 @@ public class Game extends AnimationTimer {
         } else {
             world.getCannon().setAngleMovingDirection(0);
         }
-        world.getCannon().setLaunching(pressedKeys.contains(KeyCode.SPACE));
+        world.getCannon().setLaunching(pressedKeys.contains(KeyCode.ENTER) || pressedKeys.contains(KeyCode.SPACE));
         for (var key: pressedKeys) {
             if (key.isDigitKey()) {
                 selectWeapon(key.getName().charAt(0) - '0');
@@ -104,6 +110,9 @@ public class Game extends AnimationTimer {
         }
         if (pressedKeys.contains(KeyCode.Q)) {
             finish(FinishReason.USER_EXIT);
+        }
+        if (pressedKeys.contains(KeyCode.R)) {
+            finish(FinishReason.USER_RESTART);
         }
     }
 
@@ -119,8 +128,31 @@ public class Game extends AnimationTimer {
     }
 
     void finish(@NonNull FinishReason reason) {
+        if (finished) {
+            return;
+        }
+        finished = true;
         stop();
-        Platform.exit();
+
+        if (reason == FinishReason.USER_EXIT) {
+            Platform.exit();
+        } else if (reason == FinishReason.USER_RESTART) {
+            Platform.runLater(() -> new Game(root, worldProvider).start());
+        } else if (reason == FinishReason.TARGET_DESTROYED) {
+            Platform.runLater(() -> {
+                ButtonType restart = new ButtonType("Restart", ButtonBar.ButtonData.CANCEL_CLOSE);
+                ButtonType exit = new ButtonType("Exit", ButtonBar.ButtonData.OK_DONE);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Target destroyed", restart, exit);
+                alert.setTitle("Game finished");
+                alert.setHeaderText(null);
+                var buttonResult = alert.showAndWait();
+                if (buttonResult.isEmpty() || buttonResult.get() == exit) {
+                    Platform.exit();
+                } else {
+                    new Game(root, worldProvider).start();
+                }
+            });
+        }
     }
 
     @Override
@@ -131,6 +163,7 @@ public class Game extends AnimationTimer {
 
     public enum FinishReason {
         USER_EXIT,
-        TARGET_HIT
+        USER_RESTART,
+        TARGET_DESTROYED
     }
 }

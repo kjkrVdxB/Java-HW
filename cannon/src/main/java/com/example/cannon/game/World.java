@@ -90,7 +90,7 @@ public class World {
         entities.stream()
                 .filter(e -> e instanceof Drawable)
                 .map(e -> (Drawable)e)
-                .sorted(Comparator.comparing(Drawable::layer))
+                .sorted(Comparator.comparing(Drawable::drawingLayer))
                 .forEach(d -> d.draw(graphicsContext));
     }
 

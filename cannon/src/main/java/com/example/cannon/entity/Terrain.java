@@ -72,13 +72,12 @@ public class Terrain extends GameEntity implements Drawable {
         return new Point2D(start.getX() + distance * cosBySlope(slope), start.getY() + distance * sinBySlope(slope));
     }
 
-    private Point2D intersectWithLine(Point2D start, Point2D end) {
-        return null; // TODO maybe later
-    }
-
-    public boolean isUnder(@NonNull Point2D point2D) {
-        var height = getHeight(point2D.getX());
-        return height < point2D.getY() - 0.1;
+    public boolean isPointUnder(@NonNull Point2D point) {
+        if (point.getX() < vertices.get(0).getX() || point.getX() >= vertices.get(vertices.size() - 1).getX()) {
+            return false;
+        }
+        var height = getHeight(point.getX());
+        return height < point.getY() - 1;
     }
 
     public Point2D nextToRight(Point2D start, double distance) {
@@ -116,7 +115,7 @@ public class Terrain extends GameEntity implements Drawable {
     }
 
     @Override
-    public int layer() {
+    public int drawingLayer() {
         return -1;
     }
 

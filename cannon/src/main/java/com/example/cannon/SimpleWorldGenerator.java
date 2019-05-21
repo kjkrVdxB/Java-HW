@@ -23,7 +23,7 @@ public class SimpleWorldGenerator {
                 cannonX = x;
                 cannonY = y;
             }
-            if (i == 350) {
+            if (i == 330) {
                 targetX = x;
                 targetY = y;
             }
@@ -40,6 +40,6 @@ public class SimpleWorldGenerator {
     }
 
     private static double f(double x) {
-        return sin(x / 20) * (50 + x * (800 - x) / 4000) + 400;
+        return sin(x / 60) * (50 + x * (800 - x) / 4000) + 400;
     }
 }

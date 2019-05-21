@@ -1,78 +1,95 @@
 package com.example.cannon.entity;
 
-import com.example.cannon.game.Game;
 import com.example.cannon.game.GameEntity;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import static com.example.cannon.Utils.drawCircle;
-import static com.example.cannon.Utils.getTimeElapsedSeconds;
-import static java.lang.Math.min;
+import static com.example.cannon.Utils.*;
+import static java.lang.Math.sqrt;
 
 /** An entity for an ongoing explosion. */
 public class Explosion extends GameEntity implements Drawable {
-    @NonNull
-    private final Point2D position;
-    @NonNull
-    private final Type type;
-    private final long startTime;
+    private double radius;
+    private double duration;
+    private Point2D position;
+    private long startingTime;
+    private double damageBaseStrength;
+    private double damageInterval;
+    private boolean startedDamaging;
+    private long lastDamaged;
 
-    public Explosion(@NonNull Type type, @NonNull Point2D position, long startTime) {
-        this.type = type;
+    public Explosion(@NonNull Point2D position, long startingTime, double radius, double duration, double damageBaseStrength, double damageInterval) {
         this.position = position;
-        this.startTime = startTime;
+        this.startingTime = startingTime;
+        this.radius = radius;
+        this.duration = duration;
+        this.damageBaseStrength = damageBaseStrength;
+        this.damageInterval = damageInterval;
+        this.startedDamaging = false;
     }
 
-    private double currentRadius() {
-        return type.getRadius() * min(getTimeElapsedSeconds(startTime, getWorld().getCurrentTime()) / type.getDuration(), 1);
+    private double getProgress(long time) {
+        return getTimeElapsedSeconds(startingTime, time) / duration;
+    }
+
+    private double getStrengthAt(long time) {
+        double progress = getProgress(time);
+        return 1 - sqrt(progress);
+    }
+
+    private double getRadiusAt(long time) {
+        return radius * getProgress(time);
     }
 
     @Override
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.rgb(255, 0, 0, 0.5));
-        double currentRadius = currentRadius();
-        drawCircle(graphicsContext, position, currentRadius);
+        graphicsContext.setFill(Color.rgb(255, 0, 0, getStrengthAt(getWorld().getCurrentTime())));
+        drawCircle(graphicsContext, position, getRadiusAt(getWorld().getCurrentTime()));
         graphicsContext.restore();
     }
 
     @Override
-    public int layer() {
+    public int drawingLayer() {
         return 0;
     }
 
     @Override
     public void update() {
-        if (checkTargetCollision()) {
-            getWorld().finishGame(Game.FinishReason.TARGET_HIT);
-        }
-        if (getTimeElapsedSeconds(startTime, getWorld().getCurrentTime()) > type.getDuration()) {
+        damage();
+        if (getTimeElapsedSeconds(startingTime, getWorld().getCurrentTime()) > duration) {
             disappear();
         }
     }
 
-    private boolean checkTargetCollision() {
-        var target = getWorld().getTarget();
-        return position.distance(target.getPosition()) < currentRadius() + target.getRadius();
+    /** Deal all the damage missed in the current frame with damageInterval intervals */
+    private void damage() {
+        if (damageInterval == Double.POSITIVE_INFINITY) {
+            if (!startedDamaging) {
+                damageOnce(getWorld().getCurrentTime());
+            }
+            return;
+        }
+        long nanoDamageInterval = nanoFromSeconds(damageInterval);
+        long time = startedDamaging ? lastDamaged + nanoDamageInterval : startingTime;
+        while (time < getWorld().getCurrentTime() && getProgress(time) < 1) {
+            damageOnce(time);
+            time += nanoDamageInterval;
+        }
     }
 
-    public static class Type {
-        private final double radius;
-        private final double duration;
+    private void damageOnce(long time) {
+        damageTarget(time);
+        startedDamaging = true;
+        lastDamaged = time;
+    }
 
-        public Type(double radius, double duration) {
-            this.radius = radius;
-            this.duration = duration;
-        }
-
-        public double getRadius() {
-            return radius;
-        }
-
-        public double getDuration() {
-            return duration;
+    private void damageTarget(long time) {
+        var target = getWorld().getTarget();
+        if (target.getPosition().distance(position) < target.getRadius() + getRadiusAt(time)) {
+            target.dealDamage(damageBaseStrength * getStrengthAt(time));
         }
     }
 }
