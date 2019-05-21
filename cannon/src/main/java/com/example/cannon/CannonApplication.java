@@ -9,6 +9,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.FileNotFoundException;
 import java.util.function.Consumer;
@@ -16,9 +17,10 @@ import java.util.function.Consumer;
 public class CannonApplication extends Application {
     public static final double HEIGHT = 600;
     public static final double WIDTH = 800;
+    private static String worldMapFileName = "test.layout";
 
     @Override
-    public void start(Stage stage) throws FileNotFoundException {
+    public void start(Stage stage) {
         Group root = new Group();
         Scene scene = new Scene(root);
 
@@ -27,42 +29,52 @@ public class CannonApplication extends Application {
         stage.sizeToScene();
         stage.setResizable(false);
 
-        new Game(root, new SimpleWorldLoader("test.layout"), new Consumer<>() {
+        var onFinish = new Consumer<Game.FinishReason>() {
             @Override
             public void accept(Game.FinishReason finishReason) {
                 if (finishReason == Game.FinishReason.USER_EXIT) {
                     Platform.exit();
                 } else if (finishReason == Game.FinishReason.USER_RESTART) {
                     Platform.runLater(() -> {
-                        try {
-                            new Game(root, new SimpleWorldLoader("test.layout"), this).start();
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
+                        startGame(root, worldMapFileName, this);
                     });
                 } else if (finishReason == Game.FinishReason.TARGET_DESTROYED) {
                     Platform.runLater(() -> {
                         ButtonType restart = new ButtonType("Restart", ButtonBar.ButtonData.CANCEL_CLOSE);
                         ButtonType exit = new ButtonType("Exit", ButtonBar.ButtonData.OK_DONE);
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Target destroyed", restart, exit);
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Target destroyed.", restart, exit);
                         alert.setTitle("Game finished");
                         alert.setHeaderText(null);
                         var buttonResult = alert.showAndWait();
                         if (buttonResult.isEmpty() || buttonResult.get() == exit) {
                             Platform.exit();
                         } else {
-                            try {
-                                new Game(root, new SimpleWorldLoader("test.layout"), this).start();
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            }
+                            startGame(root, worldMapFileName, this);
                         }
                     });
                 }
             }
-        }).start();
+        };
+        startGame(root, worldMapFileName, onFinish);
 
         stage.show();
+    }
+
+    private void startGame(@NonNull Group root, @NonNull String filename, Consumer<Game.FinishReason> onFinishCalBack) {
+        try {
+            new Game(root, new SimpleWorldLoader(filename), onFinishCalBack).start();
+        } catch (FileNotFoundException e) {
+            showFileNotFoundAlert(filename);
+        }
+    }
+
+    private void showFileNotFoundAlert(@NonNull String filename) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Game loading error");
+        alert.setHeaderText(null);
+        alert.setContentText("World map file not found: " + filename);
+        alert.showAndWait();
+        Platform.exit();
     }
 
     public static void main(String[] args) {

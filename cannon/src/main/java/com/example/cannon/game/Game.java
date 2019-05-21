@@ -60,6 +60,7 @@ public class Game extends AnimationTimer {
         initOverlay();
     }
 
+    /** Initialize the on-screen help. */
     private void initOverlay() {
         currentWeaponText.setFont(Font.font(null, FontWeight.BOLD, 20));
         root.getChildren().add(currentWeaponText);
@@ -129,10 +130,12 @@ public class Game extends AnimationTimer {
         setCurrentWeaponText(weapon == null ? "None" : weapon.getName());
     }
 
+    /** Set the displayed text of current weapon. */
     private void setCurrentWeaponText(@NonNull String text) {
         currentWeaponText.setText("Current weapon: " + text);
     }
 
+    
     void finish(@NonNull FinishReason reason) {
         if (finished) {
             return;
@@ -142,15 +145,20 @@ public class Game extends AnimationTimer {
         Platform.runLater(() -> onFinishCallback.accept(reason));
     }
 
+    /** Handle one screen update. */
     @Override
-    public void handle(long now) {
-        world.update(now);
+    public void handle(long timeNano) {
+        world.update(timeNano);
         world.draw(graphicsContext);
     }
 
+    /** Reason why the game should be stopped. */
     public enum FinishReason {
+        /** User requested exit. */
         USER_EXIT,
+        /** User requested restart. */
         USER_RESTART,
+        /** The goal was accomplished */
         TARGET_DESTROYED
     }
 }
