@@ -64,15 +64,21 @@ public interface Weapon {
             return this;
         }
 
+        @NonNull
+        Point2D updateStartingSpeed(@NonNull Point2D startingSpeed) {
+            startingSpeed = rotate(startingSpeed, ThreadLocalRandom.current().nextGaussian() * 0.5 * angleStandardDeviation);
+            startingSpeed = startingSpeed.multiply(BasicWeaponBuilder.this.startingSpeed);
+            return startingSpeed;
+        }
+
         Weapon build() {
             return new Weapon() {
                 @Override
                 public @NonNull GameEntity getProjectile(@NonNull Point2D startingPosition,
                                                          @NonNull Point2D startingSpeed,
                                                          long launchingTime) {
-                    startingSpeed = rotate(startingSpeed, ThreadLocalRandom.current().nextGaussian() * 0.5 * angleStandardDeviation);
-                    startingSpeed = startingSpeed.multiply(BasicWeaponBuilder.this.startingSpeed);
-                    return new SimpleProjectile(startingPosition, startingSpeed, launchingTime, bombRadius, bombBoost) {
+                    startingSpeed = updateStartingSpeed(startingSpeed);
+                    return new BasicProjectile(startingPosition, startingSpeed, launchingTime, bombRadius, bombBoost) {
                         @Override
                         protected void explode(@NonNull Point2D position) {
                             if (explosionType != null) {
@@ -105,9 +111,8 @@ public interface Weapon {
                                                          @NonNull Point2D startingSpeed,
                                                          long launchingTime) {
                     double boomTime =  Math.log(1 - ThreadLocalRandom.current().nextDouble())/(-2);
-                    startingSpeed = rotate(startingSpeed, ThreadLocalRandom.current().nextGaussian() * 0.5 * angleStandardDeviation);
-                    startingSpeed = startingSpeed.multiply(FunkyBombBuilder.this.startingSpeed);
-                    return new SimpleProjectile(startingPosition, startingSpeed, launchingTime, bombRadius, bombBoost) {
+                    startingSpeed = updateStartingSpeed(startingSpeed);
+                    return new BasicProjectile(startingPosition, startingSpeed, launchingTime, bombRadius, bombBoost) {
                         @Override
                         public void update() {
                             if (getTimeElapsedSeconds(this.launchingTime, getWorld().getCurrentTime()) > boomTime) {
@@ -119,6 +124,7 @@ public interface Weapon {
                         @Override
                         protected void explode(@NonNull Point2D position) {
                             var piecesCount = ThreadLocalRandom.current().nextInt(3, 6);
+                            spawn(new Explosion(new Explosion.Type(60, 0.5), position, getWorld().getCurrentTime()));
                             for (int i = 0; i < piecesCount; ++i) {
                                 Point2D direction = vectorByAngle(Math.random() * 2 * Math.PI);
                                 spawn(GRENADE_LAUNCHER.getProjectile(position.add(direction.multiply(15)), direction, getWorld().getCurrentTime()));
@@ -154,7 +160,7 @@ public interface Weapon {
             .withName("Nuke")
             .withBombRadius(10)
             .withStartingSpeed(500)
-            .angleStandardDeviation(0.01)
+            .angleStandardDeviation(0.1)
             .withExplosionType(new Explosion.Type(200, 10))
             .build();
     Weapon PISTOL = new BasicWeaponBuilder()
@@ -164,17 +170,17 @@ public interface Weapon {
             .angleStandardDeviation(0.05)
             .build();
     Weapon GRENADE_LAUNCHER = new BasicWeaponBuilder()
-            .withName("Grenade launcher")
+            .withName("Grenade Launcher")
             .withBombRadius(5)
             .withStartingSpeed(600)
-            .angleStandardDeviation(0.3)
+            .angleStandardDeviation(0.1)
             .withRateLimit(0.5)
             .withExplosionType(new Explosion.Type(30, 0.5))
             .build();
     Weapon RIFLE = new BasicWeaponBuilder()
             .withName("Rifle")
             .withBombRadius(3)
-            .angleStandardDeviation(0.00001)
+            .angleStandardDeviation(0.0001)
             .withStartingSpeed(3000)
             .build();
     Weapon FUNKY_BOMB = new FunkyBombBuilder()

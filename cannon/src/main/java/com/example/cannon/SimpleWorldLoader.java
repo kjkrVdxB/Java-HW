@@ -12,12 +12,12 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class BasicWorldLoader implements World.WorldProvider {
+public class SimpleWorldLoader implements World.WorldProvider {
     private Terrain terrain;
     private Cannon cannon;
     private Target target;
 
-    public BasicWorldLoader(@NonNull String filename) throws FileNotFoundException {
+    public SimpleWorldLoader(@NonNull String filename) throws FileNotFoundException {
         Scanner scanner = new Scanner(new File(filename));
         var vertices = new ArrayList<Point2D>();
         int verticesNumber = scanner.nextInt();

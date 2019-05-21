@@ -21,14 +21,7 @@ public class CannonApplication extends Application {
         stage.setTitle("Cannon");
         stage.setResizable(false);
 
-        Game gameState = new Game(root, new BasicWorldLoader("test.layout"));
-
-        new AnimationTimer() {
-            @Override
-            public void handle(long nowNano) {
-                gameState.update(nowNano);
-            }
-        }.start();
+        new Game(root, new SimpleWorldLoader("test.layout")).start();
 
         stage.show();
     }

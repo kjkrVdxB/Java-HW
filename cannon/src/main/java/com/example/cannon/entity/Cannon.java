@@ -56,9 +56,9 @@ public class Cannon extends GameEntity implements Drawable {
     @Override
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.BLACK);
+        graphicsContext.setFill(Color.DARKOLIVEGREEN);
         drawCircle(graphicsContext, position, RADIUS);
-        graphicsContext.setStroke(Color.BLACK);
+        graphicsContext.setStroke(Color.DARKOLIVEGREEN);
         graphicsContext.setLineWidth(THICKNESS);
         var end = position.add(Utils.vectorByAngle(angle).multiply(LENGTH));
         graphicsContext.strokeLine(position.getX(), position.getY(), end.getX(), end.getY());

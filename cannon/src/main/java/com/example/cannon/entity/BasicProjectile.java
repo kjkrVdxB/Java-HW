@@ -1,5 +1,6 @@
 package com.example.cannon.entity;
 
+import com.example.cannon.game.Game;
 import com.example.cannon.game.GameEntity;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
@@ -12,7 +13,7 @@ import static com.example.cannon.Utils.getTimeElapsedSeconds;
 import static com.example.cannon.game.World.GRAVITY;
 
 /** An entity for projectile in flight. */
-public class SimpleProjectile extends GameEntity implements Drawable {
+public class BasicProjectile extends GameEntity implements Drawable {
     @NonNull
     private final Point2D startingPosition;
     @NonNull
@@ -21,11 +22,11 @@ public class SimpleProjectile extends GameEntity implements Drawable {
     protected final double radius;
     private final double boost;
 
-    public SimpleProjectile(@NonNull Point2D startingPosition,
-                            @NonNull Point2D startingSpeed,
-                            long launchingTime, 
-                            double radius,
-                            double boost) {
+    public BasicProjectile(@NonNull Point2D startingPosition,
+                           @NonNull Point2D startingSpeed,
+                           long launchingTime,
+                           double radius,
+                           double boost) {
         this.launchingTime = launchingTime;
         this.startingPosition = startingPosition;
         this.startingVelocity = startingSpeed;
@@ -53,7 +54,7 @@ public class SimpleProjectile extends GameEntity implements Drawable {
         if (outOfBounds(position)) {
             disappear();
         } else if (checkCollisionWithTarget(position)) {
-            getWorld().finishGame();
+            getWorld().finishGame(Game.FinishReason.TARGET_HIT);
         } else if (checkCollisionWithTerrain(position)) {
             explode(position);
         }

@@ -1,11 +1,11 @@
-package com.example.cannon.levelgenerator;
+package com.example.cannon;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static java.lang.Math.sin;
 
-public class LevelGenerator {
+public class SimpleWorldGenerator {
     public static void main(String[] args) throws IOException {
         var printer = new PrintWriter("test.layout", StandardCharsets.UTF_8);
         int n = 401;
@@ -40,6 +40,6 @@ public class LevelGenerator {
     }
 
     private static double f(double x) {
-        return sin(x / 20) * (50 + x * (800 - x) / 1600) + 400;
+        return sin(x / 20) * (50 + x * (800 - x) / 4000) + 400;
     }
 }

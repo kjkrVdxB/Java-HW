@@ -82,7 +82,7 @@ public class World {
     /** Draw this world on the canvas. */
     public void draw(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.save();
-        graphicsContext.setFill(Color.rgb(100, 150, 250));
+        graphicsContext.setFill(Color.rgb(157, 227, 250));
         graphicsContext.fillRect(0, 0, WIDTH, HEIGHT);
         graphicsContext.restore();
 
@@ -139,8 +139,8 @@ public class World {
      * Finish the game. Objects in the world don't have access to game so that they can't fire key
      * presses for example.
      */
-    public void finishGame() {
-        game.finish();
+    public void finishGame(Game.@NonNull FinishReason reason) {
+        game.finish(reason);
     }
 
     public interface WorldProvider {

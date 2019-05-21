@@ -1,5 +1,6 @@
 package com.example.cannon.entity;
 
+import com.example.cannon.game.Game;
 import com.example.cannon.game.GameEntity;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
@@ -45,7 +46,7 @@ public class Explosion extends GameEntity implements Drawable {
     @Override
     public void update() {
         if (checkTargetCollision()) {
-            getWorld().finishGame();
+            getWorld().finishGame(Game.FinishReason.TARGET_HIT);
         }
         if (getTimeElapsedSeconds(startTime, getWorld().getCurrentTime()) > type.getDuration()) {
             disappear();

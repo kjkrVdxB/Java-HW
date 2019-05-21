@@ -1,6 +1,8 @@
 package com.example.cannon.game;
 
 import com.example.cannon.entity.Weapon;
+import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -15,10 +17,9 @@ import java.util.*;
 
 import static com.example.cannon.CannonApplication.HEIGHT;
 import static com.example.cannon.CannonApplication.WIDTH;
-import static java.lang.System.exit;
 
 /** A class representing a game instance. */
-public class Game {
+public class Game extends AnimationTimer {
     @NonNull
     private static final SortedMap<Integer, Weapon> digitToWeapon =
             new TreeMap<>(Map.ofEntries(Map.entry(1, Weapon.PISTOL),
@@ -27,7 +28,7 @@ public class Game {
                                         Map.entry(4, Weapon.NUKE),
                                         Map.entry(5, Weapon.RIFLE),
                                         Map.entry(6, Weapon.FUNKY_BOMB)));
-    /** Currently pressed key. For use in input processing */
+    /** Currently pressed keys. For use in input processing */
     @NonNull
     private final Set<KeyCode> pressedKeys = new HashSet<>();
 
@@ -37,9 +38,12 @@ public class Game {
     private final GraphicsContext graphicsContext;
     @NonNull
     private final Text currentWeaponText = new Text(10, 30, "");
+    @NonNull
+    private final Group root;
 
     public Game(@NonNull Group root, World.@NonNull WorldProvider worldProvider) {
         world = new World(this, worldProvider);
+        this.root = root;
         root.getScene().setOnKeyPressed(this::onKeyPressed);
         root.getScene().setOnKeyReleased(this::onKeyReleased);
 
@@ -47,7 +51,11 @@ public class Game {
         graphicsContext = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
 
-        selectWeapon(1);
+        selectWeapon(2 ); // Default weapon
+        initOverlay();
+    }
+
+    private void initOverlay() {
         currentWeaponText.setFont(Font.font(null, FontWeight.BOLD, 20));
         root.getChildren().add(currentWeaponText);
 
@@ -58,11 +66,6 @@ public class Game {
         helper.append("Any other: Disable");
         var text = new Text(10, 50, helper.toString());
         root.getChildren().add(text);
-    }
-
-    public void update(long timeNano) {
-        world.update(timeNano);
-        world.draw(graphicsContext);
     }
 
     private <T extends KeyEvent> void onKeyPressed(T event) {
@@ -99,6 +102,9 @@ public class Game {
                 selectWeapon(key.getName().charAt(0) - '0');
             }
         }
+        if (pressedKeys.contains(KeyCode.Q)) {
+            finish(FinishReason.USER_EXIT);
+        }
     }
 
     /** Select a weapon for cannon given a number on keyboard. */
@@ -112,7 +118,19 @@ public class Game {
         currentWeaponText.setText("Current weapon: " + text);
     }
 
-    void finish() {
-        exit(0); // TODO show a dialog or something
+    void finish(@NonNull FinishReason reason) {
+        stop();
+        Platform.exit();
+    }
+
+    @Override
+    public void handle(long now) {
+        world.update(now);
+        world.draw(graphicsContext);
+    }
+
+    public enum FinishReason {
+        USER_EXIT,
+        TARGET_HIT
     }
 }
