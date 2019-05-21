@@ -1,7 +1,6 @@
 package com.example.cannon;
 
 import com.example.cannon.game.Game;
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -10,7 +9,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.FileNotFoundException;
 import java.util.function.Consumer;
@@ -25,6 +23,7 @@ public class CannonApplication extends Application {
 
         stage.setScene(scene);
         stage.setTitle("Cannon");
+        stage.sizeToScene();
         stage.setResizable(false);
 
         new Game(root, new SimpleWorldLoader("test.layout"), new Consumer<Game.FinishReason>() {

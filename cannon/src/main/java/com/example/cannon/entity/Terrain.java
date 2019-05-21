@@ -6,6 +6,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.cannon.CannonApplication.HEIGHT;
@@ -15,17 +16,29 @@ import static java.lang.Math.sqrt;
 
 /** A class representing groud in the world. */
 public class Terrain extends GameEntity implements Drawable {
+    private static final double SUBDIVIDE_EPSILON = 1;
     /** Vertices of the ground path. 'x' coordinates should increase. */
     @NonNull
     private final List<Point2D> vertices;
 
     public Terrain(@NonNull List<Point2D> vertices) {
-        this.vertices = vertices;
+        this.vertices = new ArrayList<>(vertices);
+        for (int i = 0; i * SUBDIVIDE_EPSILON < WIDTH; ++i) {
+            trySubdivide(i * SUBDIVIDE_EPSILON);
+        }
     }
 
     @NonNull
     public List<Point2D> getVertices() {
         return vertices;
+    }
+
+    private void trySubdivide(double x) {
+        int l = vertexRightBefore(x);
+        if (x - vertices.get(l).getX() < SUBDIVIDE_EPSILON || vertices.get(l + 1).getX() - x < SUBDIVIDE_EPSILON) {
+            return;
+        }
+        vertices.add(l + 1, new Point2D(x, getHeight(vertices.get(l), vertices.get(l + 1), x)));
     }
 
     private int vertexRightBefore(double x) {
@@ -45,7 +58,7 @@ public class Terrain extends GameEntity implements Drawable {
         return vertexRightBefore(x) + 1;
     }
 
-    private double getHeight(double x) {
+    public double getHeight(double x) {
         int l = vertexRightBefore(x);
         return getHeight(vertices.get(l), vertices.get(l + 1), x);
     }

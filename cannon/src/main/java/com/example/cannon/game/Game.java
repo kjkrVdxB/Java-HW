@@ -61,7 +61,7 @@ public class Game extends AnimationTimer {
         graphicsContext = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
 
-        selectWeapon(2 ); // Default weapon
+        selectWeapon(3); // Default weapon
         initOverlay();
     }
 

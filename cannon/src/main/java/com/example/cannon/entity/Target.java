@@ -16,7 +16,7 @@ public class Target extends GameEntity implements Drawable, Damageable {
     private final static double HEALTH_BAR_WIDTH = 40;
     private final static double HEALTH_BAR_HEIGHT = 7;
     @NonNull
-    private final Point2D position;
+    private Point2D position;
     private double currentHealth = MAX_HEALTH;
 
     public Target(@NonNull Point2D position) {
@@ -63,7 +63,7 @@ public class Target extends GameEntity implements Drawable, Damageable {
 
     @Override
     public void update() {
-        // nothing to do here yet
+        position = new Point2D(position.getX(), getWorld().getTerrain().getHeight(position.getX()) - RADIUS);
     }
 
     @Override

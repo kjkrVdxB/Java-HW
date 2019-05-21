@@ -7,8 +7,7 @@ import javafx.scene.paint.Color;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import static com.example.cannon.Utils.nanoFromSeconds;
-import static com.example.cannon.Utils.vectorByAngle;
+import static com.example.cannon.Utils.*;
 import static java.lang.Math.toDegrees;
 
 public class Cannon extends GameEntity implements Drawable {
@@ -33,6 +32,7 @@ public class Cannon extends GameEntity implements Drawable {
     }
 
     public void update() {
+        basePosition = new Point2D(basePosition.getX(), getWorld().getTerrain().getHeight(basePosition.getX()));
         double deltaTime = getWorld().getLastUpdateTimeElapsedSeconds();
         basePosition = getWorld().getTerrain().nextToRight(basePosition, ENGINE_POWER * deltaTime * movingDirection);
         angle -= ANGLE_MOVING_SPEED * deltaTime * angleMovingDirection;
@@ -79,6 +79,11 @@ public class Cannon extends GameEntity implements Drawable {
         graphicsContext.lineTo(-SIZE / 2, 0);
         graphicsContext.closePath();
         graphicsContext.fill();
+        graphicsContext.restore();
+        graphicsContext.save();
+        graphicsContext.setFill(Color.BLACK);
+        drawCircle(graphicsContext, basePosition.add(SIZE / 2, 0), SIZE / 5);
+        drawCircle(graphicsContext, basePosition.add(-SIZE / 2, 0), SIZE / 5);
         graphicsContext.restore();
     }
 
