@@ -51,7 +51,7 @@ public class FTPClient {
              var dataOutputStream = new DataOutputStream(outputStream);
              var inputStream = socket.getInputStream();
              var dataInputStream = new DataInputStream(inputStream)) {
-            dataOutputStream.writeInt(1);
+            dataOutputStream.writeInt(2);
             dataOutputStream.writeUTF(path);
             int size = dataInputStream.readInt();
             if (size == -1) {

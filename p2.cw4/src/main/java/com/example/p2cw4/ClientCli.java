@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
@@ -38,9 +39,13 @@ public class ClientCli {
                     printList(ftpClient.executeList(commands[1]));
                     break;
                 case "get":
-                    var contents = ftpClient.executeGet(commands[1]);
-                    var file = new File(commands[2]);
-                    FileUtils.writeByteArrayToFile(file, contents);
+                    try {
+                        var contents = ftpClient.executeGet(commands[1]);
+                        var file = new File(commands[2]);
+                        FileUtils.writeByteArrayToFile(file, contents);
+                    } catch (FileNotFoundException exception) {
+                        System.out.println("No such file");
+                    }
                     break;
             }
         }
