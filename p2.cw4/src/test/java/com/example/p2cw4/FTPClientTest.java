@@ -122,4 +122,27 @@ class FTPTest {
                 () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
+    @Test
+    void testListMultipleClients(@TempDir Path tmpDir) throws IOException {
+        tmpDir.resolve("aaa").toFile().createNewFile();
+        tmpDir.resolve("bbb").toFile().mkdirs();
+        tmpDir.resolve("bbb").resolve("ccc").toFile().createNewFile();
+
+        var otherClient = new FTPClient();
+        otherClient.connect("localhost", 9999);
+
+        var list = client.executeList(tmpDir.toString());
+        list.sort(Comparator.comparing(a -> a.left));
+
+        var otherList = otherClient.executeList(tmpDir.toString());
+        otherList.sort(Comparator.comparing(a -> a.left));
+
+        var listExpected = Arrays.asList(
+                new ImmutablePair<>("aaa", false),
+                new ImmutablePair<>("bbb", true));
+
+        assertEquals(listExpected, list);
+        assertEquals(listExpected, otherList);
+    }
+
 }
