@@ -47,7 +47,10 @@ public class ClientCli {
     }
 
     private static void printList(List<ImmutablePair<String, Boolean>> list) {
-        // TODO
+        System.out.println("Files in the directory");
+        for (var entry: list) {
+            System.out.println((entry.getRight() ? "d ": "f ") + entry.getLeft());
+        }
     }
 
     private static @NonNull String prompt() {
