@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -21,6 +22,10 @@ public class FTPClient {
         socket.close();
     }
 
+    public boolean isConnected() {
+        return socket.isConnected();
+    }
+
     public List<ImmutablePair<String, Boolean>> executeList(@NonNull String path) throws IOException {
         try (var outputStream = socket.getOutputStream();
              var dataOutputStream = new DataOutputStream(outputStream);
@@ -29,6 +34,9 @@ public class FTPClient {
             dataOutputStream.writeInt(1);
             dataOutputStream.writeUTF(path);
             int size = dataInputStream.readInt();
+            if (size == -1) {
+                throw new FileNotFoundException("File " + path + "not found");
+            }
             System.out.println(size);
             var result = new ArrayList<ImmutablePair<String, Boolean>>();
             for (int i = 0; i < size; ++i) {
@@ -46,6 +54,9 @@ public class FTPClient {
             dataOutputStream.writeInt(1);
             dataOutputStream.writeUTF(path);
             int size = dataInputStream.readInt();
+            if (size == -1) {
+                throw new FileNotFoundException("Path " + path + "not found");
+            }
             return dataInputStream.readNBytes(size);
         }
     }
