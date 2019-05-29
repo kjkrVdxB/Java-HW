@@ -91,8 +91,8 @@ public class MatchTwoApplication extends Application {
     }
 
     private void handleButtonPress(int i, int j, ActionEvent e) {
-        Button source = (Button) e.getSource();
-        Integer numberToShow = matchTwoField.open(ImmutablePair.of(i, j));
+        var source = (Button) e.getSource();
+        var numberToShow = matchTwoField.open(ImmutablePair.of(i, j));
         if (numberToShow != null) {
             source.setText(String.valueOf(numberToShow));
             if (matchTwoField.finishedOpening()) {
