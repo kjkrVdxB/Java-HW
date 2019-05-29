@@ -133,7 +133,7 @@ public class MatchTwoApplication extends Application {
     }
 
     private static void showUsageErrorAndExit() {
-        System.out.println("Expected one even integer argument");
+        System.out.println("Expected one even integer argument - field size");
         Platform.exit();
         exit(0);
     }
