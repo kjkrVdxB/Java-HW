@@ -24,9 +24,18 @@ class MatchTwoFieldTest {
     }
 
     @Test
-    void testInappropriateField() {
-        assertFalse(checkFieldIsAppropriate(new int[][]{{1, 1}, {1, 2}}));
+    void testAppropriateField() {
         assertTrue(checkFieldIsAppropriate(new int[][]{{1, 1}, {2, 2}}));
+    }
+
+    @Test
+    void testInappropriateFieldRepeated() {
+        assertFalse(checkFieldIsAppropriate(new int[][]{{1, 1}, {1, 2}}));
+    }
+
+    @Test
+    void testInappropriateFieldTooBig() {
+        assertFalse(checkFieldIsAppropriate(new int[][]{{1, 1}, {5, 2}}));
     }
 
     @Test
