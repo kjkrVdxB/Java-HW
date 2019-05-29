@@ -45,6 +45,14 @@ class MatchTwoFieldTest {
     }
 
     @Test
+    void testFinishedOpening() {
+        assertEquals(1, (int)field.open(ImmutablePair.of(0, 0)));
+        assertFalse(field.finishedOpening());
+        assertEquals(1, (int)field.open(ImmutablePair.of(0, 1)));
+        assertTrue(field.finishedOpening());
+    }
+
+    @Test
     void testGameFinished() {
         assertEquals(1, (int)field.open(ImmutablePair.of(0, 0)));
         assertEquals(1, (int)field.open(ImmutablePair.of(0, 1)));
