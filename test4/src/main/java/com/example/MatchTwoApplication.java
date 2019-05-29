@@ -84,7 +84,7 @@ public class MatchTwoApplication extends Application {
     }
 
     private Button createButton(int i, int j) {
-        Button button = new Button();
+        var button = new Button();
         button.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         button.setOnAction(e -> handleButtonPress(i, j, e));
         return button;
