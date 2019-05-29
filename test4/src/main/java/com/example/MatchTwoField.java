@@ -84,11 +84,15 @@ public class MatchTwoField {
      * @throws IllegalArgumentException if the field is not appropriate
      */
     public MatchTwoField(int[][] field) {
-        if (!checkFieldIsAppropriate(field)) {
+        int[][] fieldClone = field.clone();
+        for (int i = 0; i < field.length; ++i) {
+            fieldClone[i] = field[i].clone();
+        }
+        if (!checkFieldIsAppropriate(fieldClone)) {
             throw new IllegalArgumentException("field is inappropriate");
         }
-        size = field.length;
-        numbers = field;
+        size = fieldClone.length;
+        numbers = fieldClone;
         opened = new boolean[size][size];
     }
 

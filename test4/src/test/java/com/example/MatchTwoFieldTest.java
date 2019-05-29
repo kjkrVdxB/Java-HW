@@ -99,4 +99,15 @@ class MatchTwoFieldTest {
     void stressRandomGeneration() {
         assertTrue(checkFieldIsAppropriate(generateField(4)));
     }
+
+    @Test
+    void testFieldConstructorFieldIsCloned() {
+        var numbers = new int[][]{{1, 1}, {2, 2}};
+        var field = new MatchTwoField(numbers);
+        numbers[0][0] = 2;
+        assertEquals(1, (int)field.open(ImmutablePair.of(0, 0)));
+        assertEquals(2, (int)field.open(ImmutablePair.of(1, 0)));
+        assertTrue(field.finishedOpening());
+        assertFalse(field.matched());
+    }
 }
