@@ -2,6 +2,7 @@ package com.example;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import static com.example.MatchTwoField.checkFieldIsAppropriate;
@@ -73,4 +74,21 @@ class MatchTwoFieldTest {
         assertNull(field.open(ImmutablePair.of(0, 0)));
     }
 
+    @Test
+    void testCompleteNotFinishedOpeningThrows() {
+        assertEquals(1, (int)field.open(ImmutablePair.of(0, 0)));
+        assertThrows(IllegalStateException.class, () -> field.completeOpening());
+    }
+
+    @Test
+    void testGettingOpenedOnNotFinishedOpeningThrows() {
+        assertEquals(1, (int)field.open(ImmutablePair.of(0, 0)));
+        assertThrows(IllegalStateException.class, () -> field.getFirstOpened());
+        assertThrows(IllegalStateException.class, () -> field.getSecondOpened());
+    }
+
+    @RepeatedTest(10)
+    void stressRandomGeneration() {
+        assertTrue(checkFieldIsAppropriate(generateField(4)));
+    }
 }
