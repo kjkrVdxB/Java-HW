@@ -60,9 +60,9 @@ public class CannonApplication extends Application {
         stage.show();
     }
 
-    private void startGame(@NonNull Group root, @NonNull String filename, Consumer<Game.FinishReason> onFinishCalBack) {
+    private void startGame(@NonNull Group root, @NonNull String filename, Consumer<Game.FinishReason> onFinishCallBack) {
         try {
-            new Game(root, new SimpleWorldLoader(filename), onFinishCalBack).start();
+            new Game(root, new SimpleWorldLoader(filename), onFinishCallBack).start();
         } catch (FileNotFoundException e) {
             showFileNotFoundAlert(filename);
         }
