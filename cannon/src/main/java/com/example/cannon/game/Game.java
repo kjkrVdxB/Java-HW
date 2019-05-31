@@ -29,6 +29,9 @@ public class Game extends AnimationTimer {
                                         Map.entry(4, Weapon.NUKE),
                                         Map.entry(5, Weapon.RIFLE),
                                         Map.entry(6, Weapon.FUNKY_BOMB)));
+
+    private static final int DEFAULT_WEAPON = 3; // By button number, see above. This is Grenade launcher.
+
     /** Currently pressed keys. For use in input processing */
     @NonNull
     private final Set<KeyCode> pressedKeys = new HashSet<>();
@@ -56,7 +59,7 @@ public class Game extends AnimationTimer {
         graphicsContext = canvas.getGraphicsContext2D();
         root.getChildren().add(canvas);
 
-        selectWeapon(3); // Default weapon
+        selectWeapon(DEFAULT_WEAPON);
         initOverlay();
     }
 
