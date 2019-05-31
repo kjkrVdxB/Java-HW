@@ -37,7 +37,7 @@ public class Terrain extends GameEntity implements Drawable {
         return vertices;
     }
 
-    /** Try to create intermediary point, but only if there is no vertexes nearby. */
+    /** Try to create intermediary point, but only if there is no vertices nearby. */
     private void trySubdivide(double x) {
         int l = vertexRightBefore(x);
         if (x - vertices.get(l).getX() < SUBDIVIDE_EPSILON || vertices.get(l + 1).getX() - x < SUBDIVIDE_EPSILON) {
@@ -77,7 +77,7 @@ public class Terrain extends GameEntity implements Drawable {
         return (x - a.getX()) / (b.getX() - a.getX()) * (b.getY() - a.getY()) + a.getY();
     }
 
-    // Math utils specific for terrain. */
+    // Math utils specific for terrain
 
     private double slope(Point2D a, Point2D b) {
         return (b.getY() - a.getY()) / (b.getX() - a.getX());
