@@ -22,14 +22,14 @@ public class FTPServer {
     public void start() {
         worker = new Thread(() -> {
             try {
-                for (;;) {
+                for (; ; ) {
                     Socket socket = serverSocket.accept();
                     new Thread(() -> {
                         handle(socket);
                     }).start();
                 }
             } catch (IOException e) {
-                // todo
+                // server socket closed?
             }
         });
         worker.start();
@@ -44,11 +44,12 @@ public class FTPServer {
         String client = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
         System.out.println(client + " incoming");
         try {
+            var inputStream = socket.getInputStream();
+            var dataInputStream = new DataInputStream(inputStream);
+            var outputStream = socket.getOutputStream();
+            var dataOutputStream = new DataOutputStream(outputStream);
+            //noinspection InfiniteLoopStatement
             for (; ; ) {
-                var inputStream = socket.getInputStream();
-                var dataInputStream = new DataInputStream(inputStream);
-                var outputStream = socket.getOutputStream();
-                var dataOutputStream = new DataOutputStream(outputStream);
                 int type = dataInputStream.readInt();
                 var path = dataInputStream.readUTF();
                 var file = new File(path);
@@ -56,7 +57,8 @@ public class FTPServer {
                     System.out.println(client + " requested list of directory '" + path + "'");
                     if (!file.isDirectory()) {
                         dataOutputStream.writeInt(-1);
-                        return;
+                        dataOutputStream.flush();
+                        continue;
                     }
                     var contents = Files.list(file.toPath()).collect(Collectors.toList());
                     dataOutputStream.writeInt(contents.size());
@@ -65,24 +67,24 @@ public class FTPServer {
                         dataOutputStream.writeUTF(contentsPath.getFileName().toString());
                         dataOutputStream.writeBoolean(contentsPath.toFile().isDirectory());
                     }
+                    dataOutputStream.flush();
                 } else if (type == 2) {
                     System.out.println(client + " requested file '" + path + "'");
                     if (!file.isFile()) {
                         dataOutputStream.writeInt(-1);
-                        return;
+                        dataOutputStream.flush();
+                        continue;
                     }
-                    // todo race
                     int size = (int) FileUtils.sizeOf(file);
                     dataOutputStream.writeInt(size);
                     dataOutputStream.flush();
                     Files.copy(file.toPath(), dataOutputStream);
+                    dataOutputStream.flush();
                 }
-                dataOutputStream.flush();
             }
         } catch (IOException e) {
-            // probably client disconnected
+            // probably client disconnected?
         }
         System.out.println(client + " disconnected");
-        //socket.close();
     }
 }
