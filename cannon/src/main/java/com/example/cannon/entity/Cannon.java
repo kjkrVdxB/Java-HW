@@ -67,6 +67,28 @@ public class Cannon extends GameEntity implements Drawable {
         var center = basePosition.add(new Point2D(0, -LAUNCHING_POSITION_HEIGHT));
         graphicsContext.translate(center.getX(), center.getY());
         graphicsContext.rotate(toDegrees(angle));
+        drawGun(graphicsContext);
+        graphicsContext.restore();
+
+        graphicsContext.save();
+        graphicsContext.translate(basePosition.getX(), basePosition.getY());
+        drawBase(graphicsContext);
+        graphicsContext.restore();
+
+        graphicsContext.save();
+        var wheelPosition = basePosition.add(SIZE / 2, 0);
+        graphicsContext.translate(wheelPosition.getX(), wheelPosition.getY());
+        drawWheel(graphicsContext);
+        graphicsContext.restore();
+
+        graphicsContext.save();
+        wheelPosition = basePosition.add(-SIZE / 2, 0);
+        graphicsContext.translate(wheelPosition.getX(), wheelPosition.getY());
+        drawWheel(graphicsContext);
+        graphicsContext.restore();
+    }
+
+    private static void drawGun(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.setFill(Color.GRAY);
         graphicsContext.beginPath();
         graphicsContext.moveTo(0, SIZE / 5 * 2);
@@ -76,9 +98,9 @@ public class Cannon extends GameEntity implements Drawable {
         graphicsContext.lineTo(-SIZE / 10 * 3, 0);
         graphicsContext.closePath();
         graphicsContext.fill();
-        graphicsContext.restore();
-        graphicsContext.save();
-        graphicsContext.translate(basePosition.getX(), basePosition.getY());
+    }
+
+    private static void drawBase(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.setFill(Color.BROWN);
         graphicsContext.beginPath();
         graphicsContext.moveTo(SIZE / 2, 0);
@@ -86,12 +108,11 @@ public class Cannon extends GameEntity implements Drawable {
         graphicsContext.lineTo(-SIZE / 2, 0);
         graphicsContext.closePath();
         graphicsContext.fill();
-        graphicsContext.restore();
-        graphicsContext.save();
+    }
+
+    private static void drawWheel(@NonNull GraphicsContext graphicsContext) {
         graphicsContext.setFill(Color.BLACK);
-        drawCircle(graphicsContext, basePosition.add(SIZE / 2, 0), SIZE / 5);
-        drawCircle(graphicsContext, basePosition.add(-SIZE / 2, 0), SIZE / 5);
-        graphicsContext.restore();
+        drawCircle(graphicsContext, Point2D.ZERO, SIZE / 5);
     }
 
     @Override
