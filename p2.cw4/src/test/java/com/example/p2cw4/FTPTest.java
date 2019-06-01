@@ -1,5 +1,6 @@
 package com.example.p2cw4;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FTPTest {
     private FTPServer server = new FTPServer(9999);
     private FTPClient client = new FTPClient();
+    @SuppressWarnings("WeakerAccess")
     public @TempDir Path tmpDir;
 
     FTPTest() throws IOException {}
@@ -36,9 +38,9 @@ class FTPTest {
 
     @Test
     void testListBasic() throws IOException {
-        tmpDir.resolve("aaa").toFile().createNewFile();
-        tmpDir.resolve("bbb").toFile().mkdirs();
-        tmpDir.resolve("bbb").resolve("ccc").toFile().createNewFile();
+        Files.createFile(tmpDir.resolve("aaa"));
+        Files.createDirectories(tmpDir.resolve("bbb"));
+        Files.createFile(tmpDir.resolve("bbb").resolve("ccc"));
 
         var list = client.executeList(tmpDir.toString());
         list.sort(Comparator.comparing(a -> a.left));
@@ -64,8 +66,8 @@ class FTPTest {
 
         var path = tmpDir.resolve("aaa").resolve("bbb").resolve("ccc");
 
-        path.resolve("ddd").toFile().mkdirs();
-        path.resolve("eee").toFile().createNewFile();
+        Files.createDirectories(path.resolve("ddd"));
+        Files.createFile(path.resolve("eee"));
 
         var list = client.executeList(path.toString());
         list.sort(Comparator.comparing(a -> a.left));
@@ -82,12 +84,9 @@ class FTPTest {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[]{1, 2, 3, 4, 5};
 
-        filePath.toFile().createNewFile();
+        Files.createFile(filePath);
 
-        try (var output = Files.newOutputStream(filePath)) {
-            output.write(arrayExpected);
-            output.flush();
-        }
+        FileUtils.writeByteArrayToFile(filePath.toFile(), arrayExpected);
 
         var byteArray = client.executeGet(filePath.toString());
         assertArrayEquals(arrayExpected, byteArray);
@@ -98,28 +97,23 @@ class FTPTest {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[0];
 
-        filePath.toFile().createNewFile();
-
-        try (var output = Files.newOutputStream(filePath)) {
-            output.write(arrayExpected);
-            output.flush();
-        }
+        Files.createFile(filePath);
 
         var byteArray = client.executeGet(filePath.toString());
         assertArrayEquals(arrayExpected, byteArray);
     }
 
     @Test
-    void testGetNonExisting() throws IOException {
+    void testGetNonExisting() {
         assertThrows(FileNotFoundException.class,
                 () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
     @Test
     void testListMultipleClients() throws IOException {
-        tmpDir.resolve("aaa").toFile().createNewFile();
-        tmpDir.resolve("bbb").toFile().mkdirs();
-        tmpDir.resolve("bbb").resolve("ccc").toFile().createNewFile();
+        Files.createFile(tmpDir.resolve("aaa"));
+        Files.createDirectories(tmpDir.resolve("bbb"));
+        Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
 
         var otherClient = new FTPClient();
         otherClient.connect("localhost", 9999);
@@ -136,5 +130,7 @@ class FTPTest {
 
         assertEquals(listExpected, list);
         assertEquals(listExpected, otherList);
+
+        otherClient.disconnect();
     }
 }

@@ -36,7 +36,7 @@ public class FTPClient {
         dataOutputStream.flush();
         int size = dataInputStream.readInt();
         if (size == -1) {
-            throw new FileNotFoundException("File " + path + " not found");
+            throw new FileNotFoundException("File '" + path + "' not found");
         }
         var result = new ArrayList<ImmutablePair<String, Boolean>>();
         for (int i = 0; i < size; ++i) {
@@ -57,7 +57,7 @@ public class FTPClient {
         dataOutputStream.flush();
         int size = dataInputStream.readInt();
         if (size == -1) {
-            throw new FileNotFoundException("Path " + path + "not found");
+            throw new FileNotFoundException("File '" + path + "' not found");
         }
         return dataInputStream.readNBytes(size);
     }

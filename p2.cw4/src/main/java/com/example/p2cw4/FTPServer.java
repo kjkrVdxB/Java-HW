@@ -4,11 +4,11 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class FTPServer {
@@ -51,16 +51,16 @@ public class FTPServer {
             //noinspection InfiniteLoopStatement
             for (; ; ) {
                 int type = dataInputStream.readInt();
-                var path = dataInputStream.readUTF();
-                var file = new File(path);
+                var pathString = dataInputStream.readUTF();
+                var path = Paths.get(pathString);
                 if (type == 1) {
-                    System.out.println(client + " requested list of directory '" + path + "'");
-                    if (!file.isDirectory()) {
+                    System.out.println(client + " requested list of directory '" + pathString + "'");
+                    if (!Files.isDirectory(path)) {
                         dataOutputStream.writeInt(-1);
                         dataOutputStream.flush();
                         continue;
                     }
-                    var contents = Files.list(file.toPath()).collect(Collectors.toList());
+                    var contents = Files.list(path).collect(Collectors.toList());
                     dataOutputStream.writeInt(contents.size());
                     dataOutputStream.flush();
                     for (var contentsPath: contents) {
@@ -69,16 +69,16 @@ public class FTPServer {
                     }
                     dataOutputStream.flush();
                 } else if (type == 2) {
-                    System.out.println(client + " requested file '" + path + "'");
-                    if (!file.isFile()) {
+                    System.out.println(client + " requested file '" + pathString + "'");
+                    if (!Files.isRegularFile(path)) {
                         dataOutputStream.writeInt(-1);
                         dataOutputStream.flush();
                         continue;
                     }
-                    int size = (int) FileUtils.sizeOf(file);
+                    int size = (int) FileUtils.sizeOf(path.toFile());
                     dataOutputStream.writeInt(size);
                     dataOutputStream.flush();
-                    Files.copy(file.toPath(), dataOutputStream);
+                    Files.copy(path, dataOutputStream);
                     dataOutputStream.flush();
                 }
             }
