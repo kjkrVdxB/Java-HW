@@ -127,8 +127,9 @@ public interface Weapon {
                         public void update() {
                             if (getTimeElapsedSeconds(this.launchingTime, getWorld().getCurrentTime()) > boomTime) {
                                 explode(getPositionAtWorldTime(getWorld().getCurrentTime()), getWorld().getCurrentTime());
+                            } else {
+                                super.update();
                             }
-                            super.update();
                         }
 
                         @Override
