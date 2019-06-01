@@ -1,12 +1,12 @@
 package com.example.p2cw4;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
 
@@ -61,8 +61,8 @@ public class ClientCli {
                     }
                     try {
                         var contents = ftpClient.executeGet(commands[1]);
-                        var file = new File(commands[2]);
-                        FileUtils.writeByteArrayToFile(file, contents);
+                        var path = Path.of(commands[2]);
+                        Files.write(path, contents);
                     } catch (FileNotFoundException exception) {
                         System.out.println("No such file");
                     }

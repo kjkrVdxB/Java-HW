@@ -1,6 +1,5 @@
 package com.example.p2cw4;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +86,7 @@ class FTPTest {
 
         Files.createFile(filePath);
 
-        FileUtils.writeByteArrayToFile(filePath.toFile(), arrayExpected);
+        Files.write(filePath, arrayExpected);
 
         var byteArray = client.executeGet(filePath.toString());
         assertArrayEquals(arrayExpected, byteArray);
