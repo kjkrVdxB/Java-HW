@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FTPTest {
     private FTPServer server = new FTPServer(9999);
     private FTPClient client = new FTPClient();
+    public @TempDir Path tmpDir;
 
     FTPTest() throws IOException {}
 
@@ -34,7 +35,7 @@ class FTPTest {
     }
 
     @Test
-    void testListBasic(@TempDir Path tmpDir) throws IOException {
+    void testListBasic() throws IOException {
         tmpDir.resolve("aaa").toFile().createNewFile();
         tmpDir.resolve("bbb").toFile().mkdirs();
         tmpDir.resolve("bbb").resolve("ccc").toFile().createNewFile();
@@ -50,14 +51,14 @@ class FTPTest {
     }
 
     @Test
-    void testEmptyList(@TempDir Path tmpDir) throws IOException {
+    void testEmptyList() throws IOException {
         var list = client.executeList(tmpDir.toString());
         list.sort(Comparator.comparing(a -> a.left));
         assertEquals(0, list.size());
     }
 
     @Test
-    void testListSubdirectory(@TempDir Path tmpDir) throws IOException {
+    void testListSubdirectory() throws IOException {
         // aaa -> bbb -> ccc -----  ddd(dir)
         //                    | --  eee(file)
 
@@ -77,7 +78,7 @@ class FTPTest {
     }
 
     @Test
-    void testGetBasic(@TempDir Path tmpDir) throws IOException {
+    void testGetBasic() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[]{1, 2, 3, 4, 5};
 
@@ -93,7 +94,7 @@ class FTPTest {
     }
 
     @Test
-    void testGetEmpty(@TempDir Path tmpDir) throws IOException {
+    void testGetEmpty() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[0];
 
@@ -109,13 +110,13 @@ class FTPTest {
     }
 
     @Test
-    void testGetNonExisting(@TempDir Path tmpDir) throws IOException {
+    void testGetNonExisting() throws IOException {
         assertThrows(FileNotFoundException.class,
                 () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
     @Test
-    void testListMultipleClients(@TempDir Path tmpDir) throws IOException {
+    void testListMultipleClients() throws IOException {
         tmpDir.resolve("aaa").toFile().createNewFile();
         tmpDir.resolve("bbb").toFile().mkdirs();
         tmpDir.resolve("bbb").resolve("ccc").toFile().createNewFile();
