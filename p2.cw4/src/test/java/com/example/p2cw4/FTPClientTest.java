@@ -1,44 +1,36 @@
 package com.example.p2cw4;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
-    FTPServer server = new FTPServer(9999);
-    FTPClient client = new FTPClient();
+    private FTPServer server = new FTPServer(9999);
+    private FTPClient client = new FTPClient();
 
     FTPTest() throws IOException {}
 
     @BeforeEach
-    void startServer() {
+    void init() throws IOException {
         server.start();
-    }
-
-    @BeforeEach
-    void startClient() throws IOException {
         client.connect("localhost", 9999);
     }
 
     @AfterEach
-    void stopServer() throws InterruptedException, IOException {
-        server.stop();
-    }
-
-    @AfterEach
-    void stopClient() throws IOException {
+    void finish() throws InterruptedException, IOException {
         client.disconnect();
+        server.stop();
     }
 
     @Test
@@ -144,5 +136,4 @@ class FTPTest {
         assertEquals(listExpected, list);
         assertEquals(listExpected, otherList);
     }
-
 }

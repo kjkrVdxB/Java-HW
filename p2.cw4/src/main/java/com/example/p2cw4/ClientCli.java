@@ -24,21 +24,41 @@ public class ClientCli {
             }
             switch (commands[0]) {
                 case "exit":
+                    if (commands.length != 1) {
+                        printHelp();
+                        continue;
+                    }
                     exit = true;
                     break;
                 case "help":
                     printHelp();
                     break;
                 case "connect":
+                    if (commands.length != 3) {
+                        printHelp();
+                        continue;
+                    }
                     ftpClient.connect(commands[1], Integer.valueOf(commands[2]));
                     break;
                 case "disconnect":
+                    if (commands.length != 1) {
+                        printHelp();
+                        continue;
+                    }
                     ftpClient.disconnect();
                     break;
                 case "list":
+                    if (commands.length != 2) {
+                        printHelp();
+                        continue;
+                    }
                     printList(ftpClient.executeList(commands[1]));
                     break;
                 case "get":
+                    if (commands.length != 3) {
+                        printHelp();
+                        continue;
+                    }
                     try {
                         var contents = ftpClient.executeGet(commands[1]);
                         var file = new File(commands[2]);
@@ -47,6 +67,10 @@ public class ClientCli {
                         System.out.println("No such file");
                     }
                     break;
+                default:
+                    System.out.println("Unknown command: " + commands[0]);
+                    printHelp();
+                    break;
             }
         }
     }
@@ -54,7 +78,7 @@ public class ClientCli {
     private static void printList(List<ImmutablePair<String, Boolean>> list) {
         System.out.println("Files in the directory");
         for (var entry: list) {
-            System.out.println((entry.getRight() ? "d ": "f ") + entry.getLeft());
+            System.out.println((entry.getRight() ? "d " : "f ") + entry.getLeft());
         }
     }
 

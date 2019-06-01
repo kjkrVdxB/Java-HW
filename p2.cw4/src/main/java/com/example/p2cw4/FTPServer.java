@@ -21,54 +21,68 @@ public class FTPServer {
 
     public void start() {
         worker = new Thread(() -> {
-            while (!Thread.interrupted()) {
-                try {
+            try {
+                for (;;) {
                     Socket socket = serverSocket.accept();
-                    handle(socket);
-                } catch (IOException e) {
-                    // todo
+                    new Thread(() -> {
+                        handle(socket);
+                    }).start();
                 }
+            } catch (IOException e) {
+                // todo
             }
         });
         worker.start();
     }
 
-    public void stop() throws InterruptedException {
-        worker.interrupt();
+    public void stop() throws InterruptedException, IOException {
+        serverSocket.close();
         worker.join();
     }
 
-    private static void handle(Socket socket) throws IOException {
-        System.out.println("incoming");
-        try (var inputStream = socket.getInputStream();
-             var dataInputStream = new DataInputStream(inputStream);
-             var outputStream = socket.getOutputStream();
-             var dataOutputStream = new DataOutputStream(outputStream)) {
-            int type = dataInputStream.readInt();
-            var path = dataInputStream.readUTF();
-            var file = new File(path);
-            if (type == 1) {
-                if (!file.isDirectory()) {
-                    dataOutputStream.writeInt(-1);
-                    return;
+    private static void handle(Socket socket) {
+        String client = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+        System.out.println(client + " incoming");
+        try {
+            for (; ; ) {
+                var inputStream = socket.getInputStream();
+                var dataInputStream = new DataInputStream(inputStream);
+                var outputStream = socket.getOutputStream();
+                var dataOutputStream = new DataOutputStream(outputStream);
+                int type = dataInputStream.readInt();
+                var path = dataInputStream.readUTF();
+                var file = new File(path);
+                if (type == 1) {
+                    System.out.println(client + " requested list of directory '" + path + "'");
+                    if (!file.isDirectory()) {
+                        dataOutputStream.writeInt(-1);
+                        return;
+                    }
+                    var contents = Files.list(file.toPath()).collect(Collectors.toList());
+                    dataOutputStream.writeInt(contents.size());
+                    dataOutputStream.flush();
+                    for (var contentsPath: contents) {
+                        dataOutputStream.writeUTF(contentsPath.getFileName().toString());
+                        dataOutputStream.writeBoolean(contentsPath.toFile().isDirectory());
+                    }
+                } else if (type == 2) {
+                    System.out.println(client + " requested file '" + path + "'");
+                    if (!file.isFile()) {
+                        dataOutputStream.writeInt(-1);
+                        return;
+                    }
+                    // todo race
+                    int size = (int) FileUtils.sizeOf(file);
+                    dataOutputStream.writeInt(size);
+                    dataOutputStream.flush();
+                    Files.copy(file.toPath(), dataOutputStream);
                 }
-                var contents = Files.list(file.toPath()).collect(Collectors.toList());
-                dataOutputStream.writeInt(contents.size());
-                for (var contentsPath: contents) {
-                    dataOutputStream.writeUTF(contentsPath.getFileName().toString());
-                    dataOutputStream.writeBoolean(contentsPath.toFile().isDirectory());
-                }
-            } else if (type == 2) {
-                if (!file.isFile()) {
-                    dataOutputStream.writeInt(-1);
-                    return;
-                }
-                // todo race
-                int size = (int) FileUtils.sizeOf(file);
-                dataOutputStream.writeInt(size);
-                Files.copy(file.toPath(), dataOutputStream);
+                dataOutputStream.flush();
             }
+        } catch (IOException e) {
+            // probably client disconnected
         }
-
+        System.out.println(client + " disconnected");
+        //socket.close();
     }
 }

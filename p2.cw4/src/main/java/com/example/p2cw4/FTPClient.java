@@ -27,37 +27,38 @@ public class FTPClient {
     }
 
     public List<ImmutablePair<String, Boolean>> executeList(@NonNull String path) throws IOException {
-        try (var outputStream = socket.getOutputStream();
-             var dataOutputStream = new DataOutputStream(outputStream);
-             var inputStream = socket.getInputStream();
-             var dataInputStream = new DataInputStream(inputStream)) {
-            dataOutputStream.writeInt(1);
-            dataOutputStream.writeUTF(path);
-            int size = dataInputStream.readInt();
-            if (size == -1) {
-                throw new FileNotFoundException("File " + path + "not found");
-            }
-            System.out.println(size);
-            var result = new ArrayList<ImmutablePair<String, Boolean>>();
-            for (int i = 0; i < size; ++i) {
-                result.add(new ImmutablePair<>(dataInputStream.readUTF(), dataInputStream.readBoolean()));
-            }
-            return result;
+        var outputStream = socket.getOutputStream();
+        var dataOutputStream = new DataOutputStream(outputStream);
+        var inputStream = socket.getInputStream();
+        var dataInputStream = new DataInputStream(inputStream);
+        dataOutputStream.writeInt(1);
+        dataOutputStream.writeUTF(path);
+        dataOutputStream.flush();
+        int size = dataInputStream.readInt();
+        if (size == -1) {
+            throw new FileNotFoundException("File " + path + " not found");
         }
+        var result = new ArrayList<ImmutablePair<String, Boolean>>();
+        for (int i = 0; i < size; ++i) {
+            String name = dataInputStream.readUTF();
+            boolean isDir = dataInputStream.readBoolean();
+            result.add(new ImmutablePair<>(name, isDir));
+        }
+        return result;
     }
 
     public byte[] executeGet(@NonNull String path) throws IOException {
-        try (var outputStream = socket.getOutputStream();
-             var dataOutputStream = new DataOutputStream(outputStream);
-             var inputStream = socket.getInputStream();
-             var dataInputStream = new DataInputStream(inputStream)) {
-            dataOutputStream.writeInt(2);
-            dataOutputStream.writeUTF(path);
-            int size = dataInputStream.readInt();
-            if (size == -1) {
-                throw new FileNotFoundException("Path " + path + "not found");
-            }
-            return dataInputStream.readNBytes(size);
+        var outputStream = socket.getOutputStream();
+        var dataOutputStream = new DataOutputStream(outputStream);
+        var inputStream = socket.getInputStream();
+        var dataInputStream = new DataInputStream(inputStream);
+        dataOutputStream.writeInt(2);
+        dataOutputStream.writeUTF(path);
+        dataOutputStream.flush();
+        int size = dataInputStream.readInt();
+        if (size == -1) {
+            throw new FileNotFoundException("Path " + path + "not found");
         }
+        return dataInputStream.readNBytes(size);
     }
 }
