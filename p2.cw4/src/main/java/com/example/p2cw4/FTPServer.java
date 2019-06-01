@@ -1,21 +1,23 @@
 package com.example.p2cw4;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class FTPServer {
+    public final static int REQUEST_LIST = 1;
+    public final static int REQUEST_GET = 2;
+
     private Thread worker;
     private ServerSocket serverSocket;
     private ExecutorService executor = Executors.newCachedThreadPool();
@@ -58,14 +60,17 @@ public class FTPServer {
                 int type = dataInputStream.readInt();
                 var pathString = dataInputStream.readUTF();
                 var path = Paths.get(pathString);
-                if (type == 1) {
+                if (type == REQUEST_LIST) {
                     System.out.println(client + " requested list of directory '" + pathString + "'");
                     if (!Files.isDirectory(path)) {
                         dataOutputStream.writeInt(-1);
                         dataOutputStream.flush();
                         continue;
                     }
-                    var contents = Files.list(path).collect(Collectors.toList());
+                    List<Path> contents;
+                    try (var directoryStream = Files.list(path)) {
+                        contents = directoryStream.collect(Collectors.toList());
+                    }
                     dataOutputStream.writeInt(contents.size());
                     dataOutputStream.flush();
                     for (var contentsPath: contents) {
@@ -73,7 +78,7 @@ public class FTPServer {
                         dataOutputStream.writeBoolean(Files.isDirectory(contentsPath));
                     }
                     dataOutputStream.flush();
-                } else if (type == 2) {
+                } else if (type == REQUEST_GET) {
                     System.out.println(client + " requested file '" + pathString + "'");
                     if (!Files.isRegularFile(path)) {
                         dataOutputStream.writeInt(-1);

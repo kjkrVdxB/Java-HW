@@ -11,6 +11,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.p2cw4.FTPServer.REQUEST_GET;
+import static com.example.p2cw4.FTPServer.REQUEST_LIST;
+
 public class FTPClient {
     private Socket socket;
 
@@ -31,7 +34,7 @@ public class FTPClient {
         var dataOutputStream = new DataOutputStream(outputStream);
         var inputStream = socket.getInputStream();
         var dataInputStream = new DataInputStream(inputStream);
-        dataOutputStream.writeInt(1);
+        dataOutputStream.writeInt(REQUEST_LIST);
         dataOutputStream.writeUTF(path);
         dataOutputStream.flush();
         int size = dataInputStream.readInt();
@@ -52,7 +55,7 @@ public class FTPClient {
         var dataOutputStream = new DataOutputStream(outputStream);
         var inputStream = socket.getInputStream();
         var dataInputStream = new DataInputStream(inputStream);
-        dataOutputStream.writeInt(2);
+        dataOutputStream.writeInt(REQUEST_GET);
         dataOutputStream.writeUTF(path);
         dataOutputStream.flush();
         int size = dataInputStream.readInt();
