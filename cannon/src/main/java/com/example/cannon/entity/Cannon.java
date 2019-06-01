@@ -26,12 +26,35 @@ public class Cannon extends GameEntity implements Drawable {
     @NonNull
     private Point2D basePosition;
     private boolean launching;
-    private int movingDirection;
-    /** As a coefficient. 1 means CCW, -1 means CW, 0 means no movement. */
-    private int angleMovingDirection;
+    private MovingDirection movingDirection = MovingDirection.NONE;
+    private RotationDirection rotationDirection = RotationDirection.NONE;
     private Weapon weapon = null;
     private long lastLaunch;
     private boolean launched = false;
+
+    public enum MovingDirection {
+        RIGHT(1),
+        LEFT(-1),
+        NONE(0);
+
+        int coefficient;
+
+        MovingDirection(int coefficient) {
+            this.coefficient = coefficient;
+        }
+    }
+
+    public enum RotationDirection {
+        CCW(1),
+        CW(-1),
+        NONE(0);
+
+        int coefficient;
+
+        RotationDirection(int coefficient) {
+            this.coefficient = coefficient;
+        }
+    }
 
     public Cannon(double angle, @NonNull Point2D basePosition) {
         this.angle = angle;
@@ -41,8 +64,8 @@ public class Cannon extends GameEntity implements Drawable {
     public void update() {
         basePosition = new Point2D(basePosition.getX(), getWorld().getTerrain().getHeight(basePosition.getX()));
         double deltaTime = getWorld().getLastUpdateTimeElapsedSeconds();
-        basePosition = getWorld().getTerrain().move(basePosition, ENGINE_POWER * deltaTime * movingDirection);
-        angle -= ANGLE_MOVING_SPEED * deltaTime * angleMovingDirection;
+        basePosition = getWorld().getTerrain().move(basePosition, ENGINE_POWER * deltaTime * movingDirection.coefficient);
+        angle -= ANGLE_MOVING_SPEED * deltaTime * rotationDirection.coefficient;
         launch();
     }
 
@@ -53,12 +76,12 @@ public class Cannon extends GameEntity implements Drawable {
         }
     }
 
-    public void setMovingDirection(int direction) {
+    public void setMovingDirection(MovingDirection direction) {
         this.movingDirection = direction;
     }
 
-    public void setAngleMovingDirection(int direction) {
-        this.angleMovingDirection = direction;
+    public void setRotationDirection(RotationDirection direction) {
+        this.rotationDirection = direction;
     }
 
     @Override

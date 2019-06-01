@@ -1,5 +1,6 @@
 package com.example.cannon.game;
 
+import com.example.cannon.entity.Cannon;
 import com.example.cannon.entity.Weapon;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -99,18 +100,18 @@ public class Game extends AnimationTimer {
     /** Fire events for currently pressed keys. */
     private void onKeysPressedUpdate() {
         if (pressedKeys.contains(KeyCode.LEFT) && !pressedKeys.contains(KeyCode.RIGHT)) {
-            world.getCannon().setMovingDirection(-1);
+            world.getCannon().setMovingDirection(Cannon.MovingDirection.LEFT);
         } else if (pressedKeys.contains(KeyCode.RIGHT) && !pressedKeys.contains(KeyCode.LEFT)) {
-            world.getCannon().setMovingDirection(1);
+            world.getCannon().setMovingDirection(Cannon.MovingDirection.RIGHT);
         } else {
-            world.getCannon().setMovingDirection(0);
+            world.getCannon().setMovingDirection(Cannon.MovingDirection.NONE);
         }
         if (pressedKeys.contains(KeyCode.UP) && !pressedKeys.contains(KeyCode.DOWN)) {
-            world.getCannon().setAngleMovingDirection(1);
+            world.getCannon().setRotationDirection(Cannon.RotationDirection.CCW);
         } else if (pressedKeys.contains(KeyCode.DOWN) && !pressedKeys.contains(KeyCode.UP)) {
-            world.getCannon().setAngleMovingDirection(-1);
+            world.getCannon().setRotationDirection(Cannon.RotationDirection.CW);
         } else {
-            world.getCannon().setAngleMovingDirection(0);
+            world.getCannon().setRotationDirection(Cannon.RotationDirection.NONE);
         }
         world.getCannon().setLaunching(pressedKeys.contains(KeyCode.ENTER) || pressedKeys.contains(KeyCode.SPACE));
         for (var key: pressedKeys) {

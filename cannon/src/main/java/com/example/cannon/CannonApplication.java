@@ -1,5 +1,6 @@
 package com.example.cannon;
 
+import com.example.cannon.entity.Cannon;
 import com.example.cannon.game.Game;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -78,6 +79,6 @@ public class CannonApplication extends Application {
     }
 
     public static void main(String[] args) {
-        Application.launch(args);
+        Application.launch(CannonApplication.class, args);
     }
 }
