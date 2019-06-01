@@ -62,7 +62,8 @@ class FTPTest {
     @Test
     void testListSubdirectory() throws IOException {
         // aaa -> bbb -> ccc -----  ddd(dir)
-        //                    | --  eee(file)
+        //                    \
+        //                    `---  eee(file)
 
         var path = tmpDir.resolve("aaa").resolve("bbb").resolve("ccc");
 

@@ -9,11 +9,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class FTPServer {
     private Thread worker;
     private ServerSocket serverSocket;
+    private ExecutorService executor = Executors.newCachedThreadPool();
 
     public FTPServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
@@ -24,9 +29,7 @@ public class FTPServer {
             try {
                 for (; ; ) {
                     Socket socket = serverSocket.accept();
-                    new Thread(() -> {
-                        handle(socket);
-                    }).start();
+                    executor.execute(() -> handle(socket));
                 }
             } catch (IOException e) {
                 // server socket closed?
@@ -38,6 +41,8 @@ public class FTPServer {
     public void stop() throws InterruptedException, IOException {
         serverSocket.close();
         worker.join();
+        executor.shutdownNow();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 
     private static void handle(Socket socket) {
@@ -65,7 +70,7 @@ public class FTPServer {
                     dataOutputStream.flush();
                     for (var contentsPath: contents) {
                         dataOutputStream.writeUTF(contentsPath.getFileName().toString());
-                        dataOutputStream.writeBoolean(contentsPath.toFile().isDirectory());
+                        dataOutputStream.writeBoolean(Files.isDirectory(contentsPath));
                     }
                     dataOutputStream.flush();
                 } else if (type == 2) {
@@ -75,7 +80,7 @@ public class FTPServer {
                         dataOutputStream.flush();
                         continue;
                     }
-                    int size = (int) FileUtils.sizeOf(path.toFile());
+                    int size = (int) Files.size(path);
                     dataOutputStream.writeInt(size);
                     dataOutputStream.flush();
                     Files.copy(path, dataOutputStream);
