@@ -65,6 +65,7 @@ class FTPTest {
         //                    \
         //                    `---  eee(file)
 
+        var tmpDir = Files.createTempDirectory("kek");
         var path = tmpDir.resolve("aaa").resolve("bbb").resolve("ccc");
 
         Files.createDirectories(path.resolve("ddd"));
@@ -78,6 +79,7 @@ class FTPTest {
                 new ListingItem(ListingItem.Type.FILE, "eee"));
 
         assertEquals(listExpected, list);
+        FileUtils.deleteDirectory(tmpDir.toFile());
     }
 
     @Test
