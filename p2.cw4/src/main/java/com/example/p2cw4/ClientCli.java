@@ -79,7 +79,7 @@ public class ClientCli {
     private static void printList(List<ListingItem> list) {
         System.out.println("Files in the directory");
         for (var entry: list) {
-            System.out.println((entry.getType() == ListingItem.ItemType.DIRECTORY ? "d " : "f ") + entry.getName());
+            System.out.println((entry.getType() == ListingItem.Type.DIRECTORY ? "d " : "f ") + entry.getName());
         }
     }
 

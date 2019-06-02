@@ -45,7 +45,7 @@ public class FTPClient {
         for (int i = 0; i < size; ++i) {
             String name = dataInputStream.readUTF();
             boolean isDir = dataInputStream.readBoolean();
-            result.add(new ListingItem(isDir ? ListingItem.ItemType.DIRECTORY : ListingItem.ItemType.FILE, name));
+            result.add(new ListingItem(isDir ? ListingItem.Type.DIRECTORY : ListingItem.Type.FILE, name));
         }
         return result;
     }
@@ -66,15 +66,15 @@ public class FTPClient {
     }
 
     public static class ListingItem {
-        @NonNull final ItemType type;
+        @NonNull final Type type;
         @NonNull final String name;
 
-        public ListingItem(@NonNull ItemType type, @NonNull String name) {
+        public ListingItem(@NonNull Type type, @NonNull String name) {
             this.type = type;
             this.name = name;
         }
 
-        public ItemType getType() {
+        public Type getType() {
             return type;
         }
 
@@ -82,7 +82,7 @@ public class FTPClient {
             return name;
         }
 
-        public enum ItemType {
+        public enum Type {
             FILE,
             DIRECTORY
         }

@@ -45,8 +45,8 @@ class FTPTest {
         list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ListingItem(ListingItem.ItemType.FILE, "aaa"),
-                new ListingItem(ListingItem.ItemType.DIRECTORY, "bbb"));
+                new ListingItem(ListingItem.Type.FILE, "aaa"),
+                new ListingItem(ListingItem.Type.DIRECTORY, "bbb"));
 
         assertEquals(listExpected, list);
     }
@@ -73,8 +73,8 @@ class FTPTest {
         list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ListingItem(ListingItem.ItemType.DIRECTORY, "ddd"),
-                new ListingItem(ListingItem.ItemType.FILE, "eee"));
+                new ListingItem(ListingItem.Type.DIRECTORY, "ddd"),
+                new ListingItem(ListingItem.Type.FILE, "eee"));
 
         assertEquals(listExpected, list);
     }
@@ -125,8 +125,8 @@ class FTPTest {
         otherList.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ListingItem(ListingItem.ItemType.FILE, "aaa"),
-                new ListingItem(ListingItem.ItemType.DIRECTORY, "bbb"));
+                new ListingItem(ListingItem.Type.FILE, "aaa"),
+                new ListingItem(ListingItem.Type.DIRECTORY, "bbb"));
 
         assertEquals(listExpected, list);
         assertEquals(listExpected, otherList);
