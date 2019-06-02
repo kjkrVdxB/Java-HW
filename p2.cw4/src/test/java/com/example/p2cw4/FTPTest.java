@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import com.example.p2cw4.FTPClient.ListingItem;
 
@@ -152,6 +153,6 @@ class FTPTest {
         list = client.executeList(tmpDir.resolve("bbb").toString());
         list.sort(Comparator.comparing(ListingItem::getName));
 
-        assertEquals(Arrays.asList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
+        assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
     }
 }
