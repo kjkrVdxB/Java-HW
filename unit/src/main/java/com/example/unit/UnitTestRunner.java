@@ -147,11 +147,8 @@ public class UnitTestRunner {
         long startMillis = System.currentTimeMillis();
         try {
             test.invoke(testInstance);
-        } catch (Throwable e) {
-            if (!(e instanceof InvocationTargetException)) {
-                throw new UnitTestRunnerException(e);
-            }
-            Throwable targetException = ((InvocationTargetException) e).getTargetException();
+        } catch (InvocationTargetException e) {
+            Throwable targetException = e.getTargetException();
             if (expected.isInstance(targetException)) {
                 testRunResult.setResult(TestResult.SUCCESS, "Caught the expected exception");
             } else {
@@ -165,6 +162,8 @@ public class UnitTestRunner {
                                                                 " was thrown");
                 }
             }
+        } catch (Exception e) {
+            throw new UnitTestRunnerException("Error invoking @Test method " + test.getName(), e);
         }
         if (testRunResult.getResult() == TestResult.UNKNOWN && !expected.equals(NoExceptionExpected.class)) {
             testRunResult.setResult(TestResult.FAILURE, "The expected exception was not thrown");
