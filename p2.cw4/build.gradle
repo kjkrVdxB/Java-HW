@@ -16,7 +16,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
 
     compile group: 'org.checkerframework', name: 'checker', version: '2.7.0'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
 }
 
 test {

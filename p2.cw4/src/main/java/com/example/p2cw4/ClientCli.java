@@ -1,6 +1,5 @@
 package com.example.p2cw4;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.FileNotFoundException;
@@ -9,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
+
+import com.example.p2cw4.FTPClient.ListingItem;
 
 public class ClientCli {
     public static void main(String[] args) throws IOException {
@@ -75,10 +76,10 @@ public class ClientCli {
         }
     }
 
-    private static void printList(List<ImmutablePair<String, Boolean>> list) {
+    private static void printList(List<ListingItem> list) {
         System.out.println("Files in the directory");
         for (var entry: list) {
-            System.out.println((entry.getRight() ? "d " : "f ") + entry.getLeft());
+            System.out.println((entry.getType() == ListingItem.ItemType.DIRECTORY ? "d " : "f ") + entry.getName());
         }
     }
 

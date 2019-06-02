@@ -1,6 +1,5 @@
 package com.example.p2cw4;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
+import com.example.p2cw4.FTPClient.ListingItem;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,11 +42,11 @@ class FTPTest {
         Files.createFile(tmpDir.resolve("bbb").resolve("ccc"));
 
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(a -> a.left));
+        list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ImmutablePair<>("aaa", false),
-                new ImmutablePair<>("bbb", true));
+                new ListingItem(ListingItem.ItemType.FILE, "aaa"),
+                new ListingItem(ListingItem.ItemType.DIRECTORY, "bbb"));
 
         assertEquals(listExpected, list);
     }
@@ -54,7 +54,7 @@ class FTPTest {
     @Test
     void testEmptyList() throws IOException {
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(a -> a.left));
+        list.sort(Comparator.comparing(ListingItem::getName));
         assertEquals(0, list.size());
     }
 
@@ -70,11 +70,11 @@ class FTPTest {
         Files.createFile(path.resolve("eee"));
 
         var list = client.executeList(path.toString());
-        list.sort(Comparator.comparing(a -> a.left));
+        list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ImmutablePair<>("ddd", true),
-                new ImmutablePair<>("eee", false));
+                new ListingItem(ListingItem.ItemType.DIRECTORY, "ddd"),
+                new ListingItem(ListingItem.ItemType.FILE, "eee"));
 
         assertEquals(listExpected, list);
     }
@@ -119,14 +119,14 @@ class FTPTest {
         otherClient.connect("localhost", 9999);
 
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(a -> a.left));
+        list.sort(Comparator.comparing(ListingItem::getName));
 
         var otherList = otherClient.executeList(tmpDir.toString());
-        otherList.sort(Comparator.comparing(a -> a.left));
+        otherList.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
-                new ImmutablePair<>("aaa", false),
-                new ImmutablePair<>("bbb", true));
+                new ListingItem(ListingItem.ItemType.FILE, "aaa"),
+                new ListingItem(ListingItem.ItemType.DIRECTORY, "bbb"));
 
         assertEquals(listExpected, list);
         assertEquals(listExpected, otherList);
