@@ -26,6 +26,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FilenameUtils;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -64,7 +65,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(@NonNull Stage stage) throws Exception {
         mainStage = stage;
 
         initializeViews();
@@ -81,8 +82,8 @@ public class Main extends Application {
     private void connectAction() {
         button.setDisable(true);
 
-        String address = addressField.getCharacters().toString().trim();
-        String portString = portField.getCharacters().toString().trim();
+        var address = addressField.getCharacters().toString().trim();
+        var portString = portField.getCharacters().toString().trim();
         int port;
         try {
             port = Integer.parseInt(portString);
@@ -126,7 +127,7 @@ public class Main extends Application {
             }
         };
 
-        Thread backgroundThread = new Thread(task);
+        var backgroundThread = new Thread(task);
         backgroundThread.setDaemon(true);
         backgroundThread.start();
     }
@@ -164,7 +165,7 @@ public class Main extends Application {
         startCurrentTask();
     }
 
-    private void setMessage(String message, boolean isError) {
+    private void setMessage(@NonNull String message, boolean isError) {
         bottomText.setText(message);
         if (isError) {
             bottomText.setStyle("-fx-fill: red");
@@ -194,7 +195,7 @@ public class Main extends Application {
         button.setOnAction(event -> connectAction());
     }
 
-    private void setDelayedAction(Runnable action) {
+    private void setDelayedAction(@NonNull Runnable action) {
         // debug
         if (pauseTransition != null) {
             throw new RuntimeException("Logic error");
@@ -306,7 +307,7 @@ public class Main extends Application {
         });
     }
 
-    private void walkAction(String relativePath) {
+    private void walkAction(@NonNull String relativePath) {
         setMessage("updating", false);
         listView.setDisable(true);
 
@@ -319,7 +320,7 @@ public class Main extends Application {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                     currentPath = currentPath.resolve(relativePath).normalize();
-                    String unixPath = FilenameUtils.separatorsToUnix(currentPath.toString());
+                    var unixPath = FilenameUtils.separatorsToUnix(currentPath.toString());
                     return client.executeList(unixPath);
             }
 
@@ -350,13 +351,13 @@ public class Main extends Application {
         backgroundThread.start();
     }
 
-    private void saveAction(String relativePath) {
+    private void saveAction(@NonNull String relativePath) {
         setMessage("saving file", false);
         listView.setDisable(true);
 
         var fileChooser = new DirectoryChooser();
         fileChooser.setTitle("Choose directory");
-        File selectedDirectory = fileChooser.showDialog(mainStage);
+        var selectedDirectory = fileChooser.showDialog(mainStage);
         if (selectedDirectory == null) {
             setMessage("Directory was not chosen properly", true);
             setDelayedAction(this::setConnectedScreen);
@@ -372,7 +373,7 @@ public class Main extends Application {
             @Override
             protected Void call() throws Exception {
                 var filePath = currentPath.resolve(relativePath);
-                String unixFilePath = FilenameUtils.separatorsToUnix(filePath.toString());
+                var unixFilePath = FilenameUtils.separatorsToUnix(filePath.toString());
                 byte[] fileBytes = client.executeGet(unixFilePath);
                 Files.write(selectedDirectory.toPath().resolve(relativePath), fileBytes);
                 return null;

@@ -3,6 +3,7 @@ package com.example.p2cw4;
 import com.example.p2cw4.FTPClient.ListingItem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,7 +37,7 @@ class FTPTest {
         server.stop();
     }
 
-    @Test
+    @RepeatedTest(5)
     void testListBasic() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));
@@ -52,14 +53,14 @@ class FTPTest {
         assertEquals(listExpected, list);
     }
 
-    @Test
+    @RepeatedTest(5)
     void testEmptyList() throws IOException {
         var list = client.executeList(tmpDir.toString());
         list.sort(Comparator.comparing(ListingItem::getName));
         assertEquals(0, list.size());
     }
 
-    @Test
+    @RepeatedTest(5)
     void testListSubdirectory() throws IOException {
         // aaa -> bbb -> ccc -----  ddd(dir)
         //                    \
@@ -81,7 +82,7 @@ class FTPTest {
         assertEquals(listExpected, list);
     }
 
-    @Test
+    @RepeatedTest(5)
     void testGetBasic() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[]{1, 2, 3, 4, 5};
@@ -94,7 +95,7 @@ class FTPTest {
         assertArrayEquals(arrayExpected, byteArray);
     }
 
-    @Test
+    @RepeatedTest(5)
     void testGetEmpty() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[0];
@@ -105,13 +106,13 @@ class FTPTest {
         assertArrayEquals(arrayExpected, byteArray);
     }
 
-    @Test
+    @RepeatedTest(5)
     void testGetNonExisting() {
         assertThrows(FileNotFoundException.class,
                 () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
-    @Test
+    @RepeatedTest(5)
     void testListMultipleClients() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));
@@ -136,7 +137,7 @@ class FTPTest {
         otherClient.disconnect();
     }
 
-    @Test
+    @RepeatedTest(5)
     void testMultipleQueries() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));
@@ -155,6 +156,5 @@ class FTPTest {
         list.sort(Comparator.comparing(ListingItem::getName));
 
         assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
-
     }
 }

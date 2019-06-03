@@ -1,6 +1,7 @@
 package com.example.p2cw4;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -9,16 +10,12 @@ import java.nio.channels.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class FTPServer {
-    public final static int REQUEST_LIST = 1;
-    public final static int REQUEST_GET = 2;
-    public final static int ANSWER_FILE_NOT_FOUND = -1;
+    final static int REQUEST_LIST = 1;
+    final static int REQUEST_GET = 2;
+    final static int ANSWER_FILE_NOT_FOUND = -1;
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
@@ -52,12 +49,12 @@ public class FTPServer {
                             var socketChannel = ((ServerSocketChannel) key.channel()).accept();
                             socketChannel.configureBlocking(false);
                             var readKey = socketChannel.register(selector, SelectionKey.OP_READ);
-                            readKey.attach(new Attachment(socketChannel));
+                            readKey.attach(new ChannelHandler(socketChannel));
                             keys.remove();
                         } else if (key.isReadable()) {
-                            var attachment = (Attachment)key.attachment();
+                            var attachment = (ChannelHandler)key.attachment();
                             if (!attachment.processRead()) {
-                                key.cancel();
+                                key.channel().close();
                             }
                             if (attachment.shouldWrite) {
                                 var writeKey = attachment.socketChannel.register(selector, SelectionKey.OP_WRITE);
@@ -65,9 +62,9 @@ public class FTPServer {
                             }
                             keys.remove();
                         } else if (key.isWritable()) {
-                            var attachment = (Attachment)key.attachment();
+                            var attachment = (ChannelHandler)key.attachment();
                             if (!attachment.processWrite()) {
-                                key.cancel();
+                                key.channel().close();
                             }
                             if (!attachment.shouldWrite) {
                                 var readKey = attachment.socketChannel.register(selector, SelectionKey.OP_READ);
@@ -87,7 +84,6 @@ public class FTPServer {
     }
 
     public void stop() throws InterruptedException, IOException {
-        selector.wakeup();
         selector.close();
         worker.interrupt();
         worker.join();
@@ -96,17 +92,17 @@ public class FTPServer {
         //executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    private static class Attachment {
-        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
-        ByteBuffer dataBuffer = null;
-        boolean readLength = false;
-        SocketChannel socketChannel;
-        RequestHandler handler;
-        int requestLength = 0;
-        boolean shouldWrite = false;
-        ByteBuffer answerBuffer;
+    private static class ChannelHandler {
+        private ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        private ByteBuffer dataBuffer = null;
+        private boolean readLength = false;
+        private final SocketChannel socketChannel;
+        private final RequestHandler handler;
+        private int requestLength = 0;
+        private boolean shouldWrite = false;
+        private ByteBuffer answerBuffer = null;
 
-        public Attachment(SocketChannel socketChannel) throws IOException {
+        private ChannelHandler(SocketChannel socketChannel) throws IOException {
             this.socketChannel = socketChannel;
             handler = new RequestHandler(socketChannel.getRemoteAddress().toString());
         }
@@ -137,6 +133,10 @@ public class FTPServer {
 
                 byte[] answer = handler.handleRequest(request);
 
+                if (answer == null) {
+                    return false;
+                }
+
                 answerBuffer = ByteBuffer.allocate(answer.length + 4);
                 answerBuffer.putInt(answer.length);
                 answerBuffer.put(answer);
@@ -164,11 +164,11 @@ public class FTPServer {
     private static class RequestHandler {
         private final @NonNull String client;
 
-        public RequestHandler(@NonNull String client) {
+        private RequestHandler(@NonNull String client) {
             this.client = client;
         }
 
-        private byte[] handleRequest(byte[] request) {
+        private byte @Nullable [] handleRequest(byte @NonNull[] request) {
             try (var inputStream = new ByteArrayInputStream(request);
                  var dataInputStream = new DataInputStream(inputStream);
                  var outputStream = new ByteArrayOutputStream()) {
@@ -181,12 +181,12 @@ public class FTPServer {
                 }
                 return outputStream.toByteArray();
             } catch (IOException e) {
-                // not going to happen
-                throw new AssertionError();
+                // probably array overrun
+                return null;
             }
         }
 
-        private void handleListRequest(@NonNull InputStream in, @NonNull OutputStream out) {
+        private void handleListRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
             try (var dataInputStream = new DataInputStream(in);
                  var dataOutputStream = new DataOutputStream(out)) {
                 var pathString = dataInputStream.readUTF();
@@ -208,13 +208,10 @@ public class FTPServer {
                     dataOutputStream.writeBoolean(Files.isDirectory(contentsPath));
                 }
                 dataOutputStream.flush();
-            } catch (IOException e) {
-                // not going to happen
-                throw new AssertionError();
             }
         }
 
-        private void handleGetRequest(@NonNull InputStream in, @NonNull OutputStream out) {
+        private void handleGetRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
             try (var dataInputStream = new DataInputStream(in);
                  var dataOutputStream = new DataOutputStream(out)) {
                 var pathString = dataInputStream.readUTF();
@@ -230,9 +227,6 @@ public class FTPServer {
                 dataOutputStream.flush();
                 Files.copy(path, out);
                 dataOutputStream.flush();
-            } catch (IOException e) {
-                // not going to happen
-                throw new AssertionError();
             }
         }
     }
