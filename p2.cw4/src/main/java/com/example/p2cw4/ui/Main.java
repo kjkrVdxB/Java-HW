@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,10 +18,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -168,9 +167,11 @@ public class Main extends Application {
     private void setMessage(@NonNull String message, boolean isError) {
         bottomText.setText(message);
         if (isError) {
-            bottomText.setStyle("-fx-fill: red");
+            bottomMainHBox.setBackground(new Background(new BackgroundFill(Color.web("FF8484"),
+                    CornerRadii.EMPTY, Insets.EMPTY)));
+            //bottomText.setStyle("-fx-fill: red");
         } else {
-            bottomText.setStyle("-fx-fill: black");
+            //bottomText.setStyle("-fx-fill: black");
         }
 
         bottomMainHBox.getChildren().remove(0);
@@ -180,6 +181,8 @@ public class Main extends Application {
     private void setConnectedScreen() {
         setMessage("connected", false);
         listView.setDisable(false);
+        bottomMainHBox.setBackground(new Background(new BackgroundFill(Color.web("84FF84"),
+                CornerRadii.EMPTY, Insets.EMPTY)));
         button.setText("disconnect");
         button.setDisable(false);
         button.setOnAction(event -> disconnectAction());
@@ -190,6 +193,7 @@ public class Main extends Application {
         listView.setDisable(true);
         bottomMainHBox.getChildren().remove(0);
         bottomMainHBox.getChildren().add(0, bottomParametersHBox);
+        bottomMainHBox.setBackground(Background.EMPTY);
         button.setText("connect");
         button.setDisable(false);
         button.setOnAction(event -> connectAction());
