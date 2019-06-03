@@ -4,7 +4,6 @@ import com.example.p2cw4.FTPClient.ListingItem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.FileNotFoundException;
@@ -18,7 +17,7 @@ import java.util.Comparator;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
-    private static final int TEST_RUNS = 20;
+    private static final int TEST_RUNS = 10;
     private FTPServer server = new FTPServer(9999);
     private FTPClient client = new FTPClient();
     @SuppressWarnings("WeakerAccess")

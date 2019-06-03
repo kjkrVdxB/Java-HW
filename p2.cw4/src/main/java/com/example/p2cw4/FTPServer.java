@@ -39,41 +39,43 @@ public class FTPServer {
                     if (!selector.isOpen()) {
                         return;
                     }
-                    var keys = selector.selectedKeys().iterator();
-                    while (keys.hasNext()) {
-                        var key = keys.next();
-                        if (!key.isValid()) {
-                            keys.remove();
-                            return;
-                        }
-                        if (key.isAcceptable()) {
-                            var socketChannel = ((ServerSocketChannel) key.channel()).accept();
-                            socketChannel.configureBlocking(false);
-                            var readKey = socketChannel.register(selector, SelectionKey.OP_READ);
-                            readKey.attach(new ChannelHandler(socketChannel));
-                            keys.remove();
-                        } else if (key.isReadable()) {
-                            var channelHandler = (ChannelHandler)key.attachment();
-                            if (!channelHandler.processRead()) {
-                                key.channel().close();
+                    synchronized (selector.selectedKeys()) {
+                        var keys = selector.selectedKeys().iterator();
+                        while (keys.hasNext()) {
+                            var key = keys.next();
+                            if (!key.isValid()) {
+                                keys.remove();
                                 return;
                             }
-                            if (channelHandler.shouldWrite) {
-                                var writeKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_WRITE);
-                                writeKey.attach(channelHandler);
+                            if (key.isAcceptable()) {
+                                var socketChannel = ((ServerSocketChannel) key.channel()).accept();
+                                socketChannel.configureBlocking(false);
+                                var readKey = socketChannel.register(selector, SelectionKey.OP_READ);
+                                readKey.attach(new ChannelHandler(socketChannel));
+                                keys.remove();
+                            } else if (key.isReadable()) {
+                                var channelHandler = (ChannelHandler) key.attachment();
+                                if (!channelHandler.processRead()) {
+                                    key.channel().close();
+                                    return;
+                                }
+                                if (channelHandler.shouldWrite) {
+                                    var writeKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_WRITE);
+                                    writeKey.attach(channelHandler);
+                                }
+                                keys.remove();
+                            } else if (key.isWritable()) {
+                                var channelHandler = (ChannelHandler) key.attachment();
+                                if (!channelHandler.processWrite()) {
+                                    key.channel().close();
+                                    return;
+                                }
+                                if (!channelHandler.shouldWrite) {
+                                    var readKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_READ);
+                                    readKey.attach(channelHandler);
+                                }
+                                keys.remove();
                             }
-                            keys.remove();
-                        } else if (key.isWritable()) {
-                            var channelHandler = (ChannelHandler)key.attachment();
-                            if (!channelHandler.processWrite()) {
-                                key.channel().close();
-                                return;
-                            }
-                            if (!channelHandler.shouldWrite) {
-                                var readKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_READ);
-                                readKey.attach(channelHandler);
-                            }
-                            keys.remove();
                         }
                     }
                 }
