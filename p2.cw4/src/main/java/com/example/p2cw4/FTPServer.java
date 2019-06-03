@@ -160,27 +160,6 @@ public class FTPServer {
         }
     }
 
-    private static void handleSocket(SocketChannel socketChannel) throws IOException {
-        String client = socketChannel.getRemoteAddress().toString();
-        System.out.println(client + " incoming");
-        var handler = new RequestHandler(client);
-        try {
-            answerRequestsWith(socketChannel, handler::handleRequest);
-        } catch (IOException e) {
-            // probably client disconnected?
-        }
-        System.out.println(client + " disconnected");
-    }
-
-    private static void answerRequestsWith(@NonNull SocketChannel socketChannel, @NonNull Function<byte[], byte[]> processor) throws IOException {
-
-
-        //noinspection InfiniteLoopStatement
-        for (; ; ) {
-
-        }
-    }
-
     private static class RequestHandler {
         private final @NonNull String client;
 
