@@ -50,6 +50,8 @@ public class Main extends Application {
     private FTPClient client = new FTPClient();
     private String currentPath;
 
+    private Task currentTask;
+
     public static void main(String[] args) {
         Application.launch(Main.class, args);
     }
@@ -83,12 +85,17 @@ public class Main extends Application {
 
         setMessage("connecting", false);
 
+        // debug
+        if (currentTask != null) {
+            throw new RuntimeException("Logic error");
+        }
+
         var task = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 client.connect(address, port);
                 currentPath = ".";
-                return client.executeList(currentPath.toString());
+                return client.executeList(currentPath);
             }
 
             @Override
@@ -97,6 +104,7 @@ public class Main extends Application {
                 items.clear();
                 items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
                 items.addAll(getValue());
+                currentTask = null;
                 setConnectedScreen();
             }
 
@@ -104,6 +112,7 @@ public class Main extends Application {
             protected void failed() {
                 super.failed();
                 setMessage("could not connect", true);
+                currentTask = null;
                 setDelayedAction(() -> setMainScreen());
             }
         };
@@ -116,8 +125,14 @@ public class Main extends Application {
     private void disconnectAction() {
         button.setDisable(true);
         setMessage("disconnecting", false);
+        listView.setDisable(true);
 
-        var task = new Task<Void>() {
+        if (currentTask != null) {
+            currentTask.cancel(true);
+            currentTask = null;
+        }
+
+        currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
                 client.disconnect();
@@ -127,6 +142,7 @@ public class Main extends Application {
             @Override
             protected void succeeded() {
                 super.succeeded();
+                currentTask = null;
                 setMainScreen();
             }
 
@@ -135,13 +151,11 @@ public class Main extends Application {
                 super.failed();
                 setMessage("could not disconnect properly", true);
                 client = new FTPClient();
+                currentTask = null;
                 setDelayedAction(() -> setMainScreen());
             }
         };
-
-        Thread backgroundThread = new Thread(task);
-        backgroundThread.setDaemon(true);
-        backgroundThread.start();
+        startCurrentTask();
     }
 
     private void setMessage(String message, boolean isError) {
@@ -158,6 +172,7 @@ public class Main extends Application {
 
     private void setConnectedScreen() {
         setMessage("connected", false);
+        listView.setDisable(false);
         button.setText("disconnect");
         button.setDisable(false);
         button.setOnAction(event -> disconnectAction());
@@ -165,6 +180,7 @@ public class Main extends Application {
 
     private void setMainScreen() {
         items.clear();
+        listView.setDisable(true);
         bottomMainHBox.getChildren().remove(0);
         bottomMainHBox.getChildren().add(0, bottomParametersHBox);
         button.setText("connect");
@@ -263,7 +279,14 @@ public class Main extends Application {
 
     private void walkAction(String relativePath) {
         setMessage("updating", false);
-        var task = new Task<List<FTPClient.ListingItem>>() {
+        listView.setDisable(true);
+
+        // debug
+        if (currentTask != null) {
+            throw new RuntimeException("Logic error");
+        }
+
+        currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 try {
@@ -281,6 +304,7 @@ public class Main extends Application {
                 items.clear();
                 items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
                 items.addAll(getValue());
+                currentTask = null;
                 setConnectedScreen();
             }
 
@@ -288,11 +312,15 @@ public class Main extends Application {
             protected void failed() {
                 super.failed();
                 setMessage("updating error", true);
+                currentTask = null;
                 setDelayedAction(() -> setConnectedScreen());
             }
         };
+       startCurrentTask();
+    }
 
-        Thread backgroundThread = new Thread(task);
+    private void startCurrentTask() {
+        Thread backgroundThread = new Thread(currentTask);
         backgroundThread.setDaemon(true);
         backgroundThread.start();
     }
