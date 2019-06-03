@@ -79,6 +79,7 @@ public class Main extends Application {
         setMainScreen();
 
         stage.setTitle("FTP Client");
+        stage.setMinWidth(300);
         stage.setScene(new Scene(root, 800, 600));
         stage.show();
     }
@@ -108,7 +109,7 @@ public class Main extends Application {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 client.connect(address, port);
-                currentPath = Paths.get(".");
+                currentPath = Paths.get("");
                 return client.executeList(currentPath.toString());
             }
 
@@ -180,7 +181,8 @@ public class Main extends Application {
     }
 
     private void setConnectedScreen() {
-        setMessage("connected", false);
+        String pathToShow = currentPath.toString().equals("") ? "." : currentPath.toString();
+        setMessage("path:  " + pathToShow, false);
         listView.setDisable(false);
         bottomMainHBox.setBackground(connectedBackground);
         button.setText("disconnect");
@@ -247,6 +249,7 @@ public class Main extends Application {
         bottomTextStackPane.setAlignment(Pos.CENTER);
         HBox.setHgrow(bottomTextStackPane, Priority.ALWAYS);
         bottomText = new Text();
+        bottomTextStackPane.setMinWidth(0);
         bottomTextStackPane.getChildren().add(bottomText);
     }
 
@@ -386,8 +389,9 @@ public class Main extends Application {
             @Override
             protected void succeeded() {
                 super.succeeded();
+                setMessage("file downloaded successfully", false);
                 currentTask = null;
-                setConnectedScreen();
+                setDelayedAction(() -> setConnectedScreen());
             }
 
             @Override
