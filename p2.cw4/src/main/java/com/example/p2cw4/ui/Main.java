@@ -22,11 +22,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.List;
 
 public class Main extends Application {
@@ -47,10 +50,11 @@ public class Main extends Application {
     private Image fileImage;
     private Image upImage;
 
+    private Stage mainStage;
     private FTPClient client = new FTPClient();
     private String currentPath;
-
     private Task currentTask;
+    private PauseTransition pauseTransition;
 
     public static void main(String[] args) {
         Application.launch(Main.class, args);
@@ -58,6 +62,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        mainStage = stage;
+
         initializeViews();
         loadImages();
         setupListView();
@@ -127,10 +133,7 @@ public class Main extends Application {
         setMessage("disconnecting", false);
         listView.setDisable(true);
 
-        if (currentTask != null) {
-            currentTask.cancel(true);
-            currentTask = null;
-        }
+        cancellAllAsyncOperations();
 
         currentTask = new Task<Void>() {
             @Override
@@ -189,10 +192,29 @@ public class Main extends Application {
     }
 
     private void setDelayedAction(Runnable action) {
+        // debug
+        if (pauseTransition != null) {
+            throw new RuntimeException("Logic error");
+        }
+
         // FIXME add constant
-        var pause = new PauseTransition(Duration.seconds(2));
-        pause.setOnFinished(event -> action.run());
-        pause.play();
+        pauseTransition = new PauseTransition(Duration.seconds(2));
+        pauseTransition.setOnFinished(event -> {
+            action.run();
+            pauseTransition = null;
+        });
+        pauseTransition.play();
+    }
+
+    private void cancellAllAsyncOperations() {
+        if (pauseTransition != null) {
+            pauseTransition.stop();
+            pauseTransition = null;
+        }
+        if (currentTask != null) {
+            currentTask.cancel(true);
+            currentTask = null;
+        }
     }
 
     private void initializeViews() throws Exception {
@@ -256,6 +278,8 @@ public class Main extends Application {
                         }
                         if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
                             walkAction(item.getName());
+                        } else {
+                            saveAction(item.getName());
                         }
                     });
 
@@ -273,6 +297,8 @@ public class Main extends Application {
             var item = listView.getSelectionModel().getSelectedItem();
             if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
                 walkAction(item.getName());
+            } else {
+                saveAction(item.getName());
             }
         });
     }
@@ -289,13 +315,8 @@ public class Main extends Application {
         currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
-                try {
                     currentPath = currentPath + "/" + relativePath;
                     return client.executeList(currentPath);
-                } catch(Exception except) {
-                    except.printStackTrace();
-                    throw except;
-                }
             }
 
             @Override
@@ -325,7 +346,48 @@ public class Main extends Application {
         backgroundThread.start();
     }
 
-    private void saveAction() {
+    private void saveAction(String relativePath) {
+        setMessage("saving file", false);
+        listView.setDisable(true);
 
+        var fileChooser = new DirectoryChooser();
+        fileChooser.setTitle("Choose directory");
+        File selectedDirectory = fileChooser.showDialog(mainStage);
+        if (selectedDirectory == null) {
+            setMessage("Directory was not chosen properly", true);
+            setDelayedAction(this::setConnectedScreen);
+            return;
+        }
+
+        // debug
+        if (currentTask != null) {
+            throw new RuntimeException("Logic error");
+        }
+
+        currentTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                var filePath = currentPath + "/" + relativePath;
+                byte[] file = client.executeGet(filePath);
+                Files.write(selectedDirectory.toPath().resolve(relativePath), file);
+                return null;
+            }
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                currentTask = null;
+                setConnectedScreen();
+            }
+
+            @Override
+            protected void failed() {
+                super.failed();
+                setMessage("downloading error", true);
+                currentTask = null;
+                setDelayedAction(() -> setConnectedScreen());
+            }
+        };
+        startCurrentTask();
     }
 }
