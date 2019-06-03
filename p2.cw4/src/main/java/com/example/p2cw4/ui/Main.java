@@ -36,6 +36,11 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Main extends Application {
+    private static final Background errorBackground = new Background(
+            new BackgroundFill(Color.web("FFA1A1"), CornerRadii.EMPTY, Insets.EMPTY));
+    private static final Background connectedBackground = new Background(
+            new BackgroundFill(Color.web("BCFFBC"), CornerRadii.EMPTY, Insets.EMPTY));
+
     private VBox root;
     private ListView<FTPClient.ListingItem> listView;
     private ObservableList<FTPClient.ListingItem> items = FXCollections.observableArrayList();
@@ -167,11 +172,7 @@ public class Main extends Application {
     private void setMessage(@NonNull String message, boolean isError) {
         bottomText.setText(message);
         if (isError) {
-            bottomMainHBox.setBackground(new Background(new BackgroundFill(Color.web("FF8484"),
-                    CornerRadii.EMPTY, Insets.EMPTY)));
-            //bottomText.setStyle("-fx-fill: red");
-        } else {
-            //bottomText.setStyle("-fx-fill: black");
+            bottomMainHBox.setBackground(errorBackground);
         }
 
         bottomMainHBox.getChildren().remove(0);
@@ -181,8 +182,7 @@ public class Main extends Application {
     private void setConnectedScreen() {
         setMessage("connected", false);
         listView.setDisable(false);
-        bottomMainHBox.setBackground(new Background(new BackgroundFill(Color.web("84FF84"),
-                CornerRadii.EMPTY, Insets.EMPTY)));
+        bottomMainHBox.setBackground(connectedBackground);
         button.setText("disconnect");
         button.setDisable(false);
         button.setOnAction(event -> disconnectAction());
@@ -363,7 +363,7 @@ public class Main extends Application {
         fileChooser.setTitle("Choose directory");
         var selectedDirectory = fileChooser.showDialog(mainStage);
         if (selectedDirectory == null) {
-            setMessage("Directory was not chosen properly", true);
+            setMessage("directory was not chosen properly", true);
             setDelayedAction(this::setConnectedScreen);
             return;
         }
