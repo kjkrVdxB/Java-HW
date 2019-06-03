@@ -12,10 +12,14 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Integer.min;
+
 public class FTPServer {
     final static int REQUEST_LIST = 1;
     final static int REQUEST_GET = 2;
     final static int ANSWER_FILE_NOT_FOUND = -1;
+    final static int MAX_BYTES_READ = 4096;
+    final static int MAX_BYTES_WRITE = 4096;
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
@@ -132,15 +136,13 @@ public class FTPServer {
                     return true;
                 }
             }
+            dataBuffer.limit(min(dataBuffer.position() + MAX_BYTES_READ, dataBuffer.capacity()));
             if (socketChannel.read(dataBuffer) == -1) {
                 return false;
             }
             dataBuffer.flip();
             if (dataBuffer.remaining() == requestLength) {
-                byte[] request = new byte[requestLength];
-                dataBuffer.get(request);
-
-                byte[] answer = handler.handleRequest(request);
+                byte[] answer = handler.handleRequest(dataBuffer.array());
 
                 if (answer == null) {
                     return false;
@@ -160,10 +162,11 @@ public class FTPServer {
         }
 
         boolean processWrite() throws IOException {
+            answerBuffer.limit(min(answerBuffer.position() + MAX_BYTES_WRITE, answerBuffer.capacity()));
             if (socketChannel.write(answerBuffer) == -1) {
                 return false;
             }
-            if (answerBuffer.remaining() == 0) {
+            if (answerBuffer.position() == answerBuffer.capacity()) {
                 shouldWrite = false;
             }
             return true;
