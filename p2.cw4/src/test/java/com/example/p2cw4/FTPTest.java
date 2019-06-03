@@ -18,6 +18,7 @@ import java.util.Comparator;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
+    private static final int TEST_RUNS = 20;
     private FTPServer server = new FTPServer(9999);
     private FTPClient client = new FTPClient();
     @SuppressWarnings("WeakerAccess")
@@ -37,7 +38,7 @@ class FTPTest {
         server.stop();
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testListBasic() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));
@@ -53,20 +54,19 @@ class FTPTest {
         assertEquals(listExpected, list);
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testEmptyList() throws IOException {
         var list = client.executeList(tmpDir.toString());
         list.sort(Comparator.comparing(ListingItem::getName));
         assertEquals(0, list.size());
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testListSubdirectory() throws IOException {
         // aaa -> bbb -> ccc -----  ddd(dir)
         //                    \
         //                    `---  eee(file)
 
-        var tmpDir = Files.createTempDirectory("kek");
         var path = tmpDir.resolve("aaa").resolve("bbb").resolve("ccc");
 
         Files.createDirectories(path.resolve("ddd"));
@@ -82,7 +82,7 @@ class FTPTest {
         assertEquals(listExpected, list);
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testGetBasic() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[]{1, 2, 3, 4, 5};
@@ -95,7 +95,7 @@ class FTPTest {
         assertArrayEquals(arrayExpected, byteArray);
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testGetEmpty() throws IOException {
         var filePath = tmpDir.resolve("test");
         var arrayExpected = new byte[0];
@@ -106,13 +106,13 @@ class FTPTest {
         assertArrayEquals(arrayExpected, byteArray);
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testGetNonExisting() {
         assertThrows(FileNotFoundException.class,
                 () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testListMultipleClients() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));
@@ -137,7 +137,7 @@ class FTPTest {
         otherClient.disconnect();
     }
 
-    @RepeatedTest(5)
+    @RepeatedTest(TEST_RUNS)
     void testMultipleQueries() throws IOException {
         Files.createFile(tmpDir.resolve("aaa"));
         Files.createDirectories(tmpDir.resolve("bbb"));

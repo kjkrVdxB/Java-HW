@@ -44,6 +44,7 @@ public class FTPServer {
                         var key = keys.next();
                         if (!key.isValid()) {
                             keys.remove();
+                            return;
                         }
                         if (key.isAcceptable()) {
                             var socketChannel = ((ServerSocketChannel) key.channel()).accept();
@@ -52,23 +53,25 @@ public class FTPServer {
                             readKey.attach(new ChannelHandler(socketChannel));
                             keys.remove();
                         } else if (key.isReadable()) {
-                            var attachment = (ChannelHandler)key.attachment();
-                            if (!attachment.processRead()) {
+                            var channelHandler = (ChannelHandler)key.attachment();
+                            if (!channelHandler.processRead()) {
                                 key.channel().close();
+                                return;
                             }
-                            if (attachment.shouldWrite) {
-                                var writeKey = attachment.socketChannel.register(selector, SelectionKey.OP_WRITE);
-                                writeKey.attach(attachment);
+                            if (channelHandler.shouldWrite) {
+                                var writeKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_WRITE);
+                                writeKey.attach(channelHandler);
                             }
                             keys.remove();
                         } else if (key.isWritable()) {
-                            var attachment = (ChannelHandler)key.attachment();
-                            if (!attachment.processWrite()) {
+                            var channelHandler = (ChannelHandler)key.attachment();
+                            if (!channelHandler.processWrite()) {
                                 key.channel().close();
+                                return;
                             }
-                            if (!attachment.shouldWrite) {
-                                var readKey = attachment.socketChannel.register(selector, SelectionKey.OP_READ);
-                                readKey.attach(attachment);
+                            if (!channelHandler.shouldWrite) {
+                                var readKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_READ);
+                                readKey.attach(channelHandler);
                             }
                             keys.remove();
                         }
@@ -102,7 +105,7 @@ public class FTPServer {
         private boolean shouldWrite = false;
         private ByteBuffer answerBuffer = null;
 
-        private ChannelHandler(SocketChannel socketChannel) throws IOException {
+        private ChannelHandler(@NonNull SocketChannel socketChannel) throws IOException {
             this.socketChannel = socketChannel;
             handler = new RequestHandler(socketChannel.getRemoteAddress().toString());
         }
