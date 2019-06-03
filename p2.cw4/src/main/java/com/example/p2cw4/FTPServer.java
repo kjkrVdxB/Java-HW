@@ -33,7 +33,6 @@ public class FTPServer {
         worker = new Thread(() -> {
             try {
                 serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-
                 for (; ; ) {
                     selector.select();
                     if (!selector.isOpen()) {
@@ -57,7 +56,7 @@ public class FTPServer {
                                 var channelHandler = (ChannelHandler) key.attachment();
                                 if (!channelHandler.processRead()) {
                                     key.channel().close();
-                                    return;
+                                    continue;
                                 }
                                 if (channelHandler.shouldWrite) {
                                     var writeKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_WRITE);
@@ -68,7 +67,7 @@ public class FTPServer {
                                 var channelHandler = (ChannelHandler) key.attachment();
                                 if (!channelHandler.processWrite()) {
                                     key.channel().close();
-                                    return;
+                                    continue;
                                 }
                                 if (!channelHandler.shouldWrite) {
                                     var readKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_READ);
@@ -98,14 +97,19 @@ public class FTPServer {
     }
 
     private static class ChannelHandler {
-        private ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
-        private ByteBuffer dataBuffer = null;
+        @NonNull
+        private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        @NonNull
+        private ByteBuffer dataBuffer;
         private boolean readLength = false;
+        @NonNull
         private final SocketChannel socketChannel;
+        @NonNull
         private final RequestHandler handler;
         private int requestLength = 0;
         private boolean shouldWrite = false;
-        private ByteBuffer answerBuffer = null;
+        @NonNull
+        private ByteBuffer answerBuffer;
 
         private ChannelHandler(@NonNull SocketChannel socketChannel) throws IOException {
             this.socketChannel = socketChannel;
