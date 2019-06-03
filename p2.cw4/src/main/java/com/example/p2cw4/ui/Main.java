@@ -25,6 +25,7 @@ import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -54,7 +55,7 @@ public class Main extends Application {
 
     private Stage mainStage;
     private FTPClient client = new FTPClient();
-    private String currentPath;
+    private Path currentPath;
     private Task currentTask;
     private PauseTransition pauseTransition;
 
@@ -102,8 +103,8 @@ public class Main extends Application {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 client.connect(address, port);
-                currentPath = ".";
-                return client.executeList(currentPath);
+                currentPath = Paths.get(".");
+                return client.executeList(currentPath.toString());
             }
 
             @Override
@@ -317,8 +318,9 @@ public class Main extends Application {
         currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
-                    currentPath = currentPath + "/" + relativePath;
-                    return client.executeList(currentPath);
+                    currentPath = currentPath.resolve(relativePath).normalize();
+                    String unixPath = FilenameUtils.separatorsToUnix(currentPath.toString());
+                    return client.executeList(unixPath);
             }
 
             @Override
@@ -369,9 +371,10 @@ public class Main extends Application {
         currentTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                var filePath = currentPath + "/" + relativePath;
-                byte[] file = client.executeGet(filePath);
-                Files.write(selectedDirectory.toPath().resolve(relativePath), file);
+                var filePath = currentPath.resolve(relativePath);
+                String unixFilePath = FilenameUtils.separatorsToUnix(filePath.toString());
+                byte[] fileBytes = client.executeGet(unixFilePath);
+                Files.write(selectedDirectory.toPath().resolve(relativePath), fileBytes);
                 return null;
             }
 
