@@ -14,12 +14,12 @@
          <children>
             <HBox id="bottomParametersHBox" minWidth="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Adress:">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Address:">
                      <HBox.margin>
                         <Insets left="3.0" right="3.0" top="5.0" />
                      </HBox.margin>
                   </Text>
-                  <TextField id="adressField" HBox.hgrow="ALWAYS">
+                  <TextField id="addressField" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets top="1.0" />
                      </HBox.margin>

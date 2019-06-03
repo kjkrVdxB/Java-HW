@@ -30,6 +30,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class Main extends Application {
@@ -40,7 +42,7 @@ public class Main extends Application {
     private Button button;
 
     private HBox bottomParametersHBox;
-    private TextField adressField;
+    private TextField addressField;
     private TextField portField;
 
     private StackPane bottomTextStackPane;
@@ -78,7 +80,7 @@ public class Main extends Application {
     private void connectAction() {
         button.setDisable(true);
 
-        String address = adressField.getCharacters().toString().trim();
+        String address = addressField.getCharacters().toString().trim();
         String portString = portField.getCharacters().toString().trim();
         int port;
         try {
@@ -228,7 +230,7 @@ public class Main extends Application {
         button = (Button) root.lookup("#button");
 
         bottomParametersHBox = (HBox) root.lookup("#bottomParametersHBox");
-        adressField = (TextField) root.lookup("#adressField");
+        addressField = (TextField) root.lookup("#addressField");
         portField = (TextField) root.lookup("#portField");
 
         constructTextStackPane();
