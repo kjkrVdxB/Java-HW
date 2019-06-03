@@ -15,6 +15,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -46,35 +48,17 @@ public class Main extends Application {
     private Image upImage;
 
     private FTPClient client = new FTPClient();
+    private String currentPath;
+
+    public static void main(String[] args) {
+        Application.launch(Main.class, args);
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
         initializeViews();
         loadImages();
-
-        listView.setCellFactory(listView -> new ListCell<>() {
-            private ImageView imageView = new ImageView();
-
-            @Override
-            public void updateItem(FTPClient.ListingItem item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    if (item.getName().equals("../")) {
-                        imageView.setImage(upImage);
-                    } else if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
-                        imageView.setImage(folderImage);
-                    } else {
-                        imageView.setImage(fileImage);
-                    }
-                    setGraphicTextGap(20);
-                    setText(item.getName());
-                    setGraphic(imageView);
-                }
-            }
-        });
+        setupListView();
 
         setMainScreen();
 
@@ -103,14 +87,14 @@ public class Main extends Application {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 client.connect(address, port);
-                System.out.println(Thread.currentThread().getName());
-                return client.executeList(".");
+                currentPath = ".";
+                return client.executeList(currentPath.toString());
             }
 
             @Override
             protected void succeeded() {
                 super.succeeded();
-                items.removeAll();
+                items.clear();
                 items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
                 items.addAll(getValue());
                 setConnectedScreen();
@@ -198,8 +182,6 @@ public class Main extends Application {
     private void initializeViews() throws Exception {
         root = FXMLLoader.load(Main.class.getResource("/mainLayout.fxml").toURI().toURL());
 
-        var defaultListVIew = (ListView) root.lookup("#listView");
-        root.getChildren().remove(defaultListVIew);
         listView = new ListView<>(items);
         VBox.setVgrow(listView, Priority.ALWAYS);
         root.getChildren().add(0, listView);
@@ -214,6 +196,14 @@ public class Main extends Application {
         constructTextStackPane();
     }
 
+    private void constructTextStackPane() {
+        bottomTextStackPane = new StackPane();
+        bottomTextStackPane.setAlignment(Pos.CENTER);
+        HBox.setHgrow(bottomTextStackPane, Priority.ALWAYS);
+        bottomText = new Text();
+        bottomTextStackPane.getChildren().add(bottomText);
+    }
+
     private void loadImages() throws URISyntaxException, MalformedURLException {
         folderImage = new Image(Main.class.getResource("/folder.png").toURI().toURL().toString(),
                 0, 15, true, false);
@@ -223,15 +213,85 @@ public class Main extends Application {
                 0, 15, true, false);
 
     }
-    private void constructTextStackPane() {
-        bottomTextStackPane = new StackPane();
-        bottomTextStackPane.setAlignment(Pos.CENTER);
-        HBox.setHgrow(bottomTextStackPane, Priority.ALWAYS);
-        bottomText = new Text();
-        bottomTextStackPane.getChildren().add(bottomText);
+
+    private void setupListView() {
+        listView.setCellFactory(listView -> new ListCell<>() {
+            private ImageView imageView = new ImageView();
+
+            @Override
+            public void updateItem(FTPClient.ListingItem item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setOnMouseClicked(null);
+                } else {
+                    if (item.getName().equals("../")) {
+                        imageView.setImage(upImage);
+                    } else if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
+                        imageView.setImage(folderImage);
+                    } else {
+                        imageView.setImage(fileImage);
+                    }
+
+                    if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
+                        setOnMouseClicked(event -> {
+                            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
+                                walkAction(item.getName());
+                            }
+                        });
+                    } else {
+                        setOnMouseClicked(null);
+                    }
+
+                    listView.setOnKeyPressed(event -> {
+                        if (event.getCode() == KeyCode.ENTER) {
+                            walkAction(listView.getSelectionModel().getSelectedItem().getName());
+                        }
+                    });
+
+                    setGraphicTextGap(20);
+                    setText(item.getName());
+                    setGraphic(imageView);
+                }
+            }
+        });
+
     }
 
-    public static void main(String[] args) {
-        Application.launch(Main.class, args);
+    private void walkAction(String relativePath) {
+        setMessage("updating", false);
+        var task = new Task<List<FTPClient.ListingItem>>() {
+            @Override
+            protected List<FTPClient.ListingItem> call() throws Exception {
+                try {
+                    currentPath = currentPath + "/" + relativePath;
+                    return client.executeList(currentPath);
+                } catch(Exception except) {
+                    except.printStackTrace();
+                    throw except;
+                }
+            }
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                items.clear();
+                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
+                items.addAll(getValue());
+                setConnectedScreen();
+            }
+
+            @Override
+            protected void failed() {
+                super.failed();
+                setMessage("updating error", true);
+                setDelayedAction(() -> setConnectedScreen());
+            }
+        };
+
+        Thread backgroundThread = new Thread(task);
+        backgroundThread.setDaemon(true);
+        backgroundThread.start();
     }
 }
