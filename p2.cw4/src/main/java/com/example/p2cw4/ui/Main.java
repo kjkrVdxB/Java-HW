@@ -137,7 +137,7 @@ public class Main extends Application {
         setMessage("disconnecting", false);
         listView.setDisable(true);
 
-        cancellAllAsyncOperations();
+        cancelAllAsyncOperations();
 
         currentTask = new Task<Void>() {
             @Override
@@ -210,7 +210,7 @@ public class Main extends Application {
         pauseTransition.play();
     }
 
-    private void cancellAllAsyncOperations() {
+    private void cancelAllAsyncOperations() {
         if (pauseTransition != null) {
             pauseTransition.stop();
             pauseTransition = null;
@@ -346,7 +346,7 @@ public class Main extends Application {
     }
 
     private void startCurrentTask() {
-        Thread backgroundThread = new Thread(currentTask);
+        var backgroundThread = new Thread(currentTask);
         backgroundThread.setDaemon(true);
         backgroundThread.start();
     }
