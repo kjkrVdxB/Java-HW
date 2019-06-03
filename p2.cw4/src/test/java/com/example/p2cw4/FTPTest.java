@@ -79,7 +79,6 @@ class FTPTest {
                 new ListingItem(ListingItem.Type.FILE, "eee"));
 
         assertEquals(listExpected, list);
-        FileUtils.deleteDirectory(tmpDir.toFile());
     }
 
     @Test
