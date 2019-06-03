@@ -4,11 +4,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -25,38 +22,142 @@ public class FTPServer {
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    //private ExecutorService executor = Executors.newCachedThreadPool();
+    private volatile Selector selector;
 
     public FTPServer(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
+        serverSocketChannel.configureBlocking(false);
     }
 
-    public void start() {
+    public void start() throws IOException {
+        selector = Selector.open();
         worker = new Thread(() -> {
             try {
+                serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
                 for (; ; ) {
-                    var socketChannel = serverSocketChannel.accept();
-                    executor.execute(() -> {
-                        try {
-                            handleSocket(socketChannel);
-                        } catch (IOException e) {
-                            // TODO
+                    selector.select();
+                    if (!selector.isOpen()) {
+                        return;
+                    }
+                    var keys = selector.selectedKeys().iterator();
+                    while (keys.hasNext()) {
+                        var key = keys.next();
+                        if (!key.isValid()) {
+                            keys.remove();
                         }
-                    });
+                        if (key.isAcceptable()) {
+                            var socketChannel = ((ServerSocketChannel) key.channel()).accept();
+                            socketChannel.configureBlocking(false);
+                            var readKey = socketChannel.register(selector, SelectionKey.OP_READ);
+                            readKey.attach(new Attachment(socketChannel));
+                            keys.remove();
+                        } else if (key.isReadable()) {
+                            var attachment = (Attachment)key.attachment();
+                            if (!attachment.processRead()) {
+                                key.cancel();
+                            }
+                            if (attachment.shouldWrite) {
+                                var writeKey = attachment.socketChannel.register(selector, SelectionKey.OP_WRITE);
+                                writeKey.attach(attachment);
+                            }
+                            keys.remove();
+                        } else if (key.isWritable()) {
+                            var attachment = (Attachment)key.attachment();
+                            if (!attachment.processWrite()) {
+                                key.cancel();
+                            }
+                            if (!attachment.shouldWrite) {
+                                key.cancel();
+                            }
+                            keys.remove();
+                        }
+                    }
                 }
             } catch (IOException e) {
-                // server socket closed?
+                // TODO
+            } catch (ClosedSelectorException e) {
+                // time to go out
             }
         });
         worker.start();
     }
 
     public void stop() throws InterruptedException, IOException {
-        serverSocketChannel.close();
+        selector.wakeup();
+        selector.close();
+        worker.interrupt();
         worker.join();
-        executor.shutdownNow();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
+        serverSocketChannel.close();
+        //executor.shutdownNow();
+        //executor.awaitTermination(5, TimeUnit.SECONDS);
+    }
+
+    private static class Attachment {
+        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        ByteBuffer dataBuffer = null;
+        boolean readLength = false;
+        SocketChannel socketChannel;
+        RequestHandler handler;
+        int requestLength = 0;
+        boolean shouldWrite = false;
+        ByteBuffer answerBuffer;
+
+        public Attachment(SocketChannel socketChannel) throws IOException {
+            this.socketChannel = socketChannel;
+            handler = new RequestHandler(socketChannel.getRemoteAddress().toString());
+        }
+
+        boolean processRead() throws IOException {
+            if (!readLength) {
+                if (socketChannel.read(lengthBuffer) == -1) {
+                    return false;
+                }
+                lengthBuffer.flip();
+                if (lengthBuffer.remaining() == 4) {
+                    requestLength = lengthBuffer.getInt();
+                    lengthBuffer.clear();
+                    dataBuffer = ByteBuffer.allocate(requestLength);
+                    readLength = true;
+                } else {
+                    lengthBuffer.compact();
+                    return true;
+                }
+            }
+            if (socketChannel.read(dataBuffer) == -1) {
+                return false;
+            }
+            dataBuffer.flip();
+            if (dataBuffer.remaining() == requestLength) {
+                byte[] request = new byte[requestLength];
+                dataBuffer.get(request);
+
+                byte[] answer = handler.handleRequest(request);
+
+                answerBuffer = ByteBuffer.allocate(answer.length + 4);
+                answerBuffer.putInt(answer.length);
+                answerBuffer.put(answer);
+                answerBuffer.flip();
+                readLength = false;
+                shouldWrite = true;
+                dataBuffer.clear();
+            } else {
+                dataBuffer.compact();
+            }
+            return true;
+        }
+
+        boolean processWrite() throws IOException {
+            if (socketChannel.write(answerBuffer) == -1) {
+                return false;
+            }
+            if (answerBuffer.remaining() == 0) {
+                shouldWrite = false;
+            }
+            return true;
+        }
     }
 
     private static void handleSocket(SocketChannel socketChannel) throws IOException {
@@ -72,45 +173,11 @@ public class FTPServer {
     }
 
     private static void answerRequestsWith(@NonNull SocketChannel socketChannel, @NonNull Function<byte[], byte[]> processor) throws IOException {
-        var lengthBuffer = ByteBuffer.allocate(4);
-        ByteBuffer dataBuffer = null;
-        var readLength = false;
-        var requestLength = 0;
+
 
         //noinspection InfiniteLoopStatement
         for (; ; ) {
-            if (!readLength) {
-                socketChannel.read(lengthBuffer);
-                lengthBuffer.flip();
-                if (lengthBuffer.remaining() == 4) {
-                    requestLength = lengthBuffer.getInt();
-                    lengthBuffer.clear();
-                    dataBuffer = ByteBuffer.allocate(requestLength);
-                    readLength = true;
-                } else {
-                    lengthBuffer.compact();
-                    continue;
-                }
-            }
-            socketChannel.read(dataBuffer);
-            dataBuffer.flip();
-            if (dataBuffer.remaining() == requestLength) {
-                byte[] request = new byte[requestLength];
-                dataBuffer.get(request);
 
-                byte[] answer = processor.apply(request);
-
-                var answerBuffer = ByteBuffer.allocate(answer.length + 4);
-                answerBuffer.putInt(answer.length);
-                answerBuffer.put(answer);
-                answerBuffer.flip();
-                while (answerBuffer.remaining() != 0) {
-                    socketChannel.write(answerBuffer);
-                }
-                readLength = false;
-            } else {
-                dataBuffer.compact();
-            }
         }
     }
 
