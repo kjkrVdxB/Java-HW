@@ -234,19 +234,12 @@ public class Main extends Application {
                         imageView.setImage(fileImage);
                     }
 
-                    if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
-                        setOnMouseClicked(event -> {
-                            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
-                                walkAction(item.getName());
-                            }
-                        });
-                    } else {
-                        setOnMouseClicked(null);
-                    }
-
-                    listView.setOnKeyPressed(event -> {
-                        if (event.getCode() == KeyCode.ENTER) {
-                            walkAction(listView.getSelectionModel().getSelectedItem().getName());
+                    setOnMouseClicked(event -> {
+                        if (event.getButton() != MouseButton.PRIMARY | event.getClickCount() < 2) {
+                            return;
+                        }
+                        if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
+                            walkAction(item.getName());
                         }
                     });
 
@@ -257,6 +250,15 @@ public class Main extends Application {
             }
         });
 
+        listView.setOnKeyPressed(event -> {
+            if (event.getCode() != KeyCode.ENTER) {
+                return;
+            }
+            var item = listView.getSelectionModel().getSelectedItem();
+            if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
+                walkAction(item.getName());
+            }
+        });
     }
 
     private void walkAction(String relativePath) {
@@ -293,5 +295,9 @@ public class Main extends Application {
         Thread backgroundThread = new Thread(task);
         backgroundThread.setDaemon(true);
         backgroundThread.start();
+    }
+
+    private void saveAction() {
+
     }
 }
