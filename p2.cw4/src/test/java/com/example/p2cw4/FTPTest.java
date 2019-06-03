@@ -137,22 +137,23 @@ class FTPTest {
 
     @Test
     void testMultipleQueries() throws IOException {
-//        Files.createFile(tmpDir.resolve("aaa"));
-//        Files.createDirectories(tmpDir.resolve("bbb"));
-//        Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
-//
-//        var list = client.executeList(tmpDir.toString());
-//        list.sort(Comparator.comparing(ListingItem::getName));
-//
-//        var listExpected = Arrays.asList(
-//                new ListingItem(ListingItem.Type.FILE, "aaa"),
-//                new ListingItem(ListingItem.Type.DIRECTORY, "bbb"));
-//
-//        assertEquals(listExpected, list);
-//
-//        list = client.executeList(tmpDir.resolve("bbb").toString());
-//        list.sort(Comparator.comparing(ListingItem::getName));
-//
-//        assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
+        Files.createFile(tmpDir.resolve("aaa"));
+        Files.createDirectories(tmpDir.resolve("bbb"));
+        Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
+
+        var list = client.executeList(tmpDir.toString());
+        list.sort(Comparator.comparing(ListingItem::getName));
+
+        var listExpected = Arrays.asList(
+                new ListingItem(ListingItem.Type.FILE, "aaa"),
+                new ListingItem(ListingItem.Type.DIRECTORY, "bbb"));
+
+        assertEquals(listExpected, list);
+
+        list = client.executeList(tmpDir.resolve("bbb").toString());
+        list.sort(Comparator.comparing(ListingItem::getName));
+
+        assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
+
     }
 }

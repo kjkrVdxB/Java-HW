@@ -70,7 +70,8 @@ public class FTPServer {
                                 key.cancel();
                             }
                             if (!attachment.shouldWrite) {
-                                key.cancel();
+                                var readKey = attachment.socketChannel.register(selector, SelectionKey.OP_READ);
+                                readKey.attach(attachment);
                             }
                             keys.remove();
                         }
