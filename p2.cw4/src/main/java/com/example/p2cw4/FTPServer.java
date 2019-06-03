@@ -3,8 +3,12 @@ package com.example.p2cw4;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -20,19 +24,26 @@ public class FTPServer {
     public final static int ANSWER_FILE_NOT_FOUND = -1;
 
     private Thread worker;
-    private ServerSocket serverSocket;
+    private ServerSocketChannel serverSocketChannel;
     private ExecutorService executor = Executors.newCachedThreadPool();
 
     public FTPServer(int port) throws IOException {
-        serverSocket = new ServerSocket(port);
+        serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.bind(new InetSocketAddress(port));
     }
 
     public void start() {
         worker = new Thread(() -> {
             try {
                 for (; ; ) {
-                    Socket socket = serverSocket.accept();
-                    executor.execute(() -> handleSocket(socket));
+                    var socketChannel = serverSocketChannel.accept();
+                    executor.execute(() -> {
+                        try {
+                            handleSocket(socketChannel);
+                        } catch (IOException e) {
+                            // TODO
+                        }
+                    });
                 }
             } catch (IOException e) {
                 // server socket closed?
@@ -42,41 +53,64 @@ public class FTPServer {
     }
 
     public void stop() throws InterruptedException, IOException {
-        serverSocket.close();
+        serverSocketChannel.close();
         worker.join();
         executor.shutdownNow();
         executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    private static void handleSocket(Socket socket) {
-        String client = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+    private static void handleSocket(SocketChannel socketChannel) throws IOException {
+        String client = socketChannel.getRemoteAddress().toString();
         System.out.println(client + " incoming");
         var handler = new RequestHandler(client);
         try {
-            answerRequestsWith(socket, handler::handleRequest);
+            answerRequestsWith(socketChannel, handler::handleRequest);
         } catch (IOException e) {
             // probably client disconnected?
         }
         System.out.println(client + " disconnected");
     }
 
-    private static void answerRequestsWith(@NonNull Socket socket, @NonNull Function<byte[], byte[]> processor) throws IOException {
-        var outputStream = socket.getOutputStream();
-        var dataOutputStream = new DataOutputStream(outputStream);
-        var inputStream = socket.getInputStream();
-        var dataInputStream = new DataInputStream(inputStream);
+    private static void answerRequestsWith(@NonNull SocketChannel socketChannel, @NonNull Function<byte[], byte[]> processor) throws IOException {
+        var lengthBuffer = ByteBuffer.allocate(4);
+        ByteBuffer dataBuffer = null;
+        var readLength = false;
+        var requestLength = 0;
 
         //noinspection InfiniteLoopStatement
         for (; ; ) {
-            int requestLength = dataInputStream.readInt();
-            byte[] request = inputStream.readNBytes(requestLength);
+            if (!readLength) {
+                socketChannel.read(lengthBuffer);
+                lengthBuffer.flip();
+                if (lengthBuffer.remaining() == 4) {
+                    requestLength = lengthBuffer.getInt();
+                    lengthBuffer.clear();
+                    dataBuffer = ByteBuffer.allocate(requestLength);
+                    readLength = true;
+                } else {
+                    lengthBuffer.compact();
+                    continue;
+                }
+            }
+            socketChannel.read(dataBuffer);
+            dataBuffer.flip();
+            if (dataBuffer.remaining() == requestLength) {
+                byte[] request = new byte[requestLength];
+                dataBuffer.get(request);
 
-            byte[] answer = processor.apply(request);
+                byte[] answer = processor.apply(request);
 
-            dataOutputStream.writeInt(answer.length);
-            dataOutputStream.flush();
-            outputStream.write(answer);
-            outputStream.flush();
+                var answerBuffer = ByteBuffer.allocate(answer.length + 4);
+                answerBuffer.putInt(answer.length);
+                answerBuffer.put(answer);
+                answerBuffer.flip();
+                while (answerBuffer.remaining() != 0) {
+                    socketChannel.write(answerBuffer);
+                }
+                readLength = false;
+            } else {
+                dataBuffer.compact();
+            }
         }
     }
 
