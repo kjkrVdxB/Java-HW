@@ -17,13 +17,31 @@ import java.util.stream.Collectors;
 
 import static java.lang.Integer.min;
 
+/**
+ * A simple FTP server
+ * The protocol is following:
+ *
+ * All basic types are encoded as per DataOutputStream specification.
+ * Each request should start with the length of the request body, one 4 byte integer. Requests of length more than
+ * {@code MAX_REQUEST_LENGTH} result in the server disconnect since they can be abusing.
+ * The client can ask two types of queries, GET and LIST. Request body starts with a 4 byte integer indicating
+ * the request type, 1 for GET and 2 for LIST. After it is the string indicating the path, as encoded by
+ * {@code DataOutputStream.writeUTF(String)}. // TODO string restrictions
+ *
+ * The answer body for the GET request starts with a 4 byte integer indicating the length of the resulting file.
+ * The length is -1 if the file was not found, there is nothing after the length in this case.
+ *
+ * The answer body for the LIST request starts with a 4 byte integer indicating the number of entries in the requested
+ * directory, or -1 if it was not found. Then that amount of records of type {@code (String, Boolean)}, where the string is
+ * the entry name, and the boolean is true iff the entry is a directory.
+ */
 public class FTPServer {
     public final static int REQUEST_LIST = 1;
     public final static int REQUEST_GET = 2;
     public final static int ANSWER_FILE_NOT_FOUND = -1;
+    public final static int MAX_REQUEST_LENGTH = 2048;
     private final static int MAX_BYTES_READ = 4096;
     private final static int MAX_BYTES_WRITE = 4096;
-    private final static int MAX_REQUEST_LENGTH = 2048;
     private static final long EXECUTOR_AWAIT_TERMINATION_SECONDS = 5;
 
     private Thread worker;
@@ -121,6 +139,7 @@ public class FTPServer {
         executor.awaitTermination(EXECUTOR_AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
     }
 
+    /** Class for reading and writing to the socket channel, and also starting processing threads */
     private class ChannelHandler {
         @NonNull
         private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4); // 4 bytes for storing 'int'
@@ -223,9 +242,7 @@ public class FTPServer {
         }
     }
 
-    /**
-     * Class for handling request processing
-     */
+    /** Class for handling request processing */
     private static class RequestHandler {
         private final @NonNull String client;
 

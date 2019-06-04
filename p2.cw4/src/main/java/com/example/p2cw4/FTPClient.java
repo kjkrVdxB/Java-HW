@@ -11,24 +11,55 @@ import java.util.Objects;
 
 import static com.example.p2cw4.FTPServer.*;
 
+/** A simple FTP client. See the details of the protocol in {@link FTPServer} */
 public class FTPClient {
+    @Nullable
     private Socket socket;
 
+    /**
+     * Try to connect to the given {@code address} and {@code port}. Disconnects first if already connected.
+     *
+     * @throws IOException if the connection fails
+     */
     public void connect(@NonNull String address, int port) throws IOException {
+        if (isConnected()) {
+            disconnect();
+        }
         socket = new Socket(address, port);
     }
 
+    /**
+     * Disconnect from the server. Does nothing if not connected.
+     *
+     * @throws IOException if the disconnect failed
+     */
     public void disconnect() throws IOException {
-        socket.close();
-        socket = null;
+        if (socket != null) {
+            socket.close();
+            socket = null;
+        }
     }
 
+    /**
+     * Check if we successfully connected
+     */
     public boolean isConnected() {
-        return socket != null;
+        return socket != null && socket.isConnected();
     }
 
+    /**
+     * Execute the LIST query. Returns the entries in the {@code path} on the server.
+     *
+     * @throws IOException if there was a connection error
+     * @throws FileNotFoundException if there is no such directory on the server
+     * @throws IllegalStateException if not connected
+     */
     @NonNull
     public List<ListingItem> executeList(@NonNull String path) throws IOException {
+
+        if (!isConnected()) {
+            throw new IllegalStateException("Not connected");
+        }
         var arrayStream = new ByteArrayOutputStream();
 
         encodeListRequest(path, arrayStream);
@@ -40,18 +71,15 @@ public class FTPClient {
         return result;
     }
 
-    private static void encodeListRequest(@NonNull String path, @NonNull OutputStream stream) {
+    private static void encodeListRequest(@NonNull String path, @NonNull OutputStream stream) throws IOException {
         try (var dataStream = new DataOutputStream(stream)) {
             dataStream.writeInt(REQUEST_LIST);
             dataStream.writeUTF(path);
-        } catch (IOException e) {
-            // not going to happen
-            throw new AssertionError();
         }
     }
 
     @Nullable
-    private static List<ListingItem> decodeListAnswer(byte @NonNull [] answer) {
+    private static List<ListingItem> decodeListAnswer(byte @NonNull [] answer) throws IOException {
         try (var arrayStream = new ByteArrayInputStream(answer);
              var dataStream = new DataInputStream(arrayStream)) {
             var result = new ArrayList<ListingItem>();
@@ -65,13 +93,20 @@ public class FTPClient {
                 result.add(new ListingItem(isDir ? ListingItem.Type.DIRECTORY : ListingItem.Type.FILE, name));
             }
             return result;
-        } catch (IOException e) {
-            // not going to happen
-            throw new AssertionError();
         }
     }
 
+    /**
+     * Execute the GET query. Returns the contents of the file on the server.
+     *
+     * @throws IOException if there was a connection error
+     * @throws FileNotFoundException if there is no such directory on the server
+     * @throws IllegalStateException if not connected
+     */
     public byte @NonNull [] executeGet(@NonNull String path) throws IOException {
+        if (!isConnected()) {
+            throw new IllegalStateException("Not connected");
+        }
         var arrayStream = new ByteArrayOutputStream();
 
         encodeGetRequest(path, arrayStream);
@@ -83,7 +118,9 @@ public class FTPClient {
         return result;
     }
 
+    /** Handle (send) one request */
     private byte @NonNull [] handleRequest(byte @NonNull [] request) throws IOException {
+        assert socket != null;
         var outputStream = socket.getOutputStream();
         var dataOutputStream = new DataOutputStream(outputStream);
         var inputStream = socket.getInputStream();
@@ -98,17 +135,14 @@ public class FTPClient {
         return inputStream.readNBytes(answerLength);
     }
 
-    private static void encodeGetRequest(@NonNull String path, @NonNull OutputStream stream) {
+    private static void encodeGetRequest(@NonNull String path, @NonNull OutputStream stream) throws IOException {
         try (var dataStream = new DataOutputStream(stream)) {
             dataStream.writeInt(REQUEST_GET);
             dataStream.writeUTF(path);
-        } catch (IOException e) {
-            // not going to happen
-            throw new AssertionError();
         }
     }
 
-    private static byte @Nullable [] decodeGetAnswer(byte @NonNull [] answer) {
+    private static byte @Nullable [] decodeGetAnswer(byte @NonNull [] answer) throws IOException {
         byte[] result;
         try (var arrayStream = new ByteArrayInputStream(answer);
              var dataStream = new DataInputStream(arrayStream)) {
@@ -117,13 +151,11 @@ public class FTPClient {
                 return null;
             }
             result = arrayStream.readNBytes(size); // should actually read everything
-        } catch (IOException e) {
-            // not going to happen
-            throw new AssertionError();
         }
         return result;
     }
 
+    /** Describes a list entry */
     public static class ListingItem {
         @NonNull
         final Type type;
