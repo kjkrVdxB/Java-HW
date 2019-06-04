@@ -119,137 +119,6 @@ public class FTPClientGUI extends Application {
         stage.show();
     }
 
-    private void connectAction() {
-        button.setDisable(true);
-
-        var address = addressField.getCharacters().toString().trim();
-        var portString = portField.getCharacters().toString().trim();
-        int port;
-        try {
-            port = Integer.parseInt(portString);
-        } catch (NumberFormatException exception) {
-            setMessage(PORT_FORMAT_MESSAGE, true);
-            setDelayedAction(this::setMainScreen);
-            return;
-        }
-
-        setMessage(CONNECTING_MESSAGE, false);
-
-        currentTask = new Task<List<FTPClient.ListingItem>>() {
-            @Override
-            protected List<FTPClient.ListingItem> call() throws Exception {
-                client.connect(address, port);
-                currentPath = Paths.get("");
-                return client.executeList(currentPath.toString());
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                items.clear();
-                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
-                items.addAll(getValue());
-                currentTask = null;
-                setConnectedScreen();
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(CONNECTION_ERROR_MESSAGE, true);
-                currentTask = null;
-                setDelayedAction(() -> setMainScreen());
-            }
-        };
-
-        startCurrentTask();
-    }
-
-    private void disconnectAction() {
-        button.setDisable(true);
-        setMessage(DISCONNECTING_MESSAGE, false);
-        listView.setDisable(true);
-
-        cancelAllAsyncOperations();
-
-        currentTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                client.disconnect();
-                return null;
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                currentTask = null;
-                setMainScreen();
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(DISCONNECTION_ERROR_MESSAGE, true);
-                client = new FTPClient();
-                currentTask = null;
-                setDelayedAction(() -> setMainScreen());
-            }
-        };
-
-        startCurrentTask();
-    }
-
-    private void setMessage(@NonNull String message, boolean isError) {
-        bottomText.setText(message);
-        if (isError) {
-            bottomMainHBox.setBackground(errorBackground);
-        }
-
-        bottomMainHBox.getChildren().remove(0);
-        bottomMainHBox.getChildren().add(0, bottomTextStackPane);
-    }
-
-    private void setConnectedScreen() {
-        String pathToShow = currentPath.toString().equals("") ? "." : currentPath.toString();
-        setMessage("path:  " + pathToShow, false);
-        listView.setDisable(false);
-        bottomMainHBox.setBackground(connectedBackground);
-        button.setText(DISCONNECT_BUTTON_TEXT);
-        button.setDisable(false);
-        button.setOnAction(event -> disconnectAction());
-    }
-
-    private void setMainScreen() {
-        items.clear();
-        listView.setDisable(true);
-        bottomMainHBox.getChildren().remove(0);
-        bottomMainHBox.getChildren().add(0, bottomParametersHBox);
-        bottomMainHBox.setBackground(Background.EMPTY);
-        button.setText(CONNECT_BUTTON_TEXT);
-        button.setDisable(false);
-        button.setOnAction(event -> connectAction());
-    }
-
-    private void setDelayedAction(@NonNull Runnable action) {
-        pauseTransition = new PauseTransition(Duration.millis(DELAY_MILLIS));
-        pauseTransition.setOnFinished(event -> {
-            action.run();
-            pauseTransition = null;
-        });
-        pauseTransition.play();
-    }
-
-    private void cancelAllAsyncOperations() {
-        if (pauseTransition != null) {
-            pauseTransition.stop();
-            pauseTransition = null;
-        }
-        if (currentTask != null) {
-            currentTask.cancel(true);
-            currentTask = null;
-        }
-    }
-
     private void initializeViews() throws IOException {
         root = FXMLLoader.load(FTPClientGUI.class.getResource(LAYOUT_FXML_RESOURCE_PATH));
 
@@ -337,6 +206,103 @@ public class FTPClientGUI extends Application {
         });
     }
 
+    private void setMessage(@NonNull String message, boolean isError) {
+        bottomText.setText(message);
+        if (isError) {
+            bottomMainHBox.setBackground(errorBackground);
+        }
+
+        bottomMainHBox.getChildren().remove(0);
+        bottomMainHBox.getChildren().add(0, bottomTextStackPane);
+    }
+
+    private void setConnectedScreen() {
+        String pathToShow = currentPath.toString().equals("") ? "." : currentPath.toString();
+        setMessage("path:  " + pathToShow, false);
+        listView.setDisable(false);
+        bottomMainHBox.setBackground(connectedBackground);
+        button.setText(DISCONNECT_BUTTON_TEXT);
+        button.setDisable(false);
+        button.setOnAction(event -> disconnectAction());
+    }
+
+    private void setMainScreen() {
+        items.clear();
+        listView.setDisable(true);
+        bottomMainHBox.getChildren().remove(0);
+        bottomMainHBox.getChildren().add(0, bottomParametersHBox);
+        bottomMainHBox.setBackground(Background.EMPTY);
+        button.setText(CONNECT_BUTTON_TEXT);
+        button.setDisable(false);
+        button.setOnAction(event -> connectAction());
+    }
+
+    private void cancelAllAsyncOperations() {
+        if (pauseTransition != null) {
+            pauseTransition.stop();
+            pauseTransition = null;
+        }
+        if (currentTask != null) {
+            currentTask.cancel(true);
+            currentTask = null;
+        }
+    }
+
+    private void setDelayedAction(@NonNull Runnable action) {
+        pauseTransition = new PauseTransition(Duration.millis(DELAY_MILLIS));
+        pauseTransition.setOnFinished(event -> {
+            action.run();
+            pauseTransition = null;
+        });
+        pauseTransition.play();
+    }
+
+    private void connectAction() {
+        button.setDisable(true);
+
+        var address = addressField.getCharacters().toString().trim();
+        var portString = portField.getCharacters().toString().trim();
+        int port;
+        try {
+            port = Integer.parseInt(portString);
+        } catch (NumberFormatException exception) {
+            setMessage(PORT_FORMAT_MESSAGE, true);
+            setDelayedAction(this::setMainScreen);
+            return;
+        }
+
+        setMessage(CONNECTING_MESSAGE, false);
+
+        currentTask = new Task<List<FTPClient.ListingItem>>() {
+            @Override
+            protected List<FTPClient.ListingItem> call() throws Exception {
+                client.connect(address, port);
+                currentPath = Paths.get("");
+                return client.executeList(currentPath.toString());
+            }
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                items.clear();
+                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
+                items.addAll(getValue());
+                currentTask = null;
+                setConnectedScreen();
+            }
+
+            @Override
+            protected void failed() {
+                super.failed();
+                setMessage(CONNECTION_ERROR_MESSAGE, true);
+                currentTask = null;
+                setDelayedAction(() -> setMainScreen());
+            }
+        };
+
+        startCurrentTask();
+    }
+
     private void walkAction(@NonNull String relativePath) {
         setMessage(UPDATING_MESSAGE, false);
         listView.setDisable(true);
@@ -368,12 +334,6 @@ public class FTPClientGUI extends Application {
             }
         };
        startCurrentTask();
-    }
-
-    private void startCurrentTask() {
-        var backgroundThread = new Thread(currentTask);
-        backgroundThread.setDaemon(true);
-        backgroundThread.start();
     }
 
     private void saveAction(@NonNull String relativePath) {
@@ -417,5 +377,45 @@ public class FTPClientGUI extends Application {
             }
         };
         startCurrentTask();
+    }
+
+    private void disconnectAction() {
+        button.setDisable(true);
+        setMessage(DISCONNECTING_MESSAGE, false);
+        listView.setDisable(true);
+
+        cancelAllAsyncOperations();
+
+        currentTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                client.disconnect();
+                return null;
+            }
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                currentTask = null;
+                setMainScreen();
+            }
+
+            @Override
+            protected void failed() {
+                super.failed();
+                setMessage(DISCONNECTION_ERROR_MESSAGE, true);
+                client = new FTPClient();
+                currentTask = null;
+                setDelayedAction(() -> setMainScreen());
+            }
+        };
+
+        startCurrentTask();
+    }
+
+    private void startCurrentTask() {
+        var backgroundThread = new Thread(currentTask);
+        backgroundThread.setDaemon(true);
+        backgroundThread.start();
     }
 }
