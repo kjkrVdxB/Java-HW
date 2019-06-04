@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+/** JavaFX graphical user interface which wraps the FTPClient class */
 public class FTPClientGUI extends Application {
     private static final Background errorBackground = new Background(
             new BackgroundFill(Color.web("FFA1A1"), CornerRadii.EMPTY, Insets.EMPTY));
@@ -99,10 +100,16 @@ public class FTPClientGUI extends Application {
     private Task currentTask;
     private PauseTransition pauseTransition;
 
+    /** Launches GUI application */
     public static void main(String[] args) {
         Application.launch(FTPClientGUI.class, args);
     }
 
+    /**
+     * The main entry point for JavaFX Application.
+     *
+     * @throws IOException if resources could not be read properly.
+     */
     @Override
     public void start(@NonNull Stage stage) throws IOException {
         mainStage = stage;
