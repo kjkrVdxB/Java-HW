@@ -48,6 +48,7 @@ public class FTPServer {
     private ServerSocketChannel serverSocketChannel;
     private ExecutorService executor = Executors.newCachedThreadPool();
     private volatile Selector selector;
+    private boolean started = true;
 
     /**
      * Create new FTPServer listening on {@code port}
@@ -66,6 +67,7 @@ public class FTPServer {
      * @throws IOException in case the start fails
      */
     public void start() throws IOException {
+        started = true;
         selector = Selector.open();
         worker = new Thread(() -> {
             try {
@@ -73,6 +75,7 @@ public class FTPServer {
                     serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 } catch (ClosedChannelException e) {
                     e.printStackTrace();
+                    started = false;
                     return;
                 }
                 for (; ; ) {
@@ -80,44 +83,79 @@ public class FTPServer {
                         selector.select();
                     } catch (IOException e) {
                         e.printStackTrace();
+                        started = false;
                         return;
                     }
                     if (!selector.isOpen()) {
                         return;
                     }
-                    try {
-                        synchronized (selector.selectedKeys()) {
-                            var keys = selector.selectedKeys().iterator();
-                            while (keys.hasNext()) {
-                                var key = keys.next();
-                                if (!key.isValid()) {
-                                    keys.remove();
-                                    continue;
-                                }
-                                if (key.isAcceptable()) {
-                                    var socketChannel = ((ServerSocketChannel) key.channel()).accept();
+                    synchronized (selector.selectedKeys()) {
+                        var keys = selector.selectedKeys().iterator();
+                        while (keys.hasNext()) {
+                            var key = keys.next();
+                            if (!key.isValid()) {
+                                keys.remove();
+                                continue;
+                            }
+                            if (key.isAcceptable()) {
+                                SocketChannel socketChannel = null;
+                                try {
+                                    socketChannel = ((ServerSocketChannel) key.channel()).accept();
                                     socketChannel.configureBlocking(false);
                                     socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
-                                    keys.remove();
-                                } else if (key.isReadable()) {
-                                    var channelHandler = (ChannelHandler) key.attachment();
+                                } catch (IOException e) {
+                                    try {
+                                        if (socketChannel != null) {
+                                            socketChannel.close();
+                                        }
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                    e.printStackTrace();
+                                    continue;
+                                }
+                                keys.remove();
+                            } else if (key.isReadable()) {
+                                var channelHandler = (ChannelHandler) key.attachment();
+                                try {
                                     if (!channelHandler.processRead()) {
                                         key.channel().close();
                                         continue;
                                     }
-                                    keys.remove();
-                                } else if (key.isWritable()) {
-                                    var channelHandler = (ChannelHandler) key.attachment();
-                                    channelHandler.processWrite();
-                                    if (!channelHandler.shouldWrite) {
-                                        channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
+                                } catch (IOException e) {
+                                    try {
+                                        key.channel().close();
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
                                     }
-                                    keys.remove();
+                                    e.printStackTrace();
+                                    continue;
                                 }
+                                keys.remove();
+                            } else if (key.isWritable()) {
+                                var channelHandler = (ChannelHandler) key.attachment();
+                                try {
+                                    channelHandler.processWrite();
+                                } catch (IOException e) {
+                                    try {
+                                        key.channel().close();
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
+                                    e.printStackTrace();
+                                    continue;
+                                }
+                                if (!channelHandler.shouldWrite) {
+                                    try {
+                                        channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
+                                    } catch (ClosedChannelException e) {
+                                        e.printStackTrace();
+                                        continue;
+                                    }
+                                }
+                                keys.remove();
                             }
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             } catch (ClosedSelectorException e) {
