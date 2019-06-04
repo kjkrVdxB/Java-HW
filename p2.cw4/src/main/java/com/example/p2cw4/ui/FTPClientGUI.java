@@ -36,10 +36,11 @@ import java.util.List;
 
 /** JavaFX graphical user interface which wraps the FTPClient class */
 public class FTPClientGUI extends Application {
-    private static final Background errorBackground = new Background(
+    private static final Background ERROR_BACKGROUND = new Background(
             new BackgroundFill(Color.web("FFA1A1"), CornerRadii.EMPTY, Insets.EMPTY));
-    private static final Background connectedBackground = new Background(
+    private static final Background CONNECTED_BACKGROUND = new Background(
             new BackgroundFill(Color.web("BCFFBC"), CornerRadii.EMPTY, Insets.EMPTY));
+    private static final Insets REFRESH_BUTTON_INSTES = new Insets(1, 1, 1, 5);
 
     private static final int MIN_WIDTH = 300;
     private static final int DEFAULT_WIDTH = 800;
@@ -81,7 +82,8 @@ public class FTPClientGUI extends Application {
     private ListView<FTPClient.ListingItem> listView;
     private ObservableList<FTPClient.ListingItem> items = FXCollections.observableArrayList();
     private HBox bottomMainHBox;
-    private Button button;
+    private Button mainButton;
+    private Button refreshButton;
 
     private HBox bottomParametersHBox;
     private TextField addressField;
@@ -134,13 +136,21 @@ public class FTPClientGUI extends Application {
         root.getChildren().add(0, listView);
 
         bottomMainHBox = (HBox) root.lookup(BOTTOM_MAIN_HBOX_SELECTOR);
-        button = (Button) root.lookup(BUTTON_SELECTOR);
+        mainButton = (Button) root.lookup(BUTTON_SELECTOR);
+        constructRefreshButton();
 
         bottomParametersHBox = (HBox) root.lookup(BOTTOM_PARAMETERS_HBOX_SELECTOR);
         addressField = (TextField) root.lookup(ADDRESS_FIELD_SELECTOR);
         portField = (TextField) root.lookup(PORT_FIELD_SELECTOR);
 
         constructTextStackPane();
+    }
+
+    private void constructRefreshButton() {
+        refreshButton = new Button("refresh");
+        refreshButton.setMinWidth(Double.NEGATIVE_INFINITY);
+        HBox.setMargin(refreshButton, REFRESH_BUTTON_INSTES);
+        refreshButton.setOnAction(event -> walkAction("."));
     }
 
     private void constructTextStackPane() {
@@ -216,9 +226,9 @@ public class FTPClientGUI extends Application {
     private void setMessage(@NonNull String message, boolean isError) {
         bottomText.setText(message);
         if (isError) {
-            bottomMainHBox.setBackground(errorBackground);
+            bottomMainHBox.setBackground(ERROR_BACKGROUND);
         }
-
+        bottomMainHBox.getChildren().remove(refreshButton);
         bottomMainHBox.getChildren().remove(0);
         bottomMainHBox.getChildren().add(0, bottomTextStackPane);
     }
@@ -227,21 +237,27 @@ public class FTPClientGUI extends Application {
         String pathToShow = currentPath.toString().equals("") ? "." : currentPath.toString();
         setMessage("path:  " + pathToShow, false);
         listView.setDisable(false);
-        bottomMainHBox.setBackground(connectedBackground);
-        button.setText(DISCONNECT_BUTTON_TEXT);
-        button.setDisable(false);
-        button.setOnAction(event -> disconnectAction());
+
+        bottomMainHBox.getChildren().add(1, refreshButton);
+        bottomMainHBox.setBackground(CONNECTED_BACKGROUND);
+
+        mainButton.setText(DISCONNECT_BUTTON_TEXT);
+        mainButton.setDisable(false);
+        mainButton.setOnAction(event -> disconnectAction());
     }
 
     private void setMainScreen() {
         items.clear();
         listView.setDisable(true);
+
+        bottomMainHBox.getChildren().remove(refreshButton);
         bottomMainHBox.getChildren().remove(0);
         bottomMainHBox.getChildren().add(0, bottomParametersHBox);
         bottomMainHBox.setBackground(Background.EMPTY);
-        button.setText(CONNECT_BUTTON_TEXT);
-        button.setDisable(false);
-        button.setOnAction(event -> connectAction());
+
+        mainButton.setText(CONNECT_BUTTON_TEXT);
+        mainButton.setDisable(false);
+        mainButton.setOnAction(event -> connectAction());
     }
 
     private void cancelAllAsyncOperations() {
@@ -265,7 +281,7 @@ public class FTPClientGUI extends Application {
     }
 
     private void connectAction() {
-        button.setDisable(true);
+        mainButton.setDisable(true);
 
         var address = addressField.getCharacters().toString().trim();
         var portString = portField.getCharacters().toString().trim();
@@ -387,7 +403,7 @@ public class FTPClientGUI extends Application {
     }
 
     private void disconnectAction() {
-        button.setDisable(true);
+        mainButton.setDisable(true);
         setMessage(DISCONNECTING_MESSAGE, false);
         listView.setDisable(true);
 

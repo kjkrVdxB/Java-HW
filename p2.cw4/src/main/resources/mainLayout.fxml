@@ -14,7 +14,7 @@
          <children>
             <HBox id="bottomParametersHBox" minWidth="0.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Address:">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="address:">
                      <HBox.margin>
                         <Insets left="10.0" right="5.0" top="5.0" />
                      </HBox.margin>
@@ -24,21 +24,21 @@
                         <Insets top="1.0" bottom="1.0" />
                      </HBox.margin>
                   </TextField>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Port:">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="port:">
                      <HBox.margin>
                         <Insets left="10.0" right="5.0" top="5.0" />
                      </HBox.margin>
                   </Text>
                   <TextField id="portField" HBox.hgrow="ALWAYS">
                      <HBox.margin>
-                        <Insets top="1.0" bottom="1.0" />
+                        <Insets top="1.0" bottom="1.0" right="8.0"/>
                      </HBox.margin>
                   </TextField>
                </children>
             </HBox>
             <Button id="button" minWidth="-Infinity" mnemonicParsing="false" text="Connect">
                <HBox.margin>
-                  <Insets bottom="1.0" left="5.0" right="1.0" top="1.0" />
+                  <Insets bottom="1.0" left="1.0" top="1.0" />
                </HBox.margin>
             </Button>
          </children>
