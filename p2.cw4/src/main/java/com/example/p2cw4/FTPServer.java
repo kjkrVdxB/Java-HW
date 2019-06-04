@@ -99,6 +99,7 @@ public class FTPServer {
                                     socketChannel = ((ServerSocketChannel) key.channel()).accept();
                                     socketChannel.configureBlocking(false);
                                     socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
+                                    System.out.println(socketChannel.getRemoteAddress().toString() + " connected");
                                 } catch (IOException e) {
                                     try {
                                         if (socketChannel != null) {
@@ -115,6 +116,7 @@ public class FTPServer {
                                 var channelHandler = (ChannelHandler) key.attachment();
                                 try {
                                     if (!channelHandler.processRead()) {
+                                        System.out.println(channelHandler.socketChannel.getRemoteAddress().toString() + " disconnected");
                                         key.channel().close();
                                         continue;
                                     }
