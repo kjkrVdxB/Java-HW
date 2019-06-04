@@ -1,6 +1,7 @@
 package com.example.p2cw4;
 
 import com.example.p2cw4.FTPClient.ListingItem;
+import org.checkerframework.common.util.report.qual.ReportReadWrite;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -110,7 +111,28 @@ class FTPTest {
     @RepeatedTest(TEST_RUNS)
     void testGetNonExisting() {
         assertThrows(FileNotFoundException.class,
-                     () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
+                     () -> client.executeGet(tmpDir.resolve("test").toString()));
+    }
+
+    @RepeatedTest(TEST_RUNS)
+    void testListNonExisting() {
+        assertThrows(FileNotFoundException.class,
+                     () -> client.executeList(tmpDir.resolve("test").toString()));
+    }
+
+    @RepeatedTest(TEST_RUNS)
+    void testIsConnected() throws IOException {
+        assertTrue(client.isConnected());
+
+        var otherClient = new FTPClient();
+
+        assertFalse(otherClient.isConnected());
+
+        otherClient.connect("localhost", TEST_PORT);
+        assertTrue(otherClient.isConnected());
+
+        otherClient.disconnect();
+        assertFalse(otherClient.isConnected());
     }
 
     @RepeatedTest(TEST_RUNS)

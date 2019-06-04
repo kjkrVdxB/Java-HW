@@ -52,7 +52,7 @@ public class FTPServer {
                             var key = keys.next();
                             if (!key.isValid()) {
                                 keys.remove();
-                                return;
+                                continue;
                             }
                             if (key.isAcceptable()) {
                                 var socketChannel = ((ServerSocketChannel) key.channel()).accept();

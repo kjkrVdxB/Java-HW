@@ -20,10 +20,11 @@ public class FTPClient {
 
     public void disconnect() throws IOException {
         socket.close();
+        socket = null;
     }
 
     public boolean isConnected() {
-        return socket.isConnected();
+        return socket != null;
     }
 
     @NonNull
