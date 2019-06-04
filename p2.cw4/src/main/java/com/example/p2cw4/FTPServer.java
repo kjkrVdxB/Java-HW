@@ -10,6 +10,9 @@ import java.nio.channels.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.Integer.min;
@@ -24,7 +27,7 @@ public class FTPServer {
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
-    //private ExecutorService executor = Executors.newCachedThreadPool();
+    private ExecutorService executor = Executors.newCachedThreadPool();
     private volatile Selector selector;
 
     public FTPServer(int port) throws IOException {
@@ -54,18 +57,13 @@ public class FTPServer {
                             if (key.isAcceptable()) {
                                 var socketChannel = ((ServerSocketChannel) key.channel()).accept();
                                 socketChannel.configureBlocking(false);
-                                var readKey = socketChannel.register(selector, SelectionKey.OP_READ);
-                                readKey.attach(new ChannelHandler(socketChannel));
+                                socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
                                 keys.remove();
                             } else if (key.isReadable()) {
                                 var channelHandler = (ChannelHandler) key.attachment();
                                 if (!channelHandler.processRead()) {
                                     key.channel().close();
                                     continue;
-                                }
-                                if (channelHandler.shouldWrite) {
-                                    var writeKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_WRITE);
-                                    writeKey.attach(channelHandler);
                                 }
                                 keys.remove();
                             } else if (key.isWritable()) {
@@ -75,8 +73,7 @@ public class FTPServer {
                                     continue;
                                 }
                                 if (!channelHandler.shouldWrite) {
-                                    var readKey = channelHandler.socketChannel.register(selector, SelectionKey.OP_READ);
-                                    readKey.attach(channelHandler);
+                                    channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
                                 }
                                 keys.remove();
                             }
@@ -97,11 +94,11 @@ public class FTPServer {
         worker.interrupt();
         worker.join();
         serverSocketChannel.close();
-        //executor.shutdownNow();
-        //executor.awaitTermination(5, TimeUnit.SECONDS);
+        executor.shutdownNow();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    private static class ChannelHandler {
+    private class ChannelHandler {
         @NonNull
         private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
         @NonNull
@@ -147,19 +144,33 @@ public class FTPServer {
             }
             dataBuffer.flip();
             if (dataBuffer.remaining() == requestLength) {
-                byte[] answer = handler.handleRequest(dataBuffer.array());
+                socketChannel.register(selector, 0);
+                executor.execute(() -> {
+                    byte[] answer = handler.handleRequest(dataBuffer.array());
+                    dataBuffer.clear();
 
-                if (answer == null) {
-                    return false;
-                }
+                    if (answer == null) {
+                        try {
+                            socketChannel.close();
+                        } catch (IOException e) {
+                            // ???
+                        }
+                        return;
+                    }
 
-                answerBuffer = ByteBuffer.allocate(answer.length + 4);
-                answerBuffer.putInt(answer.length);
-                answerBuffer.put(answer);
-                answerBuffer.flip();
-                readLength = false;
-                shouldWrite = true;
-                dataBuffer.clear();
+                    answerBuffer = ByteBuffer.allocate(answer.length + 4);
+                    answerBuffer.putInt(answer.length);
+                    answerBuffer.put(answer);
+                    answerBuffer.flip();
+                    readLength = false;
+                    shouldWrite = true;
+                    try {
+                        socketChannel.register(selector, SelectionKey.OP_WRITE, this);
+                        selector.wakeup();
+                    } catch (ClosedChannelException e) {
+                        // well we go now
+                    }
+                });
             } else {
                 dataBuffer.compact();
             }
@@ -185,7 +196,7 @@ public class FTPServer {
             this.client = client;
         }
 
-        private byte @Nullable [] handleRequest(byte @NonNull[] request) {
+        private byte @Nullable [] handleRequest(byte @NonNull [] request) {
             try (var inputStream = new ByteArrayInputStream(request);
                  var dataInputStream = new DataInputStream(inputStream);
                  var outputStream = new ByteArrayOutputStream()) {

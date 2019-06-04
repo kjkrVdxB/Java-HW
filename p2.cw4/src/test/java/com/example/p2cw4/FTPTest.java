@@ -18,17 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
     private static final int TEST_RUNS = 10;
-    private FTPServer server = new FTPServer(9999);
+    private static final int TEST_PORT = 9999;
+    private FTPServer server = new FTPServer(TEST_PORT);
     private FTPClient client = new FTPClient();
     @SuppressWarnings("WeakerAccess")
-    public @TempDir Path tmpDir;
+    public @TempDir
+    Path tmpDir;
 
     FTPTest() throws IOException {}
 
     @BeforeEach
     void init() throws IOException {
         server.start();
-        client.connect("localhost", 9999);
+        client.connect("localhost", TEST_PORT);
     }
 
     @AfterEach
@@ -108,7 +110,7 @@ class FTPTest {
     @RepeatedTest(TEST_RUNS)
     void testGetNonExisting() {
         assertThrows(FileNotFoundException.class,
-                () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
+                     () -> client.executeGet(tmpDir.resolve("test").toAbsolutePath().toString()));
     }
 
     @RepeatedTest(TEST_RUNS)
@@ -118,7 +120,7 @@ class FTPTest {
         Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
 
         var otherClient = new FTPClient();
-        otherClient.connect("localhost", 9999);
+        otherClient.connect("localhost", TEST_PORT);
 
         var list = client.executeList(tmpDir.toString());
         list.sort(Comparator.comparing(ListingItem::getName));
@@ -155,5 +157,59 @@ class FTPTest {
         list.sort(Comparator.comparing(ListingItem::getName));
 
         assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
+    }
+
+    @RepeatedTest(5)
+    void testMultipleConcurrentQueries() throws IOException {
+        final int QUERIES_COUNT = 10;
+        Files.createFile(tmpDir.resolve("aaa"));
+        Files.createFile(tmpDir.resolve("bbb"));
+        Files.createFile(tmpDir.resolve("ccc"));
+
+        var otherClient = new FTPClient();
+        otherClient.connect("localhost", TEST_PORT);
+        var yetAnotherClient = new FTPClient();
+        yetAnotherClient.connect("localhost", TEST_PORT);
+
+        var thread1 = new Thread(() -> {
+            try {
+                for (int i = 0; i < QUERIES_COUNT; ++i) {
+                    client.executeList(tmpDir.toString());
+                }
+            } catch (IOException ignored) {
+            }
+        });
+
+        var thread2 = new Thread(() -> {
+            try {
+                for (int i = 0; i < QUERIES_COUNT; ++i) {
+                    otherClient.executeList(tmpDir.toString());
+                }
+            } catch (IOException ignored) {
+            }
+        });
+
+        var thread3 = new Thread(() -> {
+            try {
+                for (int i = 0; i < QUERIES_COUNT; ++i) {
+                    yetAnotherClient.executeGet(tmpDir.resolve("aaa").toString());
+                }
+            } catch (IOException ignored) {
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+
+        try {
+            thread1.join();
+            thread2.join();
+            thread3.join();
+        } catch (InterruptedException ignored) {
+        }
+
+        otherClient.disconnect();
+        yetAnotherClient.disconnect();
     }
 }
