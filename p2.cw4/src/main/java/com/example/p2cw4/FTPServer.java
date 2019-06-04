@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 import static java.lang.Integer.min;
 
 public class FTPServer {
-    final static int REQUEST_LIST = 1;
-    final static int REQUEST_GET = 2;
-    final static int ANSWER_FILE_NOT_FOUND = -1;
+    public final static int REQUEST_LIST = 1;
+    public final static int REQUEST_GET = 2;
+    public final static int ANSWER_FILE_NOT_FOUND = -1;
     private final static int MAX_BYTES_READ = 4096;
     private final static int MAX_BYTES_WRITE = 4096;
     private final static int MAX_REQUEST_LENGTH = 2048;
@@ -31,12 +31,22 @@ public class FTPServer {
     private ExecutorService executor = Executors.newCachedThreadPool();
     private volatile Selector selector;
 
+    /**
+     * Create new FTPServer listening on {@code port}
+     *
+     * @throws IOException if something goes wrong
+     */
     public FTPServer(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
         serverSocketChannel.configureBlocking(false);
     }
 
+    /**
+     * Start the server
+     *
+     * @throws IOException in case the start fails
+     */
     public void start() throws IOException {
         selector = Selector.open();
         worker = new Thread(() -> {
@@ -69,10 +79,7 @@ public class FTPServer {
                                 keys.remove();
                             } else if (key.isWritable()) {
                                 var channelHandler = (ChannelHandler) key.attachment();
-                                if (!channelHandler.processWrite()) {
-                                    key.channel().close();
-                                    continue;
-                                }
+                                channelHandler.processWrite();
                                 if (!channelHandler.shouldWrite) {
                                     channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
                                 }
@@ -90,11 +97,26 @@ public class FTPServer {
         worker.start();
     }
 
-    public void stop() throws InterruptedException, IOException {
-        selector.close();
+    /**
+     * Stop the server. Waits for all the threads to stop.
+     *
+     * @throws InterruptedException if interrupted while locked
+     */
+    public void stop() throws InterruptedException {
+        try {
+            selector.close();
+        } catch (IOException e) {
+            System.out.println("Exception while closing the selector");
+            e.printStackTrace();
+        }
         worker.interrupt();
         worker.join();
-        serverSocketChannel.close();
+        try {
+            serverSocketChannel.close();
+        } catch (IOException e) {
+            System.out.println("Exception while closing the server socket channel");
+            e.printStackTrace();
+        }
         executor.shutdownNow();
         executor.awaitTermination(EXECUTOR_AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
     }
@@ -119,6 +141,15 @@ public class FTPServer {
             handler = new RequestHandler(socketChannel.getRemoteAddress().toString());
         }
 
+        /**
+         * Read the request. First it's length, the request itself. Once the request have been read
+         * start a new thread for it's processing. On one call at most {@code MAX_BYTES_READ} bytes of request are read.
+         * Also if the request length is more that {@code MAX_REQUEST_LENGTH} it is considered malformed and
+         * the end-of-stream is reported.
+         *
+         * @return false if the end-of-stream was reached or the request length is too long
+         * @throws IOException in case of read error
+         */
         boolean processRead() throws IOException {
             if (!readLength) {
                 if (socketChannel.read(lengthBuffer) == -1) {
@@ -178,18 +209,23 @@ public class FTPServer {
             return true;
         }
 
-        boolean processWrite() throws IOException {
+        /**
+         * Try to write at most {@code MAX_BYTES_WRITE} of answerBuffer
+         *
+         * @throws IOException in case of writing error
+         */
+        void processWrite() throws IOException {
             answerBuffer.limit(min(answerBuffer.position() + MAX_BYTES_WRITE, answerBuffer.capacity()));
-            if (socketChannel.write(answerBuffer) == -1) {
-                return false;
-            }
+            socketChannel.write(answerBuffer);
             if (answerBuffer.position() == answerBuffer.capacity()) {
                 shouldWrite = false;
             }
-            return true;
         }
     }
 
+    /**
+     * Class for handling request processing
+     */
     private static class RequestHandler {
         private final @NonNull String client;
 
@@ -197,6 +233,12 @@ public class FTPServer {
             this.client = client;
         }
 
+
+        /**
+         * Get an answer to the given request
+         *
+         * @return null in case the request
+         */
         private byte @Nullable [] handleRequest(byte @NonNull [] request) {
             try (var inputStream = new ByteArrayInputStream(request);
                  var dataInputStream = new DataInputStream(inputStream);
@@ -207,6 +249,8 @@ public class FTPServer {
                     handleListRequest(inputStream, outputStream);
                 } else if (type == REQUEST_GET) {
                     handleGetRequest(inputStream, outputStream);
+                } else {
+                    return null;
                 }
                 return outputStream.toByteArray();
             } catch (IOException e) {
@@ -215,6 +259,11 @@ public class FTPServer {
             }
         }
 
+        /**
+         * Reads the LIST request parameters from {@code in} and writes the answer to {@code out}
+         *
+         * @throws IOException in case of stream errors
+         */
         private void handleListRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
             try (var dataInputStream = new DataInputStream(in);
                  var dataOutputStream = new DataOutputStream(out)) {
@@ -240,6 +289,11 @@ public class FTPServer {
             }
         }
 
+        /**
+         * Reads the GET request parameters from {@code in} and writes the answer to {@code out}
+         *
+         * @throws IOException in case of stream errors
+         */
         private void handleGetRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
             try (var dataInputStream = new DataInputStream(in);
                  var dataOutputStream = new DataOutputStream(out)) {
