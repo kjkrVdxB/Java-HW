@@ -18,8 +18,9 @@ public class FTPServer {
     final static int REQUEST_LIST = 1;
     final static int REQUEST_GET = 2;
     final static int ANSWER_FILE_NOT_FOUND = -1;
-    final static int MAX_BYTES_READ = 4096;
-    final static int MAX_BYTES_WRITE = 4096;
+    private final static int MAX_BYTES_READ = 4096;
+    private final static int MAX_BYTES_WRITE = 4096;
+    private final static int MAX_REQUEST_LENGTH = 2048;
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
@@ -129,6 +130,10 @@ public class FTPServer {
                 if (lengthBuffer.remaining() == 4) {
                     requestLength = lengthBuffer.getInt();
                     lengthBuffer.clear();
+                    if (requestLength > MAX_REQUEST_LENGTH) {
+                        // Basic protection against DOS
+                        return false;
+                    }
                     dataBuffer = ByteBuffer.allocate(requestLength);
                     readLength = true;
                 } else {
