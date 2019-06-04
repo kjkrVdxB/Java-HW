@@ -74,6 +74,7 @@ public class FTPClientGUI extends Application {
 
     private static final String DISCONNECT_BUTTON_TEXT = "disconnect";
     private static final String CONNECT_BUTTON_TEXT = "connect";
+    private static final String REFRESH_BUTTON_TEXT = "refresh";
     private static final String TITLE = "FTP Client";
     private static final String UP_FOLDER_NAME = "../";
     private static final String FILE_CHOOSER_TITLE_PREFIX = "Choose directory to save \"";
@@ -147,7 +148,7 @@ public class FTPClientGUI extends Application {
     }
 
     private void constructRefreshButton() {
-        refreshButton = new Button("refresh");
+        refreshButton = new Button(REFRESH_BUTTON_TEXT);
         refreshButton.setMinWidth(Double.NEGATIVE_INFINITY);
         HBox.setMargin(refreshButton, REFRESH_BUTTON_INSTES);
         refreshButton.setOnAction(event -> walkAction("."));
