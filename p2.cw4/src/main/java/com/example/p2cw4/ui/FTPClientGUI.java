@@ -28,19 +28,53 @@ import javafx.util.Duration;
 import org.apache.commons.io.FilenameUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class Main extends Application {
+public class FTPClientGUI extends Application {
     private static final Background errorBackground = new Background(
             new BackgroundFill(Color.web("FFA1A1"), CornerRadii.EMPTY, Insets.EMPTY));
     private static final Background connectedBackground = new Background(
             new BackgroundFill(Color.web("BCFFBC"), CornerRadii.EMPTY, Insets.EMPTY));
+
+    private static final int MIN_WIDTH = 300;
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 600;
+    private static final int ICONS_HEIGHT = 15;
+    private static final int LISTVIEW_ITEM_TEXT_GAP = 20;
+    private static final int DELAY_MILLIS = 2000;
+
+    private static final String LAYOUT_FXML_RESOURCE_PATH = "/mainLayout.fxml";
+    private static final String FOLDER_PNG_RESOURCE_PATH = "/folder.png";
+    private static final String FILE_PNG_RESOURCE_PATH = "/file.png";
+    private static final String UP_PNG_RESOURCE_PATH = "/up.png";
+
+    private static final String BOTTOM_MAIN_HBOX_SELECTOR = "#bottomMainHBox";
+    private static final String BUTTON_SELECTOR = "#button";
+    private static final String BOTTOM_PARAMETERS_HBOX_SELECTOR = "#bottomParametersHBox";
+    private static final String ADDRESS_FIELD_SELECTOR = "#addressField";
+    private static final String PORT_FIELD_SELECTOR = "#portField";
+
+    private static final String PORT_FORMAT_MESSAGE = "port must be integer";
+    private static final String CONNECTING_MESSAGE = "connecting";
+    private static final String CONNECTION_ERROR_MESSAGE = "could not connect";
+    private static final String DISCONNECTING_MESSAGE = "disconnecting";
+    private static final String DISCONNECTION_ERROR_MESSAGE = "could not disconnect properly";
+    private static final String UPDATING_MESSAGE = "updating";
+    private static final String UPDATING_ERROR_MESSAGE = "updating error";
+    private static final String SAVING_FILE_MESSAGE = "saving file";
+    private static final String DIRECTORY_NOT_CHOSEN_MESSAGE = "directory was not chosen properly";
+    private static final String FILE_DOWNLOADED_MESSAGE = "file downloaded successfully";
+    private static final String DOWNLOAD_ERROR_MESSAGE = "download error";
+
+    private static final String DISCONNECT_BUTTON_TEXT = "disconnect";
+    private static final String CONNECT_BUTTON_TEXT = "connect";
+    private static final String TITLE = "FTP Client";
+    private static final String UP_FOLDER_NAME = "../";
+    private static final String FILE_CHOOSER_TITLE_PREFIX = "Choose directory to save \"";
 
     private VBox root;
     private ListView<FTPClient.ListingItem> listView;
@@ -66,11 +100,11 @@ public class Main extends Application {
     private PauseTransition pauseTransition;
 
     public static void main(String[] args) {
-        Application.launch(Main.class, args);
+        Application.launch(FTPClientGUI.class, args);
     }
 
     @Override
-    public void start(@NonNull Stage stage) throws Exception {
+    public void start(@NonNull Stage stage) throws IOException {
         mainStage = stage;
 
         initializeViews();
@@ -79,9 +113,9 @@ public class Main extends Application {
 
         setMainScreen();
 
-        stage.setTitle("FTP Client");
-        stage.setMinWidth(300);
-        stage.setScene(new Scene(root, 800, 600));
+        stage.setTitle(TITLE);
+        stage.setMinWidth(MIN_WIDTH);
+        stage.setScene(new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT));
         stage.show();
     }
 
@@ -94,19 +128,14 @@ public class Main extends Application {
         try {
             port = Integer.parseInt(portString);
         } catch (NumberFormatException exception) {
-            setMessage("port must be integer", true);
+            setMessage(PORT_FORMAT_MESSAGE, true);
             setDelayedAction(this::setMainScreen);
             return;
         }
 
-        setMessage("connecting", false);
+        setMessage(CONNECTING_MESSAGE, false);
 
-        // debug
-        if (currentTask != null) {
-            throw new RuntimeException("Logic error");
-        }
-
-        var task = new Task<List<FTPClient.ListingItem>>() {
+        currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
                 client.connect(address, port);
@@ -118,7 +147,7 @@ public class Main extends Application {
             protected void succeeded() {
                 super.succeeded();
                 items.clear();
-                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
+                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
                 items.addAll(getValue());
                 currentTask = null;
                 setConnectedScreen();
@@ -127,20 +156,18 @@ public class Main extends Application {
             @Override
             protected void failed() {
                 super.failed();
-                setMessage("could not connect", true);
+                setMessage(CONNECTION_ERROR_MESSAGE, true);
                 currentTask = null;
                 setDelayedAction(() -> setMainScreen());
             }
         };
 
-        var backgroundThread = new Thread(task);
-        backgroundThread.setDaemon(true);
-        backgroundThread.start();
+        startCurrentTask();
     }
 
     private void disconnectAction() {
         button.setDisable(true);
-        setMessage("disconnecting", false);
+        setMessage(DISCONNECTING_MESSAGE, false);
         listView.setDisable(true);
 
         cancelAllAsyncOperations();
@@ -162,12 +189,13 @@ public class Main extends Application {
             @Override
             protected void failed() {
                 super.failed();
-                setMessage("could not disconnect properly", true);
+                setMessage(DISCONNECTION_ERROR_MESSAGE, true);
                 client = new FTPClient();
                 currentTask = null;
                 setDelayedAction(() -> setMainScreen());
             }
         };
+
         startCurrentTask();
     }
 
@@ -186,7 +214,7 @@ public class Main extends Application {
         setMessage("path:  " + pathToShow, false);
         listView.setDisable(false);
         bottomMainHBox.setBackground(connectedBackground);
-        button.setText("disconnect");
+        button.setText(DISCONNECT_BUTTON_TEXT);
         button.setDisable(false);
         button.setOnAction(event -> disconnectAction());
     }
@@ -197,19 +225,13 @@ public class Main extends Application {
         bottomMainHBox.getChildren().remove(0);
         bottomMainHBox.getChildren().add(0, bottomParametersHBox);
         bottomMainHBox.setBackground(Background.EMPTY);
-        button.setText("connect");
+        button.setText(CONNECT_BUTTON_TEXT);
         button.setDisable(false);
         button.setOnAction(event -> connectAction());
     }
 
     private void setDelayedAction(@NonNull Runnable action) {
-        // debug
-        if (pauseTransition != null) {
-            throw new RuntimeException("Logic error");
-        }
-
-        // FIXME add constant
-        pauseTransition = new PauseTransition(Duration.seconds(2));
+        pauseTransition = new PauseTransition(Duration.millis(DELAY_MILLIS));
         pauseTransition.setOnFinished(event -> {
             action.run();
             pauseTransition = null;
@@ -228,19 +250,19 @@ public class Main extends Application {
         }
     }
 
-    private void initializeViews() throws Exception {
-        root = FXMLLoader.load(Main.class.getResource("/mainLayout.fxml").toURI().toURL());
+    private void initializeViews() throws IOException {
+        root = FXMLLoader.load(FTPClientGUI.class.getResource(LAYOUT_FXML_RESOURCE_PATH));
 
         listView = new ListView<>(items);
         VBox.setVgrow(listView, Priority.ALWAYS);
         root.getChildren().add(0, listView);
 
-        bottomMainHBox = (HBox) root.lookup("#bottomMainHBox");
-        button = (Button) root.lookup("#button");
+        bottomMainHBox = (HBox) root.lookup(BOTTOM_MAIN_HBOX_SELECTOR);
+        button = (Button) root.lookup(BUTTON_SELECTOR);
 
-        bottomParametersHBox = (HBox) root.lookup("#bottomParametersHBox");
-        addressField = (TextField) root.lookup("#addressField");
-        portField = (TextField) root.lookup("#portField");
+        bottomParametersHBox = (HBox) root.lookup(BOTTOM_PARAMETERS_HBOX_SELECTOR);
+        addressField = (TextField) root.lookup(ADDRESS_FIELD_SELECTOR);
+        portField = (TextField) root.lookup(PORT_FIELD_SELECTOR);
 
         constructTextStackPane();
     }
@@ -254,13 +276,13 @@ public class Main extends Application {
         bottomTextStackPane.getChildren().add(bottomText);
     }
 
-    private void loadImages() throws URISyntaxException, MalformedURLException {
-        folderImage = new Image(Main.class.getResource("/folder.png").toURI().toURL().toString(),
-                0, 15, true, false);
-        fileImage = new Image(Main.class.getResource("/file.png").toURI().toURL().toString(),
-                0, 15, true, false);
-        upImage = new Image(Main.class.getResource("/up.png").toURI().toURL().toString(),
-                0, 15, true, false);
+    private void loadImages() {
+        folderImage = new Image(FTPClientGUI.class.getResourceAsStream(FOLDER_PNG_RESOURCE_PATH),
+                0, ICONS_HEIGHT, true, false);
+        fileImage = new Image(FTPClientGUI.class.getResourceAsStream(FILE_PNG_RESOURCE_PATH),
+                0, ICONS_HEIGHT, true, false);
+        upImage = new Image(FTPClientGUI.class.getResourceAsStream(UP_PNG_RESOURCE_PATH),
+                0, ICONS_HEIGHT, true, false);
 
     }
 
@@ -276,7 +298,7 @@ public class Main extends Application {
                     setGraphic(null);
                     setOnMouseClicked(null);
                 } else {
-                    if (item.getName().equals("../")) {
+                    if (item.getName().equals(UP_FOLDER_NAME)) {
                         imageView.setImage(upImage);
                     } else if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
                         imageView.setImage(folderImage);
@@ -295,7 +317,7 @@ public class Main extends Application {
                         }
                     });
 
-                    setGraphicTextGap(20);
+                    setGraphicTextGap(LISTVIEW_ITEM_TEXT_GAP);
                     setText(item.getName());
                     setGraphic(imageView);
                 }
@@ -316,13 +338,8 @@ public class Main extends Application {
     }
 
     private void walkAction(@NonNull String relativePath) {
-        setMessage("updating", false);
+        setMessage(UPDATING_MESSAGE, false);
         listView.setDisable(true);
-
-        // debug
-        if (currentTask != null) {
-            throw new RuntimeException("Logic error");
-        }
 
         currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
@@ -336,7 +353,7 @@ public class Main extends Application {
             protected void succeeded() {
                 super.succeeded();
                 items.clear();
-                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, "../"));
+                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
                 items.addAll(getValue());
                 currentTask = null;
                 setConnectedScreen();
@@ -345,7 +362,7 @@ public class Main extends Application {
             @Override
             protected void failed() {
                 super.failed();
-                setMessage("updating error", true);
+                setMessage(UPDATING_ERROR_MESSAGE, true);
                 currentTask = null;
                 setDelayedAction(() -> setConnectedScreen());
             }
@@ -360,21 +377,17 @@ public class Main extends Application {
     }
 
     private void saveAction(@NonNull String relativePath) {
-        setMessage("saving file", false);
+        setMessage(SAVING_FILE_MESSAGE, false);
         listView.setDisable(true);
 
         var fileChooser = new DirectoryChooser();
-        fileChooser.setTitle("Choose directory");
+        String title = FILE_CHOOSER_TITLE_PREFIX + relativePath + "\"";
+        fileChooser.setTitle(title);
         var selectedDirectory = fileChooser.showDialog(mainStage);
         if (selectedDirectory == null) {
-            setMessage("directory was not chosen properly", true);
+            setMessage(DIRECTORY_NOT_CHOSEN_MESSAGE, true);
             setDelayedAction(this::setConnectedScreen);
             return;
-        }
-
-        // debug
-        if (currentTask != null) {
-            throw new RuntimeException("Logic error");
         }
 
         currentTask = new Task<Void>() {
@@ -390,7 +403,7 @@ public class Main extends Application {
             @Override
             protected void succeeded() {
                 super.succeeded();
-                setMessage("file downloaded successfully", false);
+                setMessage(FILE_DOWNLOADED_MESSAGE, false);
                 currentTask = null;
                 setDelayedAction(() -> setConnectedScreen());
             }
@@ -398,7 +411,7 @@ public class Main extends Application {
             @Override
             protected void failed() {
                 super.failed();
-                setMessage("downloading error", true);
+                setMessage(DOWNLOAD_ERROR_MESSAGE, true);
                 currentTask = null;
                 setDelayedAction(() -> setConnectedScreen());
             }
