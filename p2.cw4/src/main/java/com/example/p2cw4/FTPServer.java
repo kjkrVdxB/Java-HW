@@ -24,6 +24,7 @@ public class FTPServer {
     private final static int MAX_BYTES_READ = 4096;
     private final static int MAX_BYTES_WRITE = 4096;
     private final static int MAX_REQUEST_LENGTH = 2048;
+    private static final long EXECUTOR_AWAIT_TERMINATION_SECONDS = 5;
 
     private Thread worker;
     private ServerSocketChannel serverSocketChannel;
@@ -95,7 +96,7 @@ public class FTPServer {
         worker.join();
         serverSocketChannel.close();
         executor.shutdownNow();
-        executor.awaitTermination(5, TimeUnit.SECONDS);
+        executor.awaitTermination(EXECUTOR_AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
     }
 
     private class ChannelHandler {
