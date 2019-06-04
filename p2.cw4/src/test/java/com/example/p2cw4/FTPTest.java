@@ -1,7 +1,6 @@
 package com.example.p2cw4;
 
 import com.example.p2cw4.FTPClient.ListingItem;
-import org.checkerframework.common.util.report.qual.ReportReadWrite;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
     private static final int TEST_RUNS = 10;
-    private static final int TEST_PORT = 9999;
+    private static final int TEST_PORT = 10000;
     private FTPServer server = new FTPServer(TEST_PORT);
     private FTPClient client = new FTPClient();
     @SuppressWarnings("WeakerAccess")

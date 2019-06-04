@@ -81,7 +81,7 @@ public class FTPServer {
                     }
                 }
             } catch (IOException e) {
-                // TODO
+                e.printStackTrace();
             } catch (ClosedSelectorException e) {
                 // time to go out
             }
@@ -100,7 +100,7 @@ public class FTPServer {
 
     private class ChannelHandler {
         @NonNull
-        private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        private final ByteBuffer lengthBuffer = ByteBuffer.allocate(4); // 4 bytes for storing 'int'
         @NonNull
         private ByteBuffer dataBuffer;
         private boolean readLength = false;
@@ -158,7 +158,7 @@ public class FTPServer {
                         return;
                     }
 
-                    answerBuffer = ByteBuffer.allocate(answer.length + 4);
+                    answerBuffer = ByteBuffer.allocate(4 + answer.length); // Length of answer + answer itself
                     answerBuffer.putInt(answer.length);
                     answerBuffer.put(answer);
                     answerBuffer.flip();
