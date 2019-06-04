@@ -20,17 +20,17 @@ import static java.lang.Integer.min;
 /**
  * A simple FTP server
  * The protocol is following:
- *
+ * <p>
  * All basic types are encoded as per DataOutputStream specification.
  * Each request should start with the length of the request body, one 4 byte integer. Requests of length more than
  * {@code MAX_REQUEST_LENGTH} result in the server disconnect since they can be abusing.
  * The client can ask two types of queries, GET and LIST. Request body starts with a 4 byte integer indicating
  * the request type, 1 for GET and 2 for LIST. After it is the string indicating the path, as encoded by
  * {@code DataOutputStream.writeUTF(String)}. // TODO string restrictions
- *
+ * <p>
  * The answer body for the GET request starts with a 4 byte integer indicating the length of the resulting file.
  * The length is -1 if the file was not found, there is nothing after the length in this case.
- *
+ * <p>
  * The answer body for the LIST request starts with a 4 byte integer indicating the number of entries in the requested
  * directory, or -1 if it was not found. Then that amount of records of type {@code (String, Boolean)}, where the string is
  * the entry name, and the boolean is true iff the entry is a directory.
@@ -69,45 +69,57 @@ public class FTPServer {
         selector = Selector.open();
         worker = new Thread(() -> {
             try {
-                serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+                try {
+                    serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+                } catch (ClosedChannelException e) {
+                    e.printStackTrace();
+                    return;
+                }
                 for (; ; ) {
-                    selector.select();
+                    try {
+                        selector.select();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
+                    }
                     if (!selector.isOpen()) {
                         return;
                     }
-                    synchronized (selector.selectedKeys()) {
-                        var keys = selector.selectedKeys().iterator();
-                        while (keys.hasNext()) {
-                            var key = keys.next();
-                            if (!key.isValid()) {
-                                keys.remove();
-                                continue;
-                            }
-                            if (key.isAcceptable()) {
-                                var socketChannel = ((ServerSocketChannel) key.channel()).accept();
-                                socketChannel.configureBlocking(false);
-                                socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
-                                keys.remove();
-                            } else if (key.isReadable()) {
-                                var channelHandler = (ChannelHandler) key.attachment();
-                                if (!channelHandler.processRead()) {
-                                    key.channel().close();
+                    try {
+                        synchronized (selector.selectedKeys()) {
+                            var keys = selector.selectedKeys().iterator();
+                            while (keys.hasNext()) {
+                                var key = keys.next();
+                                if (!key.isValid()) {
+                                    keys.remove();
                                     continue;
                                 }
-                                keys.remove();
-                            } else if (key.isWritable()) {
-                                var channelHandler = (ChannelHandler) key.attachment();
-                                channelHandler.processWrite();
-                                if (!channelHandler.shouldWrite) {
-                                    channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
+                                if (key.isAcceptable()) {
+                                    var socketChannel = ((ServerSocketChannel) key.channel()).accept();
+                                    socketChannel.configureBlocking(false);
+                                    socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
+                                    keys.remove();
+                                } else if (key.isReadable()) {
+                                    var channelHandler = (ChannelHandler) key.attachment();
+                                    if (!channelHandler.processRead()) {
+                                        key.channel().close();
+                                        continue;
+                                    }
+                                    keys.remove();
+                                } else if (key.isWritable()) {
+                                    var channelHandler = (ChannelHandler) key.attachment();
+                                    channelHandler.processWrite();
+                                    if (!channelHandler.shouldWrite) {
+                                        channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
+                                    }
+                                    keys.remove();
                                 }
-                                keys.remove();
                             }
                         }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             } catch (ClosedSelectorException e) {
                 // time to go out
             }
@@ -161,7 +173,7 @@ public class FTPServer {
         }
 
         /**
-         * Read the request. First it's length, the request itself. Once the request have been read
+         * Read the request. First it's length, then the request itself. Once the request have been read
          * start a new thread for it's processing. On one call at most {@code MAX_BYTES_READ} bytes of request are read.
          * Also if the request length is more that {@code MAX_REQUEST_LENGTH} it is considered malformed and
          * the end-of-stream is reported.
