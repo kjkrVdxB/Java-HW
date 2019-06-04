@@ -48,7 +48,6 @@ public class FTPServer {
     private ServerSocketChannel serverSocketChannel;
     private ExecutorService executor = Executors.newCachedThreadPool();
     private volatile Selector selector;
-    private boolean started = true;
 
     /**
      * Create new FTPServer listening on {@code port}
@@ -67,7 +66,6 @@ public class FTPServer {
      * @throws IOException in case the start fails
      */
     public void start() throws IOException {
-        started = true;
         selector = Selector.open();
         worker = new Thread(() -> {
             try {
@@ -75,7 +73,6 @@ public class FTPServer {
                     serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 } catch (ClosedChannelException e) {
                     e.printStackTrace();
-                    started = false;
                     return;
                 }
                 for (; ; ) {
@@ -83,7 +80,6 @@ public class FTPServer {
                         selector.select();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        started = false;
                         return;
                     }
                     if (!selector.isOpen()) {
