@@ -40,9 +40,7 @@ public class FTPClient {
         }
     }
 
-    /**
-     * Check if we successfully connected
-     */
+    /** Check if we successfully connected */
     public boolean isConnected() {
         return socket != null && socket.isConnected();
     }
