@@ -6,11 +6,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static com.example.p2cw4.FTPServer.REQUEST_GET;
@@ -48,7 +54,6 @@ class FTPTest {
         Files.createFile(tmpDir.resolve("bbb").resolve("ccc"));
 
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
                 new ListingItem(ListingItem.Type.FILE, "aaa"),
@@ -60,7 +65,6 @@ class FTPTest {
     @RepeatedTest(TEST_RUNS)
     void testEmptyList() throws IOException {
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
         assertEquals(0, list.size());
     }
 
@@ -76,7 +80,6 @@ class FTPTest {
         Files.createFile(path.resolve("eee"));
 
         var list = client.executeList(path.toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
                 new ListingItem(ListingItem.Type.DIRECTORY, "ddd"),
@@ -146,10 +149,8 @@ class FTPTest {
         otherClient.connect("localhost", TEST_PORT);
 
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
 
         var otherList = otherClient.executeList(tmpDir.toString());
-        otherList.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
                 new ListingItem(ListingItem.Type.FILE, "aaa"),
@@ -168,7 +169,6 @@ class FTPTest {
         Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
 
         var list = client.executeList(tmpDir.toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
 
         var listExpected = Arrays.asList(
                 new ListingItem(ListingItem.Type.FILE, "aaa"),
@@ -177,7 +177,6 @@ class FTPTest {
         assertEquals(listExpected, list);
 
         list = client.executeList(tmpDir.resolve("bbb").toString());
-        list.sort(Comparator.comparing(ListingItem::getName));
 
         assertEquals(Collections.singletonList(new ListingItem(ListingItem.Type.DIRECTORY, "ccc")), list);
     }
@@ -358,6 +357,108 @@ class FTPTest {
         otherClient.disconnect();
     }
 
+    @RepeatedTest(TEST_RUNS)
+    void testServerGetNotFoundDirect() throws IOException, InterruptedException {
+        var anotherServer = new FTPServer(SECOND_TEST_PORT);
+        anotherServer.start();
+
+        var expectedAnswer = constructPacket(data -> {
+            try {
+                data.writeInt(-1);
+            } catch (IOException ignored) {
+            }
+        });
+
+        assertArrayEquals(expectedAnswer, simpleRequest(SECOND_TEST_PORT, constructPacket(data -> {
+            try {
+                data.writeInt(REQUEST_GET);
+                data.writeUTF("abacaba");
+            } catch (IOException ignored) {
+            }
+        }), expectedAnswer.length));
+
+        anotherServer.stop();
+    }
+
+    @RepeatedTest(TEST_RUNS)
+    void testServerGetFoundDirect() throws IOException, InterruptedException {
+        Files.write(tmpDir.resolve("abacaba"), new byte[]{1, 2, 3, 4});
+
+        var anotherServer = new FTPServer(SECOND_TEST_PORT);
+        anotherServer.start();
+
+        var expectedAnswer = constructPacket(data -> {
+            try {
+                data.writeInt(4);
+                data.write(new byte[]{1, 2, 3, 4});
+            } catch (IOException ignored) {
+            }
+        });
+
+        assertArrayEquals(expectedAnswer, simpleRequest(SECOND_TEST_PORT, constructPacket(data -> {
+            try {
+                data.writeInt(REQUEST_GET);
+                data.writeUTF(tmpDir.resolve("abacaba").toString());
+            } catch (IOException ignored) {
+            }
+        }), expectedAnswer.length));
+
+        anotherServer.stop();
+    }
+
+    @RepeatedTest(TEST_RUNS)
+    void testServerListNotFoundDirect() throws IOException, InterruptedException {
+        var anotherServer = new FTPServer(SECOND_TEST_PORT);
+        anotherServer.start();
+
+        var expectedAnswer = constructPacket(data -> {
+            try {
+                data.writeInt(-1);
+            } catch (IOException ignored) {
+            }
+        });
+
+        assertArrayEquals(expectedAnswer, simpleRequest(SECOND_TEST_PORT, constructPacket(data -> {
+            try {
+                data.writeInt(REQUEST_LIST);
+                data.writeUTF("abacaba");
+            } catch (IOException ignored) {
+            }
+        }), expectedAnswer.length));
+
+        anotherServer.stop();
+    }
+
+    @RepeatedTest(TEST_RUNS)
+    void testServerListFoundDirect() throws IOException, InterruptedException {
+        Files.createDirectories(tmpDir.resolve("abacaba").resolve("a"));
+        Files.createFile(tmpDir.resolve("abacaba").resolve("b"));
+
+        var anotherServer = new FTPServer(SECOND_TEST_PORT);
+        anotherServer.start();
+
+        var expectedAnswer = constructPacket(data -> {
+            try {
+                data.writeInt(2);
+                data.writeUTF("a");
+                data.writeBoolean(true);
+                data.writeUTF("b");
+                data.writeBoolean(false);
+            } catch (IOException ignored) {
+            }
+        });
+
+        assertArrayEquals(expectedAnswer, simpleRequest(SECOND_TEST_PORT, constructPacket(data -> {
+            try {
+                data.writeInt(REQUEST_LIST);
+                data.writeUTF(tmpDir.resolve("abacaba").toString());
+            } catch (IOException ignored) {
+            }
+        }), expectedAnswer.length));
+
+        anotherServer.stop();
+    }
+
     private byte[] constructPacket(Consumer<DataOutputStream> streamWriter) {
         var packetBody = new ByteArrayOutputStream();
         var packetBodyData = new DataOutputStream(packetBody);
@@ -392,6 +493,7 @@ class FTPTest {
                     }
                     var socketOutput = socket.getOutputStream();
                     socketOutput.write(bytesToWrite);
+                    socketOutput.flush();
                     serverSocket.close();
                 } catch (IOException ignore) {
                 }
@@ -403,5 +505,14 @@ class FTPTest {
             serverThread.join();
             return clientRequest.toByteArray();
         }
+    }
+
+    private static byte[] simpleRequest(int port, byte[] request, int numberBytesToRead) throws IOException {
+        var socket = new Socket("localhost", port);
+        socket.getOutputStream().write(request);
+        socket.getOutputStream().flush();
+        var result = socket.getInputStream().readNBytes(numberBytesToRead);
+        socket.close();
+        return result;
     }
 }

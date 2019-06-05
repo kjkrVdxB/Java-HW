@@ -89,8 +89,8 @@ public class FTPClient {
             }
             for (int i = 0; i < size; ++i) {
                 String name = dataStream.readUTF();
-                boolean isDir = dataStream.readBoolean();
-                result.add(new ListingItem(isDir ? ListingItem.Type.DIRECTORY : ListingItem.Type.FILE, name));
+                boolean isDirectory = dataStream.readBoolean();
+                result.add(new ListingItem(isDirectory ? ListingItem.Type.DIRECTORY : ListingItem.Type.FILE, name));
             }
             return result;
         }

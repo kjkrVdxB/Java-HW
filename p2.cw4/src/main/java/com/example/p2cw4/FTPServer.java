@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -343,6 +344,7 @@ public class FTPServer {
                 try (var directoryStream = Files.list(path)) {
                     contents = directoryStream.collect(Collectors.toList());
                 }
+                contents.sort(Comparator.comparing(filePath -> filePath.getFileName().toString()));
                 dataOutputStream.writeInt(contents.size());
                 dataOutputStream.flush();
                 for (var contentsPath: contents) {
