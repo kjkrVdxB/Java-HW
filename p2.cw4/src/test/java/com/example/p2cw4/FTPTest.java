@@ -4,7 +4,6 @@ import com.example.p2cw4.FTPClient.ListingItem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
@@ -259,7 +258,7 @@ class FTPTest {
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
         otherClient.connect("localhost", SECOND_TEST_PORT);
         assertThrows(FileNotFoundException.class, () -> otherClient.executeGet("abacaba"));
-        byte[] clientRequest = simpleServer.getResult();
+        byte[] clientRequest = simpleServer.getClientRequest();
 
         assertArrayEquals(expectedRequest, clientRequest);
 
@@ -289,7 +288,7 @@ class FTPTest {
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
         otherClient.connect("localhost", SECOND_TEST_PORT);
         assertArrayEquals(new byte[]{1, 2, 3, 4}, otherClient.executeGet("abacaba"));
-        byte[] clientRequest = simpleServer.getResult();
+        byte[] clientRequest = simpleServer.getClientRequest();
 
         assertArrayEquals(expectedRequest, clientRequest);
 
@@ -318,7 +317,7 @@ class FTPTest {
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
         otherClient.connect("localhost", SECOND_TEST_PORT);
         assertThrows(FileNotFoundException.class, () -> otherClient.executeList("abacaba"));
-        byte[] clientRequest = simpleServer.getResult();
+        byte[] clientRequest = simpleServer.getClientRequest();
 
         assertArrayEquals(expectedRequest, clientRequest);
 
@@ -352,7 +351,7 @@ class FTPTest {
         otherClient.connect("localhost", SECOND_TEST_PORT);
         assertEquals(List.of(new ListingItem(ListingItem.Type.DIRECTORY, "a"),
                              new ListingItem(ListingItem.Type.FILE, "b")), otherClient.executeList("abacaba"));
-        byte[] clientRequest = simpleServer.getResult();
+        byte[] clientRequest = simpleServer.getClientRequest();
 
         assertArrayEquals(expectedRequest, clientRequest);
 
@@ -380,7 +379,7 @@ class FTPTest {
     private static class SimpleServer {
         private ServerSocket serverSocket;
         private Thread serverThread;
-        private ByteArrayOutputStream result = new ByteArrayOutputStream();
+        private ByteArrayOutputStream clientRequest = new ByteArrayOutputStream();
         private SimpleServer(int numberBytesToReceive, byte[] bytesToWrite, int port) throws IOException {
             serverSocket = new ServerSocket(port);
             serverThread = new Thread(() -> {
@@ -389,7 +388,7 @@ class FTPTest {
                     var socketInput = socket.getInputStream();
                     for (int i = 0; i < numberBytesToReceive; ++i) {
                         var byteRead = socketInput.read();
-                        result.write(byteRead);
+                        clientRequest.write(byteRead);
                     }
                     var socketOutput = socket.getOutputStream();
                     socketOutput.write(bytesToWrite);
@@ -400,9 +399,9 @@ class FTPTest {
             serverThread.start();
         }
 
-        private byte[] getResult() throws InterruptedException {
+        private byte[] getClientRequest() throws InterruptedException {
             serverThread.join();
-            return result.toByteArray();
+            return clientRequest.toByteArray();
         }
     }
 }

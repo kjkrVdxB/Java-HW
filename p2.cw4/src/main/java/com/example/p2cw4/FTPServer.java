@@ -121,12 +121,7 @@ public class FTPServer {
                                         continue;
                                     }
                                 } catch (IOException e) {
-                                    try {
-                                        key.channel().close();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                    e.printStackTrace();
+                                    tryCloseAfterChannelException(e, key.channel());
                                     continue;
                                 }
                                 keys.remove();
@@ -135,12 +130,7 @@ public class FTPServer {
                                 try {
                                     channelHandler.processWrite();
                                 } catch (IOException e) {
-                                    try {
-                                        key.channel().close();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                    e.printStackTrace();
+                                    tryCloseAfterChannelException(e, key.channel());
                                     continue;
                                 }
                                 if (!channelHandler.shouldWrite) {
@@ -161,6 +151,15 @@ public class FTPServer {
             }
         });
         worker.start();
+    }
+
+    private static void tryCloseAfterChannelException(@NonNull IOException e, @NonNull SelectableChannel channel) {
+        try {
+            channel.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        e.printStackTrace();
     }
 
     /**
