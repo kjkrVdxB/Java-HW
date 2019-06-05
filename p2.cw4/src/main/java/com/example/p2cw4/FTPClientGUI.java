@@ -306,11 +306,7 @@ public class FTPClientGUI extends Application {
             @Override
             protected void succeeded() {
                 super.succeeded();
-                items.clear();
-                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
-                items.addAll(getValue());
-                currentTask = null;
-                setConnectedScreen();
+                connectOrWalkSucceeded(this);
             }
 
             @Override
@@ -340,11 +336,7 @@ public class FTPClientGUI extends Application {
             @Override
             protected void succeeded() {
                 super.succeeded();
-                items.clear();
-                items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
-                items.addAll(getValue());
-                currentTask = null;
-                setConnectedScreen();
+                connectOrWalkSucceeded(this);
             }
 
             @Override
@@ -356,6 +348,14 @@ public class FTPClientGUI extends Application {
             }
         };
        startCurrentTask();
+    }
+
+    private void connectOrWalkSucceeded(@NonNull Task<List<FTPClient.ListingItem>> instance) {
+        items.clear();
+        items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
+        items.addAll(instance.getValue());
+        currentTask = null;
+        setConnectedScreen();
     }
 
     private void saveAction(@NonNull String relativePath) {
