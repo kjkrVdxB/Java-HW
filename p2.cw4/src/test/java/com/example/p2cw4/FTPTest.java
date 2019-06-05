@@ -252,7 +252,6 @@ class FTPTest {
         var answer = constructPacket(data -> {
             try {
                 data.writeInt(-1);
-                data.write(new byte[]{1, 2, 3, 4});
             } catch (IOException ignore) {
             }
         });
