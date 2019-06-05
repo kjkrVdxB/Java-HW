@@ -237,7 +237,7 @@ class FTPTest {
         yetAnotherClient.disconnect();
     }
 
-    @Test
+    @RepeatedTest(TEST_RUNS)
     void testClientGetRequestDirect() throws IOException, InterruptedException {
         var otherClient = new FTPClient();
 
@@ -267,7 +267,7 @@ class FTPTest {
         otherClient.disconnect();
     }
 
-    @Test
+    @RepeatedTest(TEST_RUNS)
     void testClientGetAnswerDirect() throws IOException, InterruptedException {
         var otherClient = new FTPClient();
 
@@ -297,7 +297,7 @@ class FTPTest {
         otherClient.disconnect();
     }
 
-    @Test
+    @RepeatedTest(TEST_RUNS)
     void testClientListRequestDirect() throws IOException, InterruptedException {
         var otherClient = new FTPClient();
 
@@ -326,7 +326,7 @@ class FTPTest {
         otherClient.disconnect();
     }
 
-    @Test
+    @RepeatedTest(TEST_RUNS)
     void testClientListAnswerDirect() throws IOException, InterruptedException {
         var otherClient = new FTPClient();
 
@@ -394,6 +394,7 @@ class FTPTest {
                     }
                     var socketOutput = socket.getOutputStream();
                     socketOutput.write(bytesToWrite);
+                    serverSocket.close();
                 } catch (IOException ignore) {
                 }
             });
