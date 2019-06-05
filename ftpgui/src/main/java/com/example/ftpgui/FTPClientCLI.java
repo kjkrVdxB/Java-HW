@@ -1,4 +1,4 @@
-package com.example.p2cw4;
+package com.example.ftpgui;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Scanner;
 
-import com.example.p2cw4.FTPClient.ListingItem;
+import com.example.ftpgui.FTPClient.ListingItem;
 
 public class FTPClientCLI {
     public static void main(String[] args) throws IOException {

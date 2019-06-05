@@ -1,4 +1,4 @@
-package com.example.p2cw4;
+package com.example.ftpgui;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.example.p2cw4.FTPServer.*;
+import static com.example.ftpgui.FTPServer.*;
 
 /** A simple FTP client. See the details of the protocol in {@link FTPServer} */
 public class FTPClient {

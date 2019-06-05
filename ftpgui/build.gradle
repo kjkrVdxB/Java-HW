@@ -17,7 +17,7 @@ javafx {
     version = "11.0.2"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
-mainClassName = 'com.example.p2cw4.FTPClientGUI'
+mainClassName = 'com.example.ftpgui.FTPClientGUI'
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'

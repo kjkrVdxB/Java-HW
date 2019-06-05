@@ -1,4 +1,4 @@
-package com.example.p2cw4;
+package com.example.ftpgui;
 
 import java.io.IOException;
 

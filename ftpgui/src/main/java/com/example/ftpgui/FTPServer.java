@@ -1,4 +1,4 @@
-package com.example.p2cw4;
+package com.example.ftpgui;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;

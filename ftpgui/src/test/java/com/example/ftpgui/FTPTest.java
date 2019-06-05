@@ -1,6 +1,6 @@
-package com.example.p2cw4;
+package com.example.ftpgui;
 
-import com.example.p2cw4.FTPClient.ListingItem;
+import com.example.ftpgui.FTPClient.ListingItem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -19,8 +19,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static com.example.p2cw4.FTPServer.REQUEST_GET;
-import static com.example.p2cw4.FTPServer.REQUEST_LIST;
+import static com.example.ftpgui.FTPServer.REQUEST_GET;
+import static com.example.ftpgui.FTPServer.REQUEST_LIST;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FTPTest {
