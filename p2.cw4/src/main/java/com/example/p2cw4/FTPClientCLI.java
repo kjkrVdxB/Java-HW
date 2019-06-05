@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 import com.example.p2cw4.FTPClient.ListingItem;
 
-public class ClientCli {
+public class FTPClientCLI {
     public static void main(String[] args) throws IOException {
         System.out.println("Simple FTP client");
         System.out.println("Type 'help' for help");

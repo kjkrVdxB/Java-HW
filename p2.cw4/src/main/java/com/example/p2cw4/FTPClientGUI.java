@@ -1,9 +1,7 @@
-package com.example.p2cw4.ui;
+package com.example.p2cw4;
 
-import com.example.p2cw4.FTPClient;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
