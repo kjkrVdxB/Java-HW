@@ -21,3 +21,5 @@ test {
         events 'PASSED', 'FAILED', 'SKIPPED'
     }
 }
+
+mainClassName = 'com.example.unit.UnitTestCli'

@@ -5,7 +5,7 @@ import static java.lang.System.exit;
 public class UnitTestCli {
     public static void main(String[] args) {
         if (args.length != 1) {
-            usage();
+            printUsageAndExit();
         }
         Class<?> clazz;
         try {
@@ -23,7 +23,7 @@ public class UnitTestCli {
         }
     }
 
-    private static void usage() {
+    private static void printUsageAndExit() {
         System.out.println("One argument expected: the name of unit test class");
         exit(0);
     }
