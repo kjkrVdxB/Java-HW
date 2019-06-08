@@ -187,7 +187,9 @@ public class UnitTestRunner {
     /** Utility method, filters out methods which have the given annotation */
     private List<Method> getMethodsAnnotatedWith(@NonNull Class<? extends Annotation> annotation) {
         Validate.notNull(annotation);
-        return Arrays.stream(unitTests.getDeclaredMethods()).filter(method -> method.getAnnotation(annotation) != null).collect(Collectors.toList());
+        return Arrays.stream(unitTests.getDeclaredMethods())
+                .filter(method -> method.getAnnotation(annotation) != null)
+                .collect(Collectors.toList());
     }
 
     /** A class representing a result of one test run */
