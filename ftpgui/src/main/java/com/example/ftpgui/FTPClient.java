@@ -57,7 +57,6 @@ public class FTPClient {
      */
     @NonNull
     public List<ListingItem> executeList(@NonNull String path) throws IOException {
-
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");
         }
