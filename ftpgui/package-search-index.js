@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.example.ftpgui"},{"l":"com.example.ftpgui.server"}]
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.example.ftpgui"},{"l":"com.example.ftpgui.gui"},{"l":"com.example.ftpgui.server"}]
