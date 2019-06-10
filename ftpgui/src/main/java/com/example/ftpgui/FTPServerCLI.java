@@ -1,5 +1,7 @@
 package com.example.ftpgui;
 
+import com.example.ftpgui.server.FTPServer;
+
 import java.io.IOException;
 
 import static java.lang.System.exit;
