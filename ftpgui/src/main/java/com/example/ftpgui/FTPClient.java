@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +20,15 @@ public class FTPClient {
     /**
      * Try to connect to the given {@code address} and {@code port}. Disconnects first if already connected.
      *
+     * @param timeout timeout in milliseconds
      * @throws IOException if the connection fails
      */
-    public void connect(@NonNull String address, int port) throws IOException {
+    public void connect(@NonNull String address, int port, int timeout) throws IOException {
         if (isConnected()) {
             disconnect();
         }
-        socket = new Socket(address, port);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(address, port), timeout);
     }
 
     /**

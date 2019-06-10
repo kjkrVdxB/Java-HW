@@ -27,6 +27,7 @@ class FTPTest {
     private static final int TEST_RUNS = 10;
     private static final int TEST_PORT = 10000;
     private static final int SECOND_TEST_PORT = 10001;
+    private static final int CONNECTION_TIMEOUT_MILLIS = 2000;
     private FTPServer server = new FTPServer(TEST_PORT);
     private FTPClient client = new FTPClient();
     @SuppressWarnings("WeakerAccess")
@@ -38,7 +39,7 @@ class FTPTest {
     @BeforeEach
     void init() throws IOException {
         server.start();
-        client.connect("localhost", TEST_PORT);
+        client.connect("localhost", TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
     }
 
     @AfterEach
@@ -132,7 +133,7 @@ class FTPTest {
 
         assertFalse(otherClient.isConnected());
 
-        otherClient.connect("localhost", TEST_PORT);
+        otherClient.connect("localhost", TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         assertTrue(otherClient.isConnected());
 
         otherClient.disconnect();
@@ -146,7 +147,7 @@ class FTPTest {
         Files.createDirectories(tmpDir.resolve("bbb").resolve("ccc"));
 
         var otherClient = new FTPClient();
-        otherClient.connect("localhost", TEST_PORT);
+        otherClient.connect("localhost", TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
 
         var list = client.executeList(tmpDir.toString());
 
@@ -189,9 +190,9 @@ class FTPTest {
         Files.createFile(tmpDir.resolve("ccc"));
 
         var otherClient = new FTPClient();
-        otherClient.connect("localhost", TEST_PORT);
+        otherClient.connect("localhost", TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         var yetAnotherClient = new FTPClient();
-        yetAnotherClient.connect("localhost", TEST_PORT);
+        yetAnotherClient.connect("localhost", TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
 
         var thread1 = new Thread(() -> {
             try {
@@ -255,7 +256,7 @@ class FTPTest {
         });
 
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
-        otherClient.connect("localhost", SECOND_TEST_PORT);
+        otherClient.connect("localhost", SECOND_TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         assertThrows(FileNotFoundException.class, () -> otherClient.executeGet("abacaba"));
         byte[] clientRequest = simpleServer.getClientRequest();
 
@@ -285,7 +286,7 @@ class FTPTest {
         });
 
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
-        otherClient.connect("localhost", SECOND_TEST_PORT);
+        otherClient.connect("localhost", SECOND_TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         assertArrayEquals(new byte[]{1, 2, 3, 4}, otherClient.executeGet("abacaba"));
         byte[] clientRequest = simpleServer.getClientRequest();
 
@@ -314,7 +315,7 @@ class FTPTest {
         });
 
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
-        otherClient.connect("localhost", SECOND_TEST_PORT);
+        otherClient.connect("localhost", SECOND_TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         assertThrows(FileNotFoundException.class, () -> otherClient.executeList("abacaba"));
         byte[] clientRequest = simpleServer.getClientRequest();
 
@@ -347,7 +348,7 @@ class FTPTest {
         });
 
         var simpleServer = new SimpleServer(expectedRequest.length, answer, SECOND_TEST_PORT);
-        otherClient.connect("localhost", SECOND_TEST_PORT);
+        otherClient.connect("localhost", SECOND_TEST_PORT, CONNECTION_TIMEOUT_MILLIS);
         assertEquals(List.of(new ListingItem(ListingItem.Type.DIRECTORY, "a"),
                              new ListingItem(ListingItem.Type.FILE, "b")), otherClient.executeList("abacaba"));
         byte[] clientRequest = simpleServer.getClientRequest();

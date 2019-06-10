@@ -46,6 +46,7 @@ public class FTPClientGUI extends Application {
     private static final int ICONS_HEIGHT = 15;
     private static final int LIST_VIEW_ITEM_TEXT_GAP = 20;
     private static final int DELAY_MILLIS = 2000;
+    private static final int CONNECTION_TIMEOUT_MILLIS = 2000;
 
     private static final String LAYOUT_FXML_RESOURCE_PATH = "/mainLayout.fxml";
     private static final String FOLDER_PNG_RESOURCE_PATH = "/folder.png";
@@ -297,7 +298,7 @@ public class FTPClientGUI extends Application {
         currentTask = new Task<List<FTPClient.ListingItem>>() {
             @Override
             protected List<FTPClient.ListingItem> call() throws Exception {
-                client.connect(address, port);
+                client.connect(address, port, CONNECTION_TIMEOUT_MILLIS);
                 currentPath = Paths.get("");
                 return client.executeList(currentPath.toString());
             }
