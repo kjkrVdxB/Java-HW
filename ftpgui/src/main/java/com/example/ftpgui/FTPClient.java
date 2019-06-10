@@ -38,7 +38,8 @@ public class FTPClient {
      * @throws IOException if the disconnect failed
      */
     public void disconnect() throws IOException {
-        if (socket != null) {
+        if (isConnected()) {
+            assert socket != null;
             socket.close();
             socket = null;
         }
@@ -46,7 +47,7 @@ public class FTPClient {
 
     /** Check if we successfully connected */
     public boolean isConnected() {
-        return socket != null && socket.isConnected();
+        return socket != null && !socket.isClosed();
     }
 
     /**
