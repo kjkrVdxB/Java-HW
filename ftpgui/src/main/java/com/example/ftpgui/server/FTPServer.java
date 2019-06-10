@@ -68,14 +68,14 @@ public class FTPServer {
                 try {
                     serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 } catch (ClosedChannelException e) {
-                    e.printStackTrace();
+                    onIOException(e);
                     return;
                 }
                 for (; ; ) {
                     try {
                         selector.select();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        onIOException(e);
                         return;
                     }
                     if (!selector.isOpen()) {
@@ -97,14 +97,7 @@ public class FTPServer {
                                     socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
                                     System.out.println(socketChannel.getRemoteAddress().toString() + " connected");
                                 } catch (IOException e) {
-                                    try {
-                                        if (socketChannel != null) {
-                                            socketChannel.close();
-                                        }
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                    e.printStackTrace();
+                                    tryCloseAfterChannelException(e, socketChannel);
                                     continue;
                                 }
                                 keys.remove();
@@ -133,7 +126,7 @@ public class FTPServer {
                                     try {
                                         channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
                                     } catch (ClosedChannelException e) {
-                                        e.printStackTrace();
+                                        onIOException(e);
                                         continue;
                                     }
                                 }
@@ -150,13 +143,23 @@ public class FTPServer {
         worker.start();
     }
 
-    private static void tryCloseAfterChannelException(@NonNull IOException e, @NonNull SelectableChannel channel) {
+    private static void tryCloseAfterChannelException(@NonNull IOException e, SelectableChannel channel) {
+        if (channel != null) {
+            tryCloseChannel(channel);
+        }
+        onIOException(e);
+    }
+
+    private static void tryCloseChannel(@NonNull SelectableChannel channel) {
         try {
             channel.close();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            onIOException(e);
         }
-        e.printStackTrace();
+    }
+
+    private static void onIOException(@NonNull IOException exception) {
+        exception.printStackTrace();
     }
 
     /**
@@ -169,7 +172,7 @@ public class FTPServer {
             selector.close();
         } catch (IOException e) {
             System.out.println("Exception while closing the selector");
-            e.printStackTrace();
+            onIOException(e);
         }
         worker.interrupt();
         worker.join();
@@ -177,7 +180,7 @@ public class FTPServer {
             serverSocketChannel.close();
         } catch (IOException e) {
             System.out.println("Exception while closing the server socket channel");
-            e.printStackTrace();
+            onIOException(e);
         }
         executor.shutdownNow();
         executor.awaitTermination(EXECUTOR_AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
@@ -245,11 +248,7 @@ public class FTPServer {
                     dataBuffer.clear();
 
                     if (answer == null) {
-                        try {
-                            socketChannel.close();
-                        } catch (IOException e) {
-                            // ???
-                        }
+                        tryCloseChannel(socketChannel);
                         return;
                     }
 
