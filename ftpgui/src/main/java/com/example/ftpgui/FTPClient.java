@@ -1,5 +1,6 @@
 package com.example.ftpgui;
 
+import com.example.ftpgui.server.FTPServer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.example.ftpgui.FTPServer.*;
+import static com.example.ftpgui.server.FTPServer.*;
 
 /** A simple FTP client. See the details of the protocol in {@link FTPServer} */
 public class FTPClient {
@@ -37,7 +38,8 @@ public class FTPClient {
      * @throws IOException if the disconnect failed
      */
     public void disconnect() throws IOException {
-        if (socket != null) {
+        if (isConnected()) {
+            assert socket != null;
             socket.close();
             socket = null;
         }
@@ -45,7 +47,7 @@ public class FTPClient {
 
     /** Check if we successfully connected */
     public boolean isConnected() {
-        return socket != null && socket.isConnected();
+        return socket != null && !socket.isClosed();
     }
 
     /**
@@ -57,7 +59,6 @@ public class FTPClient {
      */
     @NonNull
     public List<ListingItem> executeList(@NonNull String path) throws IOException {
-
         if (!isConnected()) {
             throw new IllegalStateException("Not connected");
         }

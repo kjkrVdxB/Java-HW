@@ -1,20 +1,14 @@
-package com.example.ftpgui;
+package com.example.ftpgui.server;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.min;
 
@@ -58,6 +52,7 @@ public class FTPServer {
     public FTPServer(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
+        System.out.println("Listening on port " + port);
         serverSocketChannel.configureBlocking(false);
     }
 
@@ -73,14 +68,14 @@ public class FTPServer {
                 try {
                     serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
                 } catch (ClosedChannelException e) {
-                    e.printStackTrace();
+                    onIOException(e);
                     return;
                 }
                 for (; ; ) {
                     try {
                         selector.select();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        onIOException(e);
                         return;
                     }
                     if (!selector.isOpen()) {
@@ -102,14 +97,7 @@ public class FTPServer {
                                     socketChannel.register(selector, SelectionKey.OP_READ, new ChannelHandler(socketChannel));
                                     System.out.println(socketChannel.getRemoteAddress().toString() + " connected");
                                 } catch (IOException e) {
-                                    try {
-                                        if (socketChannel != null) {
-                                            socketChannel.close();
-                                        }
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                    e.printStackTrace();
+                                    tryCloseAfterChannelException(e, socketChannel);
                                     continue;
                                 }
                                 keys.remove();
@@ -138,7 +126,7 @@ public class FTPServer {
                                     try {
                                         channelHandler.socketChannel.register(selector, SelectionKey.OP_READ, channelHandler);
                                     } catch (ClosedChannelException e) {
-                                        e.printStackTrace();
+                                        onIOException(e);
                                         continue;
                                     }
                                 }
@@ -150,17 +138,28 @@ public class FTPServer {
             } catch (ClosedSelectorException e) {
                 // time to go out
             }
+            System.out.println("Exiting");
         });
         worker.start();
     }
 
-    private static void tryCloseAfterChannelException(@NonNull IOException e, @NonNull SelectableChannel channel) {
+    private static void tryCloseAfterChannelException(@NonNull IOException e, SelectableChannel channel) {
+        if (channel != null) {
+            tryCloseChannel(channel);
+        }
+        onIOException(e);
+    }
+
+    private static void tryCloseChannel(@NonNull SelectableChannel channel) {
         try {
             channel.close();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            onIOException(e);
         }
-        e.printStackTrace();
+    }
+
+    private static void onIOException(@NonNull IOException exception) {
+        exception.printStackTrace();
     }
 
     /**
@@ -173,7 +172,7 @@ public class FTPServer {
             selector.close();
         } catch (IOException e) {
             System.out.println("Exception while closing the selector");
-            e.printStackTrace();
+            onIOException(e);
         }
         worker.interrupt();
         worker.join();
@@ -181,7 +180,7 @@ public class FTPServer {
             serverSocketChannel.close();
         } catch (IOException e) {
             System.out.println("Exception while closing the server socket channel");
-            e.printStackTrace();
+            onIOException(e);
         }
         executor.shutdownNow();
         executor.awaitTermination(EXECUTOR_AWAIT_TERMINATION_SECONDS, TimeUnit.SECONDS);
@@ -249,11 +248,7 @@ public class FTPServer {
                     dataBuffer.clear();
 
                     if (answer == null) {
-                        try {
-                            socketChannel.close();
-                        } catch (IOException e) {
-                            // ???
-                        }
+                        tryCloseChannel(socketChannel);
                         return;
                     }
 
@@ -290,93 +285,4 @@ public class FTPServer {
         }
     }
 
-    /** Class for handling request processing */
-    private static class RequestHandler {
-        private final @NonNull String client;
-
-        private RequestHandler(@NonNull String client) {
-            this.client = client;
-        }
-
-
-        /**
-         * Get an answer to the given request
-         *
-         * @return null in case the request
-         */
-        private byte @Nullable [] handleRequest(byte @NonNull [] request) {
-            try (var inputStream = new ByteArrayInputStream(request);
-                 var dataInputStream = new DataInputStream(inputStream);
-                 var outputStream = new ByteArrayOutputStream()) {
-
-                int type = dataInputStream.readInt();
-                if (type == REQUEST_LIST) {
-                    handleListRequest(inputStream, outputStream);
-                } else if (type == REQUEST_GET) {
-                    handleGetRequest(inputStream, outputStream);
-                } else {
-                    return null;
-                }
-                return outputStream.toByteArray();
-            } catch (IOException e) {
-                // probably array overrun
-                return null;
-            }
-        }
-
-        /**
-         * Reads the LIST request parameters from {@code in} and writes the answer to {@code out}
-         *
-         * @throws IOException in case of stream errors
-         */
-        private void handleListRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
-            try (var dataInputStream = new DataInputStream(in);
-                 var dataOutputStream = new DataOutputStream(out)) {
-                var pathString = dataInputStream.readUTF();
-                var path = Path.of(pathString);
-                System.out.println(client + " requested list of directory '" + pathString + "'");
-                if (!Files.isDirectory(path)) {
-                    dataOutputStream.writeInt(ANSWER_FILE_NOT_FOUND);
-                    dataOutputStream.flush();
-                    return;
-                }
-                List<Path> contents;
-                try (var directoryStream = Files.list(path)) {
-                    contents = directoryStream.collect(Collectors.toList());
-                }
-                contents.sort(Comparator.comparing(filePath -> filePath.getFileName().toString()));
-                dataOutputStream.writeInt(contents.size());
-                dataOutputStream.flush();
-                for (var contentsPath: contents) {
-                    dataOutputStream.writeUTF(contentsPath.getFileName().toString());
-                    dataOutputStream.writeBoolean(Files.isDirectory(contentsPath));
-                }
-                dataOutputStream.flush();
-            }
-        }
-
-        /**
-         * Reads the GET request parameters from {@code in} and writes the answer to {@code out}
-         *
-         * @throws IOException in case of stream errors
-         */
-        private void handleGetRequest(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
-            try (var dataInputStream = new DataInputStream(in);
-                 var dataOutputStream = new DataOutputStream(out)) {
-                var pathString = dataInputStream.readUTF();
-                var path = Path.of(pathString);
-                System.out.println(client + " requested file '" + pathString + "'");
-                if (!Files.isRegularFile(path)) {
-                    dataOutputStream.writeInt(ANSWER_FILE_NOT_FOUND);
-                    dataOutputStream.flush();
-                    return;
-                }
-                int size = (int) Files.size(path);
-                dataOutputStream.writeInt(size);
-                dataOutputStream.flush();
-                Files.copy(path, out);
-                dataOutputStream.flush();
-            }
-        }
-    }
 }
