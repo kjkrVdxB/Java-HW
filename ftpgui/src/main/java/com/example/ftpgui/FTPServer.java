@@ -3,6 +3,7 @@ package com.example.ftpgui;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -58,6 +59,7 @@ public class FTPServer {
     public FTPServer(int port) throws IOException {
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.bind(new InetSocketAddress(port));
+        System.out.println("Listening on port " + port);
         serverSocketChannel.configureBlocking(false);
     }
 
@@ -150,6 +152,7 @@ public class FTPServer {
             } catch (ClosedSelectorException e) {
                 // time to go out
             }
+            System.out.println("Exiting");
         });
         worker.start();
     }
