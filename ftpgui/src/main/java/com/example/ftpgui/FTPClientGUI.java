@@ -44,7 +44,7 @@ public class FTPClientGUI extends Application {
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 600;
     private static final int ICONS_HEIGHT = 15;
-    private static final int LISTVIEW_ITEM_TEXT_GAP = 20;
+    private static final int LIST_VIEW_ITEM_TEXT_GAP = 20;
     private static final int DELAY_MILLIS = 2000;
 
     private static final String LAYOUT_FXML_RESOURCE_PATH = "/mainLayout.fxml";
@@ -168,7 +168,6 @@ public class FTPClientGUI extends Application {
                 0, ICONS_HEIGHT, true, false);
         upImage = new Image(FTPClientGUI.class.getResourceAsStream(UP_PNG_RESOURCE_PATH),
                 0, ICONS_HEIGHT, true, false);
-
     }
 
     private void setupListView() {
@@ -202,7 +201,7 @@ public class FTPClientGUI extends Application {
                         }
                     });
 
-                    setGraphicTextGap(LISTVIEW_ITEM_TEXT_GAP);
+                    setGraphicTextGap(LIST_VIEW_ITEM_TEXT_GAP);
                     setText(item.getName());
                     setGraphic(imageView);
                 }
