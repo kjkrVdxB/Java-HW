@@ -1,5 +1,6 @@
-package com.example.ftpgui;
+package com.example.ftpgui.gui;
 
+import com.example.ftpgui.FTPClient;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
