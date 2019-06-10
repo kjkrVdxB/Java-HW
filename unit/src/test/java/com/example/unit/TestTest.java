@@ -1,4 +1,4 @@
-package com.example.unit.test;
+package com.example.unit;
 
 import com.example.unit.api.Test;
 
