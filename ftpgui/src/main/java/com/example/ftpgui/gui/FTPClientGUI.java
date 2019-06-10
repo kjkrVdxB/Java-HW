@@ -1,7 +1,6 @@
 package com.example.ftpgui.gui;
 
 import com.example.ftpgui.FTPClient;
-import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,16 +20,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import org.apache.commons.io.FilenameUtils;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 /** JavaFX graphical user interface which wraps the FTPClient class */
@@ -39,15 +32,14 @@ public class FTPClientGUI extends Application {
             new BackgroundFill(Color.web("FFA1A1"), CornerRadii.EMPTY, Insets.EMPTY));
     private static final Background CONNECTED_BACKGROUND = new Background(
             new BackgroundFill(Color.web("BCFFBC"), CornerRadii.EMPTY, Insets.EMPTY));
-    private static final Insets REFRESH_BUTTON_INSTES = new Insets(1, 1, 1, 5);
+    private static final Insets REFRESH_BUTTON_INSETS =
+            new Insets(1, 1, 1, 5);
 
     private static final int MIN_WIDTH = 300;
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 600;
     private static final int ICONS_HEIGHT = 15;
     private static final int LIST_VIEW_ITEM_TEXT_GAP = 20;
-    private static final int DELAY_MILLIS = 2000;
-    private static final int CONNECTION_TIMEOUT_MILLIS = 2000;
 
     private static final String LAYOUT_FXML_RESOURCE_PATH = "/mainLayout.fxml";
     private static final String FOLDER_PNG_RESOURCE_PATH = "/folder.png";
@@ -60,24 +52,11 @@ public class FTPClientGUI extends Application {
     private static final String ADDRESS_FIELD_SELECTOR = "#addressField";
     private static final String PORT_FIELD_SELECTOR = "#portField";
 
-    private static final String PORT_FORMAT_MESSAGE = "port must be integer";
-    private static final String CONNECTING_MESSAGE = "connecting";
-    private static final String CONNECTION_ERROR_MESSAGE = "could not connect";
-    private static final String DISCONNECTING_MESSAGE = "disconnecting";
-    private static final String DISCONNECTION_ERROR_MESSAGE = "could not disconnect properly";
-    private static final String UPDATING_MESSAGE = "updating";
-    private static final String UPDATING_ERROR_MESSAGE = "updating error";
-    private static final String SAVING_FILE_MESSAGE = "saving file";
-    private static final String DIRECTORY_NOT_CHOSEN_MESSAGE = "directory was not chosen properly";
-    private static final String FILE_DOWNLOADED_MESSAGE = "file downloaded successfully";
-    private static final String DOWNLOAD_ERROR_MESSAGE = "download error";
-
     private static final String DISCONNECT_BUTTON_TEXT = "disconnect";
     private static final String CONNECT_BUTTON_TEXT = "connect";
     private static final String REFRESH_BUTTON_TEXT = "refresh";
     private static final String TITLE = "FTP Client";
     private static final String UP_FOLDER_NAME = "../";
-    private static final String FILE_CHOOSER_TITLE_PREFIX = "Choose directory to save \"";
 
     private VBox root;
     private ListView<FTPClient.ListingItem> listView;
@@ -97,11 +76,7 @@ public class FTPClientGUI extends Application {
     private Image fileImage;
     private Image upImage;
 
-    private Stage mainStage;
-    private FTPClient client = new FTPClient();
-    private Path currentPath;
-    private Task currentTask;
-    private PauseTransition pauseTransition;
+    private FTPClientInteractor interactor;
 
     /** Launches GUI application */
     public static void main(String[] args) {
@@ -115,7 +90,8 @@ public class FTPClientGUI extends Application {
      */
     @Override
     public void start(@NonNull Stage stage) throws IOException {
-        mainStage = stage;
+        interactor = new FTPClientInteractor(stage, this::setMessage);
+        setupInteractorCallbacks();
 
         initializeViews();
         loadImages();
@@ -127,6 +103,26 @@ public class FTPClientGUI extends Application {
         stage.setMinWidth(MIN_WIDTH);
         stage.setScene(new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT));
         stage.show();
+    }
+
+    private void setupInteractorCallbacks() {
+        interactor.setOnConnectActionSucceeded(this::connectOrWalkActionSucceeded);
+        interactor.setOnConnectActionFailed(this::setMainScreen);
+
+        interactor.setOnWalkActionSucceeded(this::connectOrWalkActionSucceeded);
+        interactor.setOnWalkActionFailed(this::setConnectedScreen);
+
+        interactor.setOnSaveActionSucceeded(this::setConnectedScreen);
+        interactor.setOnSaveActionFailed(this::setConnectedScreen);
+
+        interactor.setOnDisconnectActionSucceeded(this::setMainScreen);
+        interactor.setOnDisconnectActionFailed(this::setMainScreen);
+    }
+
+    private void connectOrWalkActionSucceeded(@NonNull List<FTPClient.ListingItem> results) {
+        items.clear();
+        items.addAll(results);
+        setConnectedScreen();
     }
 
     private void initializeViews() throws IOException {
@@ -150,8 +146,8 @@ public class FTPClientGUI extends Application {
     private void constructRefreshButton() {
         refreshButton = new Button(REFRESH_BUTTON_TEXT);
         refreshButton.setMinWidth(Double.NEGATIVE_INFINITY);
-        HBox.setMargin(refreshButton, REFRESH_BUTTON_INSTES);
-        refreshButton.setOnAction(event -> walkAction("."));
+        HBox.setMargin(refreshButton, REFRESH_BUTTON_INSETS);
+        refreshButton.setOnAction(event -> interactor.walkAction("."));
     }
 
     private void constructTextStackPane() {
@@ -196,10 +192,11 @@ public class FTPClientGUI extends Application {
                         if (event.getButton() != MouseButton.PRIMARY | event.getClickCount() < 2) {
                             return;
                         }
+                        listView.setDisable(true);
                         if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
-                            walkAction(item.getName());
+                            interactor.walkAction(item.getName());
                         } else {
-                            saveAction(item.getName());
+                            interactor.saveAction(item.getName());
                         }
                     });
 
@@ -214,11 +211,12 @@ public class FTPClientGUI extends Application {
             if (event.getCode() != KeyCode.ENTER) {
                 return;
             }
+            listView.setDisable(true);
             var item = listView.getSelectionModel().getSelectedItem();
             if (item.getType() == FTPClient.ListingItem.Type.DIRECTORY) {
-                walkAction(item.getName());
+                interactor.walkAction(item.getName());
             } else {
-                saveAction(item.getName());
+                interactor.saveAction(item.getName());
             }
         });
     }
@@ -234,7 +232,11 @@ public class FTPClientGUI extends Application {
     }
 
     private void setConnectedScreen() {
-        String pathToShow = currentPath.toString().equals("") ? "." : currentPath.toString();
+        String pathToShow = interactor.getCurrentPath().toString();
+        if (pathToShow.equals("")) {
+            pathToShow = ".";
+        }
+
         setMessage("path:  " + pathToShow, false);
         listView.setDisable(false);
 
@@ -243,7 +245,11 @@ public class FTPClientGUI extends Application {
 
         mainButton.setText(DISCONNECT_BUTTON_TEXT);
         mainButton.setDisable(false);
-        mainButton.setOnAction(event -> disconnectAction());
+        mainButton.setOnAction(event -> {
+            mainButton.setDisable(true);
+            listView.setDisable(true);
+            interactor.disconnectAction();
+        });
     }
 
     private void setMainScreen() {
@@ -257,188 +263,12 @@ public class FTPClientGUI extends Application {
 
         mainButton.setText(CONNECT_BUTTON_TEXT);
         mainButton.setDisable(false);
-        mainButton.setOnAction(event -> connectAction());
-    }
 
-    private void cancelAllAsyncOperations() {
-        if (pauseTransition != null) {
-            pauseTransition.stop();
-            pauseTransition = null;
-        }
-        if (currentTask != null) {
-            currentTask.cancel(true);
-            currentTask = null;
-        }
-    }
-
-    private void setDelayedAction(@NonNull Runnable action) {
-        pauseTransition = new PauseTransition(Duration.millis(DELAY_MILLIS));
-        pauseTransition.setOnFinished(event -> {
-            action.run();
-            pauseTransition = null;
+        mainButton.setOnAction(event -> {
+            mainButton.setDisable(true);
+            var address = addressField.getCharacters().toString().trim();
+            var portString = portField.getCharacters().toString().trim();
+            interactor.connectAction(address, portString);
         });
-        pauseTransition.play();
-    }
-
-    private void connectAction() {
-        mainButton.setDisable(true);
-
-        var address = addressField.getCharacters().toString().trim();
-        var portString = portField.getCharacters().toString().trim();
-        int port;
-        try {
-            port = Integer.parseInt(portString);
-        } catch (NumberFormatException exception) {
-            setMessage(PORT_FORMAT_MESSAGE, true);
-            setDelayedAction(this::setMainScreen);
-            return;
-        }
-
-        setMessage(CONNECTING_MESSAGE, false);
-
-        currentTask = new Task<List<FTPClient.ListingItem>>() {
-            @Override
-            protected List<FTPClient.ListingItem> call() throws Exception {
-                client.connect(address, port, CONNECTION_TIMEOUT_MILLIS);
-                currentPath = Paths.get("");
-                return client.executeList(currentPath.toString());
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                connectOrWalkSucceeded(this);
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(CONNECTION_ERROR_MESSAGE, true);
-                currentTask = null;
-                setDelayedAction(() -> setMainScreen());
-            }
-        };
-
-        startCurrentTask();
-    }
-
-    private void walkAction(@NonNull String relativePath) {
-        setMessage(UPDATING_MESSAGE, false);
-        listView.setDisable(true);
-
-        currentTask = new Task<List<FTPClient.ListingItem>>() {
-            @Override
-            protected List<FTPClient.ListingItem> call() throws Exception {
-                    currentPath = currentPath.resolve(relativePath).normalize();
-                    var unixPath = FilenameUtils.separatorsToUnix(currentPath.toString());
-                    return client.executeList(unixPath);
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                connectOrWalkSucceeded(this);
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(UPDATING_ERROR_MESSAGE, true);
-                currentTask = null;
-                setDelayedAction(() -> setConnectedScreen());
-            }
-        };
-       startCurrentTask();
-    }
-
-    private void connectOrWalkSucceeded(@NonNull Task<List<FTPClient.ListingItem>> instance) {
-        items.clear();
-        items.add(new FTPClient.ListingItem(FTPClient.ListingItem.Type.DIRECTORY, UP_FOLDER_NAME));
-        items.addAll(instance.getValue());
-        currentTask = null;
-        setConnectedScreen();
-    }
-
-    private void saveAction(@NonNull String relativePath) {
-        setMessage(SAVING_FILE_MESSAGE, false);
-        listView.setDisable(true);
-
-        var fileChooser = new DirectoryChooser();
-        String title = FILE_CHOOSER_TITLE_PREFIX + relativePath + "\"";
-        fileChooser.setTitle(title);
-        var selectedDirectory = fileChooser.showDialog(mainStage);
-        if (selectedDirectory == null) {
-            setMessage(DIRECTORY_NOT_CHOSEN_MESSAGE, true);
-            setDelayedAction(this::setConnectedScreen);
-            return;
-        }
-
-        currentTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                var filePath = currentPath.resolve(relativePath);
-                var unixFilePath = FilenameUtils.separatorsToUnix(filePath.toString());
-                byte[] fileBytes = client.executeGet(unixFilePath);
-                Files.write(selectedDirectory.toPath().resolve(relativePath), fileBytes);
-                return null;
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                setMessage(FILE_DOWNLOADED_MESSAGE, false);
-                currentTask = null;
-                setDelayedAction(() -> setConnectedScreen());
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(DOWNLOAD_ERROR_MESSAGE, true);
-                currentTask = null;
-                setDelayedAction(() -> setConnectedScreen());
-            }
-        };
-        startCurrentTask();
-    }
-
-    private void disconnectAction() {
-        mainButton.setDisable(true);
-        setMessage(DISCONNECTING_MESSAGE, false);
-        listView.setDisable(true);
-
-        cancelAllAsyncOperations();
-
-        currentTask = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                client.disconnect();
-                return null;
-            }
-
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                currentTask = null;
-                setMainScreen();
-            }
-
-            @Override
-            protected void failed() {
-                super.failed();
-                setMessage(DISCONNECTION_ERROR_MESSAGE, true);
-                client = new FTPClient();
-                currentTask = null;
-                setDelayedAction(() -> setMainScreen());
-            }
-        };
-
-        startCurrentTask();
-    }
-
-    private void startCurrentTask() {
-        var backgroundThread = new Thread(currentTask);
-        backgroundThread.setDaemon(true);
-        backgroundThread.start();
     }
 }
