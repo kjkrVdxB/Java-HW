@@ -8,6 +8,7 @@ env:
     - PROJECT_DIR=reflector
     - PROJECT_DIR=qsort
     - PROJECT_DIR=threadpool
+    - PROJECT_DIR=ftpgui
 before_install:
     - cd "$PROJECT_DIR"
 script:
